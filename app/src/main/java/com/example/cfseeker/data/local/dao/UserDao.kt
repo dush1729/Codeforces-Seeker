@@ -4,10 +4,9 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import com.example.cfseeker.data.local.entity.RatingChangeEntity
 import com.example.cfseeker.data.local.entity.UserEntity
-import com.example.cfseeker.data.remote.model.RatingChange
-import com.example.cfseeker.data.remote.model.User
 
 @Dao
 interface UserDao {
@@ -23,6 +22,18 @@ interface UserDao {
     @Query("DELETE FROM rating_change WHERE handle = :handle")
     suspend fun deleteRatingChanges(handle: String)
 
+    @Transaction
+    suspend fun addUser(user: UserEntity, ratingChanges: List<RatingChangeEntity>) {
+        insertUser(user)
+        insertRatingChanges(ratingChanges)
+    }
+
+    @Transaction
+    suspend fun deleteUserAndRatingChanges(handle: String) {
+        deleteUser(handle)
+        deleteRatingChanges(handle)
+    }
+
     @Query("SELECT * FROM user JOIN rating_change ON user.handle = rating_change.handle")
-    suspend fun getAllUserRatingChanges(): Map<User, List<RatingChange>>
+    suspend fun getAllUserRatingChanges(): Map<UserEntity, List<RatingChangeEntity>>
 }
