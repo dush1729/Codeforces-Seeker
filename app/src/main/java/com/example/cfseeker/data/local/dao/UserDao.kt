@@ -1,22 +1,21 @@
 package com.example.cfseeker.data.local.dao
 
 import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Upsert
 import com.example.cfseeker.data.local.entity.RatingChangeEntity
 import com.example.cfseeker.data.local.entity.UserEntity
 
 @Dao
 interface UserDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun insertUser(user: UserEntity)
 
     @Query("DELETE FROM user WHERE handle = :handle")
     suspend fun deleteUser(handle: String)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun insertRatingChanges(ratingChanges: List<RatingChangeEntity>)
 
     @Query("DELETE FROM rating_change WHERE handle = :handle")
