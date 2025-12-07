@@ -33,6 +33,6 @@ interface UserDao {
         deleteRatingChanges(handle)
     }
 
-    @Query("SELECT * FROM user JOIN rating_change ON user.handle = rating_change.handle")
+    @Query("SELECT * FROM user LEFT JOIN rating_change ON user.handle = rating_change.handle")
     suspend fun getAllUserRatingChanges(): Map<UserEntity, List<RatingChangeEntity>>
 }
