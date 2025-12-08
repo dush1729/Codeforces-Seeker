@@ -11,6 +11,7 @@ import com.example.cfseeker.data.local.entity.RatingChangeEntity
 import com.example.cfseeker.data.local.entity.UserEntity
 import com.example.cfseeker.data.local.entity.UserRatingChanges
 import com.example.cfseeker.databinding.UserItemBinding
+import com.example.cfseeker.utils.toRelativeTime
 
 class UserAdapter: ListAdapter<UserRatingChanges, UserAdapter.UserViewHolder>(
     UserRatingChangeDiffUtil()
@@ -29,13 +30,18 @@ class UserAdapter: ListAdapter<UserRatingChanges, UserAdapter.UserViewHolder>(
         fun bind(userRatingChange: UserRatingChanges) {
             binding.userAvatar.load(userRatingChange.user.avatar)
             binding.userHandle.text = userRatingChange.user.handle
-            userRatingChange.ratingChanges.lastOrNull()?.let { userRatingChange ->
-                val delta = userRatingChange.newRating - userRatingChange.oldRating
+
+            val latestRatingChange = userRatingChange.ratingChanges.lastOrNull()
+            if(latestRatingChange == null) {
+                binding.lastRatingUpdate.text = "No rating update"
+            } else {
+                binding.lastRatingUpdate.text = latestRatingChange.ratingUpdateTimeSeconds.toRelativeTime()
+                val delta = latestRatingChange.newRating - latestRatingChange.oldRating
                 binding.ratingDelta.text = delta.toString()
                 if(delta < 0) {
                     binding.ratingDelta.setTextColor(binding.root.context.getColor(android.R.color.holo_red_dark))
                 }
-                binding.newRating.text = userRatingChange.newRating.toString()
+                binding.newRating.text = latestRatingChange.newRating.toString()
             }
         }
     }
