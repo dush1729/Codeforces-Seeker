@@ -54,7 +54,7 @@ fun User.toUserEntity(): UserEntity = UserEntity(
     rating = rating,
     registrationTimeSeconds = registrationTimeSeconds,
     titlePhoto = titlePhoto,
-    lastSync = System.currentTimeMillis(),
+    lastSync = System.currentTimeMillis() / 1000,
 )
 
 fun List<RatingChange>.toRatingChangeEntity(): List<RatingChangeEntity> = map { ratingChange ->
@@ -66,6 +66,6 @@ fun List<RatingChange>.toRatingChangeEntity(): List<RatingChangeEntity> = map { 
         oldRating = ratingChange.oldRating,
         newRating = ratingChange.newRating,
         ratingUpdateTimeSeconds = ratingChange.ratingUpdateTimeSeconds,
-        lastSync = System.currentTimeMillis()
+        lastSync = System.currentTimeMillis() / 1000
     )
 }
