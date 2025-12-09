@@ -1,19 +1,39 @@
 package com.example.cfseeker.ui.screens
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.cfseeker.data.local.entity.RatingChangeEntity
 import com.example.cfseeker.data.local.entity.UserEntity
@@ -35,6 +55,9 @@ fun UserListScreen(
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
+    var showBottomSheet by remember { mutableStateOf(false) }
+    var userHandle by remember { mutableStateOf("") }
+
     Scaffold(
         modifier = modifier
             .fillMaxSize()
@@ -43,6 +66,13 @@ fun UserListScreen(
             TopAppBar(
                 title = { Text("Users") },
                 scrollBehavior = scrollBehavior
+            )
+        },
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = { showBottomSheet = true },
+                icon = { Icon(Icons.Filled.Add, contentDescription = "Add User") },
+                text = { Text("Add User") }
             )
         }
     ) { paddingValues ->
@@ -63,6 +93,84 @@ fun UserListScreen(
                     users = state.data,
                     modifier = Modifier.padding(paddingValues)
                 )
+            }
+        }
+    }
+
+    if (showBottomSheet) {
+        ModalBottomSheet(
+            onDismissRequest = {
+                showBottomSheet = false
+                userHandle = ""
+            },
+        ) {
+            AddUserBottomSheet(
+                userHandle = userHandle,
+                onUserHandleChange = { userHandle = it },
+                onAddClick = {
+                    viewModel.fetchUser(userHandle)
+                    showBottomSheet = false
+                    userHandle = ""
+                },
+                onCancelClick = {
+                    showBottomSheet = false
+                    userHandle = ""
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun AddUserBottomSheet(
+    userHandle: String,
+    onUserHandleChange: (String) -> Unit,
+    onAddClick: () -> Unit,
+    onCancelClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text(
+            text = "Add User",
+            style = androidx.compose.material3.MaterialTheme.typography.titleLarge
+        )
+
+        OutlinedTextField(
+            value = userHandle,
+            onValueChange = onUserHandleChange,
+            label = { Text("User Handle") },
+            placeholder = { Text("Enter Codeforces handle") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    if (userHandle.isNotBlank()) {
+                        onAddClick()
+                    }
+                }
+            )
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            TextButton(onClick = onCancelClick) {
+                Text("Cancel")
+            }
+
+            Button(
+                onClick = onAddClick,
+                enabled = userHandle.isNotBlank(),
+                modifier = Modifier.padding(start = 8.dp)
+            ) {
+                Text("Add")
             }
         }
     }
