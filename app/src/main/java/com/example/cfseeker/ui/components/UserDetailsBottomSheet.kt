@@ -46,6 +46,7 @@ fun UserDetailsBottomSheet(
     modifier: Modifier = Modifier
 ) {
     var isSyncing by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
 
     Column(
@@ -131,6 +132,16 @@ fun UserDetailsBottomSheet(
         HorizontalDivider()
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Error message
+        errorMessage?.let { error ->
+            Text(
+                text = error,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+        }
+
         // Action buttons
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -139,8 +150,13 @@ fun UserDetailsBottomSheet(
             OutlinedButton(
                 onClick = {
                     scope.launch {
-                        onDeleteClick()
-                        onDismiss()
+                        try {
+                            errorMessage = null
+                            onDeleteClick()
+                            onDismiss()
+                        } catch (e: Exception) {
+                            errorMessage = e.message ?: "Failed to delete user"
+                        }
                     }
                 },
                 modifier = Modifier.weight(1f),
@@ -154,9 +170,15 @@ fun UserDetailsBottomSheet(
             Button(
                 onClick = {
                     scope.launch {
-                        isSyncing = true
-                        onSyncClick()
-                        isSyncing = false
+                        try {
+                            isSyncing = true
+                            errorMessage = null
+                            onSyncClick()
+                            isSyncing = false
+                        } catch (e: Exception) {
+                            isSyncing = false
+                            errorMessage = e.message ?: "Failed to sync user"
+                        }
                     }
                 },
                 modifier = Modifier.weight(1f),

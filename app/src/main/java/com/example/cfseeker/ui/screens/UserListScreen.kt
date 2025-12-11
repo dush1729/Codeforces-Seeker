@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
@@ -16,9 +17,11 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -120,9 +123,7 @@ fun UserListScreen(
                 userHandle = userHandle,
                 onUserHandleChange = { userHandle = it },
                 onAddClick = {
-                    scope.launch {
-                        viewModel.fetchUser(userHandle)
-                    }
+                    viewModel.fetchUser(userHandle)
                     showBottomSheet = false
                     userHandle = ""
                 },
@@ -161,10 +162,14 @@ fun UserListScreen(
 private fun AddUserBottomSheet(
     userHandle: String,
     onUserHandleChange: (String) -> Unit,
-    onAddClick: () -> Unit,
+    onAddClick: suspend () -> Unit,
     onCancelClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    val scope = rememberCoroutineScope()
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -176,6 +181,14 @@ private fun AddUserBottomSheet(
             style = androidx.compose.material3.MaterialTheme.typography.titleLarge
         )
 
+        errorMessage?.let { error ->
+            Text(
+                text = error,
+                style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
+                color = androidx.compose.material3.MaterialTheme.colorScheme.error
+            )
+        }
+
         OutlinedTextField(
             value = userHandle,
             onValueChange = onUserHandleChange,
@@ -183,11 +196,22 @@ private fun AddUserBottomSheet(
             placeholder = { Text("Enter Codeforces handle") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
+            enabled = !isLoading,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(
                 onDone = {
-                    if (userHandle.isNotBlank()) {
-                        onAddClick()
+                    if (userHandle.isNotBlank() && !isLoading) {
+                        scope.launch {
+                            try {
+                                isLoading = true
+                                errorMessage = null
+                                onAddClick()
+                                isLoading = false
+                            } catch (e: Exception) {
+                                isLoading = false
+                                errorMessage = e.message ?: "Failed to add user"
+                            }
+                        }
                     }
                 }
             )
@@ -197,16 +221,39 @@ private fun AddUserBottomSheet(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End
         ) {
-            TextButton(onClick = onCancelClick) {
+            TextButton(
+                onClick = onCancelClick,
+                enabled = !isLoading
+            ) {
                 Text("Cancel")
             }
 
             Button(
-                onClick = onAddClick,
-                enabled = userHandle.isNotBlank(),
+                onClick = {
+                    scope.launch {
+                        try {
+                            isLoading = true
+                            errorMessage = null
+                            onAddClick()
+                            isLoading = false
+                        } catch (e: Exception) {
+                            isLoading = false
+                            errorMessage = e.message ?: "Failed to add user"
+                        }
+                    }
+                },
+                enabled = userHandle.isNotBlank() && !isLoading,
                 modifier = Modifier.padding(start = 8.dp)
             ) {
-                Text("Add")
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                } else {
+                    Text("Add")
+                }
             }
         }
     }

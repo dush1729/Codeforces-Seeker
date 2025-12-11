@@ -5,6 +5,7 @@ import com.example.cfseeker.data.local.entity.RatingChangeEntity
 import com.example.cfseeker.data.local.entity.UserEntity
 import com.example.cfseeker.data.local.entity.UserRatingChanges
 import com.example.cfseeker.data.remote.api.NetworkService
+import com.example.cfseeker.data.remote.api.safeApiCall
 import com.example.cfseeker.data.remote.model.RatingChange
 import com.example.cfseeker.data.remote.model.User
 import kotlinx.coroutines.Dispatchers
@@ -18,9 +19,14 @@ class UserRepository @Inject constructor(
     private val db: DatabaseService
 ) {
     suspend fun fetchUser(handle: String): Unit = withContext(Dispatchers.IO) {
-        // TODO: Handle 400 user not found
-        val apiUser: User = api.getUser(handle).result?.first() ?: return@withContext
-        val apiRatingChanges: List<RatingChange> = api.getRatingChanges(handle).result ?: return@withContext
+        val apiUser: User = safeApiCall {
+            api.getUser(handle)
+        }.result?.firstOrNull() ?: return@withContext
+
+        val apiRatingChanges: List<RatingChange> = safeApiCall {
+            api.getRatingChanges(handle)
+        }.result ?: emptyList()
+
         db.addUser(
             user = apiUser.toUserEntity(),
             ratingChanges = apiRatingChanges.toRatingChangeEntity()
