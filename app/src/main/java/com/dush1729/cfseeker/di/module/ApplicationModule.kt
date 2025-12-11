@@ -1,0 +1,47 @@
+package com.dush1729.cfseeker.di.module
+
+import android.content.Context
+import androidx.room.Room
+import com.dush1729.cfseeker.data.local.AppDatabase
+import com.dush1729.cfseeker.data.local.AppDatabaseService
+import com.dush1729.cfseeker.data.local.DatabaseService
+import com.dush1729.cfseeker.data.remote.api.NetworkService
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import javax.inject.Singleton
+
+@Module
+@InstallIn(SingletonComponent::class)
+object ApplicationModule {
+    @Singleton
+    @Provides
+    fun provideNetworkService(): NetworkService {
+        return Retrofit
+            .Builder()
+            .baseUrl("https://codeforces.com/api/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(NetworkService::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
+        return Room.databaseBuilder(
+            context,
+            AppDatabase::class.java,
+            "app_database")
+            .build()
+    }
+
+    @Singleton
+    @Provides
+    fun provideDatabaseService(appDatabase: AppDatabase): DatabaseService {
+        return AppDatabaseService(appDatabase)
+    }
+}

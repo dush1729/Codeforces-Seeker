@@ -17,3 +17,6 @@ local.properties
 
 # Room schema exports
 /app/schemas/
+
+# Firebase
+google-services.json

@@ -4,16 +4,17 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
+    alias(libs.plugins.google.services)
 }
 
 android {
-    namespace = "com.example.cfseeker"
+    namespace = "com.dush1729.cfseeker"
     compileSdk {
         version = release(36)
     }
 
     defaultConfig {
-        applicationId = "com.example.cfseeker"
+        applicationId = "com.dush1729.cfseeker"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -85,4 +86,8 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.coil.compose)
+
+    // Firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
 }
