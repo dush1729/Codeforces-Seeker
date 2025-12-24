@@ -10,7 +10,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.dush1729.cfseeker.ui.UserViewModel
-import com.dush1729.cfseeker.ui.screens.UserListScreen
+import com.dush1729.cfseeker.ui.screens.MainScreen
 import com.dush1729.cfseeker.ui.theme.CFSeekerTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -28,7 +28,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    UserListScreen(viewModel = viewModel)
+                    MainScreen(userViewModel = viewModel)
                 }
             }
         }

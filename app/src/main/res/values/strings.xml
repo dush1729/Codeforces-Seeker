@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">CF Seeker</string>
+    <string name="github_url">https://github.com/dush1729/CF-Seeker</string>
+    <string name="feedback_form_url">https://docs.google.com/forms/d/e/1FAIpQLScMAsX0GYBHgGeX0xJQBumuEQDgdamuuJNFWv1ag4FXi19Nng/viewform?usp=dialog</string>
 </resources>
