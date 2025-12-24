@@ -18,6 +18,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
@@ -30,12 +32,15 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -50,8 +55,10 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -78,10 +85,12 @@ fun UserListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val currentSortOption by viewModel.sortOption.collectAsStateWithLifecycle()
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val isSyncing by viewModel.isSyncing.collectAsStateWithLifecycle()
     val syncProgress by viewModel.syncProgress.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    val focusManager = LocalFocusManager.current
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
@@ -201,27 +210,74 @@ fun UserListScreen(
             }
         }
     ) { paddingValues ->
-        when (val state = uiState) {
-            is UiState.Loading -> {
-                LoadingState(modifier = Modifier.padding(paddingValues))
-            }
-
-            is UiState.Error -> {
-                ErrorState(
-                    message = state.message,
-                    modifier = Modifier.padding(paddingValues)
-                )
-            }
-
-            is UiState.Success -> {
-                UserList(
-                    users = state.data,
-                    sortOption = currentSortOption,
-                    contentPadding = paddingValues,
-                    onUserCardClick = { user ->
-                        selectedUser = user
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            // Search bar
+            TextField(
+                value = searchQuery,
+                onValueChange = { newValue ->
+                    viewModel.setSearchQuery(newValue)
+                    if (newValue.isEmpty()) {
+                        focusManager.clearFocus()
                     }
-                )
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                placeholder = { Text("Search by handle...") },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Filled.Search,
+                        contentDescription = "Search"
+                    )
+                },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = {
+                            viewModel.setSearchQuery("")
+                            focusManager.clearFocus()
+                        }) {
+                            Icon(
+                                imageVector = Icons.Filled.Close,
+                                contentDescription = "Clear search"
+                            )
+                        }
+                    }
+                },
+                singleLine = true,
+                colors = TextFieldDefaults.colors(
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent
+                ),
+                shape = MaterialTheme.shapes.medium
+            )
+
+            // User List
+            when (val state = uiState) {
+                is UiState.Loading -> {
+                    LoadingState(modifier = Modifier.fillMaxSize())
+                }
+
+                is UiState.Error -> {
+                    ErrorState(
+                        message = state.message,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+
+                is UiState.Success -> {
+                    UserList(
+                        users = state.data,
+                        sortOption = currentSortOption,
+                        onUserCardClick = { user ->
+                            selectedUser = user
+                        }
+                    )
+                }
             }
         }
     }

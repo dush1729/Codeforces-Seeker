@@ -39,6 +39,7 @@ interface UserDao {
     @Query("""
         SELECT user.* FROM user
         LEFT JOIN rating_change ON user.handle = rating_change.handle
+        WHERE LOWER(user.handle) LIKE '%' || LOWER(:searchQuery) || '%'
         GROUP BY user.handle
         ORDER BY
             CASE WHEN :sortBy = 'LAST_RATING_UPDATE' THEN MAX(rating_change.ratingUpdateTimeSeconds) END DESC,
@@ -47,7 +48,10 @@ interface UserDao {
             CASE WHEN :sortBy = 'HANDLE' THEN LOWER(user.handle) END ASC,
             user.handle ASC
     """)
-    fun getAllUserRatingChanges(sortBy: String = SortOption.LAST_RATING_UPDATE.value): Flow<List<UserRatingChanges>>
+    fun getAllUserRatingChanges(
+        sortBy: String = SortOption.LAST_RATING_UPDATE.value,
+        searchQuery: String = ""
+    ): Flow<List<UserRatingChanges>>
 
     @Query("SELECT handle FROM user")
     suspend fun getAllUserHandles(): List<String>

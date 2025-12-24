@@ -17,6 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
@@ -42,6 +43,9 @@ class UserViewModel @Inject constructor(
     private val _sortOption = MutableStateFlow(SortOption.LAST_RATING_UPDATE)
     val sortOption = _sortOption.asStateFlow()
 
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery = _searchQuery.asStateFlow()
+
     private val _isSyncing = MutableStateFlow(false)
     val isSyncing = _isSyncing.asStateFlow()
 
@@ -50,9 +54,11 @@ class UserViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            _sortOption
-                .flatMapLatest { sortOption ->
-                    repository.getAllUserRatingChanges(sortOption.value)
+            combine(_sortOption, _searchQuery) { sortOption, searchQuery ->
+                Pair(sortOption, searchQuery)
+            }
+                .flatMapLatest { (sortOption, searchQuery) ->
+                    repository.getAllUserRatingChanges(sortOption.value, searchQuery)
                 }
                 .flowOn(Dispatchers.IO)
                 .catch {
@@ -89,6 +95,10 @@ class UserViewModel @Inject constructor(
 
     fun setSortOption(sortOption: SortOption) {
         _sortOption.value = sortOption
+    }
+
+    fun setSearchQuery(query: String) {
+        _searchQuery.value = query
     }
 
     suspend fun fetchUser(handle: String) {

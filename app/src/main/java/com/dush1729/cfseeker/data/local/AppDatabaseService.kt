@@ -15,8 +15,8 @@ class AppDatabaseService @Inject constructor(private val appDatabase: AppDatabas
         appDatabase.userDao().deleteUserAndRatingChanges(handle)
     }
 
-    override fun getAllUserRatingChanges(sortBy: String): Flow<List<UserRatingChanges>> {
-        return appDatabase.userDao().getAllUserRatingChanges(sortBy)
+    override fun getAllUserRatingChanges(sortBy: String, searchQuery: String): Flow<List<UserRatingChanges>> {
+        return appDatabase.userDao().getAllUserRatingChanges(sortBy, searchQuery)
     }
 
     override suspend fun getAllUserHandles(): List<String> {

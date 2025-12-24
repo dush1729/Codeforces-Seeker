@@ -38,8 +38,11 @@ class UserRepository @Inject constructor(
         db.deleteUser(handle)
     }
 
-    fun getAllUserRatingChanges(sortBy: String = SortOption.LAST_RATING_UPDATE.value): Flow<List<UserRatingChanges>> {
-        return db.getAllUserRatingChanges(sortBy)
+    fun getAllUserRatingChanges(
+        sortBy: String = SortOption.LAST_RATING_UPDATE.value,
+        searchQuery: String = ""
+    ): Flow<List<UserRatingChanges>> {
+        return db.getAllUserRatingChanges(sortBy, searchQuery)
     }
 
     suspend fun getAllUserHandles(): List<String> {
