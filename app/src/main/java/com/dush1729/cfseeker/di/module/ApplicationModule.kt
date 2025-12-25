@@ -3,6 +3,8 @@ package com.dush1729.cfseeker.di.module
 import android.content.Context
 import androidx.room.Room
 import androidx.work.WorkManager
+import com.dush1729.cfseeker.analytics.AnalyticsService
+import com.dush1729.cfseeker.analytics.FirebaseAnalyticsService
 import com.dush1729.cfseeker.data.local.AppDatabase
 import com.dush1729.cfseeker.data.local.AppDatabaseService
 import com.dush1729.cfseeker.data.local.DatabaseService
@@ -59,5 +61,11 @@ object ApplicationModule {
     @Provides
     fun provideFirebaseAnalytics(): FirebaseAnalytics {
         return Firebase.analytics
+    }
+
+    @Singleton
+    @Provides
+    fun provideAnalyticsService(firebaseAnalytics: FirebaseAnalytics): AnalyticsService {
+        return FirebaseAnalyticsService(firebaseAnalytics)
     }
 }

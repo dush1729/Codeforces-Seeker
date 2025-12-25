@@ -16,11 +16,13 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.dush1729.cfseeker.analytics.AnalyticsService
 import com.dush1729.cfseeker.ui.UserViewModel
 
 @Composable
 fun MainScreen(
     userViewModel: UserViewModel,
+    analyticsService: AnalyticsService,
     modifier: Modifier = Modifier
 ) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
@@ -33,13 +35,19 @@ fun MainScreen(
                     icon = { Icon(Icons.Filled.People, contentDescription = "Users") },
                     label = { Text("Users") },
                     selected = selectedTabIndex == 0,
-                    onClick = { selectedTabIndex = 0 }
+                    onClick = {
+                        selectedTabIndex = 0
+                        analyticsService.logScreenView("users")
+                    }
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Filled.Info, contentDescription = "About") },
                     label = { Text("About") },
                     selected = selectedTabIndex == 1,
-                    onClick = { selectedTabIndex = 1 }
+                    onClick = {
+                        selectedTabIndex = 1
+                        analyticsService.logScreenView("about")
+                    }
                 )
             }
         }
@@ -50,6 +58,7 @@ fun MainScreen(
                 modifier = Modifier.padding(paddingValues)
             )
             1 -> AboutScreen(
+                analyticsService = analyticsService,
                 modifier = Modifier.padding(paddingValues)
             )
         }

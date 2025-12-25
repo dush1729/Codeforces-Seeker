@@ -32,6 +32,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.dush1729.cfseeker.BuildConfig
 import com.dush1729.cfseeker.R
+import com.dush1729.cfseeker.analytics.AnalyticsService
+import com.dush1729.cfseeker.analytics.DummyAnalyticsService
 import com.dush1729.cfseeker.ui.theme.CFSeekerTheme
 import com.dush1729.cfseeker.utils.openPlayStore
 import com.dush1729.cfseeker.utils.openUrl
@@ -39,6 +41,7 @@ import com.dush1729.cfseeker.utils.openUrl
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutScreen(
+    analyticsService: AnalyticsService,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -72,6 +75,7 @@ fun AboutScreen(
                 title = "Feedback / Bugs",
                 description = "Share feedback or report bugs",
                 onClick = {
+                    analyticsService.logFeedbackOpened()
                     openUrl(context, feedbackUrl)
                 }
             )
@@ -88,6 +92,7 @@ fun AboutScreen(
                 title = "GitHub",
                 description = "View source code on GitHub",
                 onClick = {
+                    analyticsService.logGitHubOpened()
                     openUrl(context, githubUrl)
                 }
             )
@@ -104,6 +109,7 @@ fun AboutScreen(
                 title = "Rate on Play Store",
                 description = "Rate and review the app on Play Store",
                 onClick = {
+                    analyticsService.logPlayStoreOpened("about_screen")
                     openPlayStore(context)
                 }
             )
@@ -120,6 +126,7 @@ fun AboutScreen(
                 title = "Share App",
                 description = "Share CF Seeker with others",
                 onClick = {
+                    analyticsService.logAppShared("about")
                     val shareIntent = android.content.Intent().apply {
                         action = android.content.Intent.ACTION_SEND
                         putExtra(
@@ -190,6 +197,6 @@ private fun AboutCard(
 @Composable
 private fun AboutScreenPreview() {
     CFSeekerTheme {
-        AboutScreen()
+        AboutScreen(analyticsService = DummyAnalyticsService)
     }
 }

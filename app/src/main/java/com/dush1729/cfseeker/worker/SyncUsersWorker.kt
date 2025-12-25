@@ -12,6 +12,7 @@ import androidx.work.Data
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
 import com.dush1729.cfseeker.R
+import com.dush1729.cfseeker.analytics.AnalyticsService
 import com.dush1729.cfseeker.data.repository.UserRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -21,7 +22,8 @@ import kotlinx.coroutines.delay
 class SyncUsersWorker @AssistedInject constructor(
     @Assisted private val context: Context,
     @Assisted workerParams: WorkerParameters,
-    private val repository: UserRepository
+    private val repository: UserRepository,
+    private val analyticsService: AnalyticsService
 ) : CoroutineWorker(context, workerParams) {
 
     companion object {
@@ -35,6 +37,10 @@ class SyncUsersWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         android.util.Log.d("SyncUsersWorker", "doWork() started")
+        val startTime = System.currentTimeMillis()
+        var successCount = 0
+        var failureCount = 0
+
         return try {
             // Get all user handles from database
             val userHandles = repository.getAllUserHandles()
@@ -42,6 +48,12 @@ class SyncUsersWorker @AssistedInject constructor(
 
             if (userHandles.isEmpty()) {
                 android.util.Log.d("SyncUsersWorker", "No users to sync, returning success")
+                analyticsService.logBulkSyncCompleted(
+                    durationMs = System.currentTimeMillis() - startTime,
+                    userCount = 0,
+                    successCount = 0,
+                    failureCount = 0
+                )
                 return Result.success()
             }
 
@@ -68,6 +80,7 @@ class SyncUsersWorker @AssistedInject constructor(
 
                     // Fetch user data
                     repository.fetchUser(handle)
+                    successCount++
                     android.util.Log.d("SyncUsersWorker", "Successfully synced $handle")
 
                     // Wait 5 seconds before next user (except for last user)
@@ -76,6 +89,7 @@ class SyncUsersWorker @AssistedInject constructor(
                     }
                 } catch (e: Exception) {
                     // Continue with next user even if one fails
+                    failureCount++
                     android.util.Log.e("SyncUsersWorker", "Failed to sync $handle", e)
                     e.printStackTrace()
                 }
@@ -85,10 +99,29 @@ class SyncUsersWorker @AssistedInject constructor(
             setForeground(createCompletionNotification(userHandles.size))
             android.util.Log.d("SyncUsersWorker", "Sync completed successfully")
 
+            // Log analytics
+            val duration = System.currentTimeMillis() - startTime
+            analyticsService.logBulkSyncCompleted(
+                durationMs = duration,
+                userCount = userHandles.size,
+                successCount = successCount,
+                failureCount = failureCount
+            )
+
             Result.success()
         } catch (e: Exception) {
             android.util.Log.e("SyncUsersWorker", "doWork() failed", e)
             e.printStackTrace()
+
+            // Log analytics for failure
+            val duration = System.currentTimeMillis() - startTime
+            analyticsService.logBulkSyncCompleted(
+                durationMs = duration,
+                userCount = successCount + failureCount,
+                successCount = successCount,
+                failureCount = failureCount
+            )
+
             Result.failure()
         }
     }

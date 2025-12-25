@@ -8,6 +8,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.WorkRequest
+import com.dush1729.cfseeker.analytics.AnalyticsService
 import com.dush1729.cfseeker.data.local.entity.UserRatingChanges
 import com.dush1729.cfseeker.data.repository.UserRepository
 import com.dush1729.cfseeker.ui.base.UiState
@@ -36,7 +37,8 @@ enum class SortOption(val value: String, val displayName: String) {
 @HiltViewModel
 class UserViewModel @Inject constructor(
     private val repository: UserRepository,
-    private val workManager: WorkManager
+    private val workManager: WorkManager,
+    private val analyticsService: AnalyticsService
 ): ViewModel() {
     private val _uiState = MutableStateFlow<UiState<List<UserRatingChanges>>>(
         UiState.Success(emptyList()))
@@ -119,6 +121,7 @@ class UserViewModel @Inject constructor(
 
     fun setSortOption(sortOption: SortOption) {
         _sortOption.value = sortOption
+        analyticsService.logSortChanged(sortOption.displayName)
     }
 
     fun setSearchQuery(query: String) {
@@ -129,8 +132,10 @@ class UserViewModel @Inject constructor(
         try {
             repository.fetchUser(handle)
             _snackbarMessage.emit("Successfully synced $handle")
+            analyticsService.logUserAdded(handle)
         } catch (e: Exception) {
             _snackbarMessage.emit("Failed to sync $handle: ${e.message}")
+            analyticsService.logUserAddFailed(handle, e.message ?: "unknown")
         }
     }
 
@@ -139,6 +144,7 @@ class UserViewModel @Inject constructor(
             try {
                 repository.deleteUser(handle)
                 _snackbarMessage.emit("Deleted $handle")
+                analyticsService.logUserDeleted(handle)
             } catch (e: Exception) {
                 _snackbarMessage.emit("Failed to delete $handle: ${e.message}")
             }
@@ -147,6 +153,8 @@ class UserViewModel @Inject constructor(
 
     fun syncAllUsers() {
         android.util.Log.d("UserViewModel", "syncAllUsers called")
+        analyticsService.logBulkSyncStarted()
+
         val syncWorkRequest = OneTimeWorkRequestBuilder<SyncUsersWorker>()
             .setBackoffCriteria(
                 BackoffPolicy.EXPONENTIAL,
