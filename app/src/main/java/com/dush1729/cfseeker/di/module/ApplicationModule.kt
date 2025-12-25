@@ -3,7 +3,9 @@ package com.dush1729.cfseeker.di.module
 import android.content.Context
 import androidx.room.Room
 import androidx.work.WorkManager
+import com.dush1729.cfseeker.BuildConfig
 import com.dush1729.cfseeker.analytics.AnalyticsService
+import com.dush1729.cfseeker.analytics.DummyAnalyticsService
 import com.dush1729.cfseeker.analytics.FirebaseAnalyticsService
 import com.dush1729.cfseeker.data.local.AppDatabase
 import com.dush1729.cfseeker.data.local.AppDatabaseService
@@ -66,6 +68,10 @@ object ApplicationModule {
     @Singleton
     @Provides
     fun provideAnalyticsService(firebaseAnalytics: FirebaseAnalytics): AnalyticsService {
-        return FirebaseAnalyticsService(firebaseAnalytics)
+        return if (BuildConfig.DEBUG) {
+            DummyAnalyticsService
+        } else {
+            FirebaseAnalyticsService(firebaseAnalytics)
+        }
     }
 }
