@@ -7,6 +7,9 @@ import com.dush1729.cfseeker.data.local.AppDatabase
 import com.dush1729.cfseeker.data.local.AppDatabaseService
 import com.dush1729.cfseeker.data.local.DatabaseService
 import com.dush1729.cfseeker.data.remote.api.NetworkService
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.ktx.Firebase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -50,5 +53,11 @@ object ApplicationModule {
     @Provides
     fun provideWorkManager(@ApplicationContext context: Context): WorkManager {
         return WorkManager.getInstance(context)
+    }
+
+    @Singleton
+    @Provides
+    fun provideFirebaseAnalytics(): FirebaseAnalytics {
+        return Firebase.analytics
     }
 }
