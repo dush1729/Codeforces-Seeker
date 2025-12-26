@@ -1,5 +1,6 @@
 package com.dush1729.cfseeker.analytics
 
+import com.dush1729.cfseeker.utils.isPowerOfTwo
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
 import javax.inject.Inject
@@ -7,6 +8,15 @@ import javax.inject.Inject
 class FirebaseAnalyticsService @Inject constructor(
     private val firebaseAnalytics: FirebaseAnalytics
 ) : AnalyticsService {
+    // Log launch event on every power of 2 (1, 2, 4, 8, 16, ...)
+    override fun logMilestoneLaunch(launchCount: Int) {
+        val isMilestone = launchCount.isPowerOfTwo()
+        if (isMilestone) {
+            firebaseAnalytics.logEvent("app_launch") {
+                param("launch_count", launchCount.toLong())
+            }
+        }
+    }
 
     override fun logUserAdded(handle: String) {
         firebaseAnalytics.logEvent("user_added") {

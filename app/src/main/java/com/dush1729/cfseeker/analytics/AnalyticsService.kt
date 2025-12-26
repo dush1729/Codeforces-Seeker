@@ -1,6 +1,8 @@
 package com.dush1729.cfseeker.analytics
 
 interface AnalyticsService {
+    fun logMilestoneLaunch(launchCount: Int)
+
     // User events
     fun logUserAdded(handle: String)
     fun logUserAddFailed(handle: String, error: String)

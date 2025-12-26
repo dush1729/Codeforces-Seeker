@@ -23,6 +23,7 @@ coilCompose = "2.7.0"
 firebaseBom = "33.7.0"
 googleServices = "4.4.2"
 workManager = "2.10.0"
+datastore = "1.1.1"
 
 [libraries]
 androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
@@ -64,6 +65,9 @@ firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics
 # WorkManager
 androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workManager" }
 androidx-hilt-work = { group = "androidx.hilt", name = "hilt-work", version = "1.2.0" }
+
+# DataStore
+androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

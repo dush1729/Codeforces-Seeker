@@ -9,6 +9,7 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.WorkRequest
 import com.dush1729.cfseeker.analytics.AnalyticsService
+import com.dush1729.cfseeker.data.local.AppPreferences
 import com.dush1729.cfseeker.data.local.entity.UserRatingChanges
 import com.dush1729.cfseeker.data.repository.UserRepository
 import com.dush1729.cfseeker.ui.base.UiState
@@ -41,7 +42,8 @@ enum class SortOption(val value: String, val displayName: String) {
 class UserViewModel @Inject constructor(
     private val repository: UserRepository,
     private val workManager: WorkManager,
-    private val analyticsService: AnalyticsService
+    private val analyticsService: AnalyticsService,
+    private val appPreferences: AppPreferences
 ): ViewModel() {
     private val _uiState = MutableStateFlow<UiState<List<UserRatingChanges>>>(
         UiState.Success(emptyList()))
@@ -71,6 +73,12 @@ class UserViewModel @Inject constructor(
         )
 
     init {
+        // Track app launch
+        viewModelScope.launch {
+            val launchCount = appPreferences.incrementLaunchCount()
+            analyticsService.logMilestoneLaunch(launchCount)
+        }
+
         viewModelScope.launch {
             combine(_sortOption, _searchQuery) { sortOption, searchQuery ->
                 Pair(sortOption, searchQuery)

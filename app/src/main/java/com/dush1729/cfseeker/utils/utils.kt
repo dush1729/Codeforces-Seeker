@@ -79,3 +79,7 @@ fun getRatingColor(rating: Int?): Color {
         else -> CFInternationalGrandmaster
     }
 }
+fun <T: Number> T.isPowerOfTwo(): Boolean {
+    val value = this.toLong()
+    return value > 0 && (value and (value - 1)) == 0L
+}

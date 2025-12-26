@@ -9,6 +9,8 @@ import com.dush1729.cfseeker.analytics.DummyAnalyticsService
 import com.dush1729.cfseeker.analytics.FirebaseAnalyticsService
 import com.dush1729.cfseeker.data.local.AppDatabase
 import com.dush1729.cfseeker.data.local.AppDatabaseService
+import com.dush1729.cfseeker.data.local.AppPreferences
+import com.dush1729.cfseeker.data.local.AppPreferencesImpl
 import com.dush1729.cfseeker.data.local.DatabaseService
 import com.dush1729.cfseeker.data.remote.api.NetworkService
 import com.google.firebase.analytics.FirebaseAnalytics
@@ -73,5 +75,11 @@ object ApplicationModule {
         } else {
             FirebaseAnalyticsService(firebaseAnalytics)
         }
+    }
+
+    @Singleton
+    @Provides
+    fun provideAppPreferences(@ApplicationContext context: Context): AppPreferences {
+        return AppPreferencesImpl(context)
     }
 }

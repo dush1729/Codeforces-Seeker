@@ -123,4 +123,7 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.hilt.work)
     kapt(libs.androidx.hilt.compiler)
+
+    // DataStore
+    implementation(libs.androidx.datastore.preferences)
 }

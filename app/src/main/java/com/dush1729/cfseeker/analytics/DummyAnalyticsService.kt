@@ -5,6 +5,7 @@ package com.dush1729.cfseeker.analytics
  * Does nothing when analytics methods are called.
  */
 object DummyAnalyticsService : AnalyticsService {
+    override fun logMilestoneLaunch(launchCount: Int) {}
     override fun logUserAdded(handle: String) {}
     override fun logUserAddFailed(handle: String, error: String) {}
     override fun logUserDeleted(handle: String) {}
