@@ -14,4 +14,5 @@ interface DatabaseService {
         searchQuery: String = ""
     ): Flow<List<UserRatingChanges>>
     suspend fun getAllUserHandles(): List<String>
+    fun getUserCount(): Flow<Int>
 }

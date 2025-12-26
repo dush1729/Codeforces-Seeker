@@ -55,4 +55,7 @@ interface UserDao {
 
     @Query("SELECT handle FROM user")
     suspend fun getAllUserHandles(): List<String>
+
+    @Query("SELECT COUNT(*) FROM user")
+    fun getUserCount(): Flow<Int>
 }

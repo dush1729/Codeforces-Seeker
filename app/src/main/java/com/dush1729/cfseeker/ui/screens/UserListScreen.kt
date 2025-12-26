@@ -22,11 +22,11 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -92,6 +92,7 @@ fun UserListScreen(
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val isSyncing by viewModel.isSyncing.collectAsStateWithLifecycle()
     val syncProgress by viewModel.syncProgress.collectAsStateWithLifecycle()
+    val userCount by viewModel.userCount.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
@@ -151,32 +152,35 @@ fun UserListScreen(
                 title = { Text("Users") },
                 scrollBehavior = scrollBehavior,
                 actions = {
-                    FilledTonalButton(
-                        onClick = { showSortMenu = true },
-                        modifier = Modifier.padding(end = 8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Sort,
-                            contentDescription = "Sort",
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Text(
-                            text = "Sort by ${currentSortOption.displayName}",
-                            modifier = Modifier.padding(start = 4.dp)
-                        )
-                    }
-                    DropdownMenu(
-                        expanded = showSortMenu,
-                        onDismissRequest = { showSortMenu = false }
-                    ) {
-                        SortOption.entries.forEach { sortOption ->
-                            DropdownMenuItem(
-                                text = { Text(sortOption.displayName) },
-                                onClick = {
-                                    viewModel.setSortOption(sortOption)
-                                    showSortMenu = false
-                                }
+                    // Sort button - only show when user list size > 1
+                    if (userCount > 1) {
+                        FilledTonalButton(
+                            onClick = { showSortMenu = true },
+                            modifier = Modifier.padding(end = 8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.Sort,
+                                contentDescription = "Sort",
+                                modifier = Modifier.size(18.dp)
                             )
+                            Text(
+                                text = "Sort by ${currentSortOption.displayName}",
+                                modifier = Modifier.padding(start = 4.dp)
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = showSortMenu,
+                            onDismissRequest = { showSortMenu = false }
+                        ) {
+                            SortOption.entries.forEach { sortOption ->
+                                DropdownMenuItem(
+                                    text = { Text(sortOption.displayName) },
+                                    onClick = {
+                                        viewModel.setSortOption(sortOption)
+                                        showSortMenu = false
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -187,39 +191,44 @@ fun UserListScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 ExtendedFloatingActionButton(
-                    onClick = { showBottomSheet = true },
+                    onClick = {
+                        showBottomSheet = true
+                    },
                     icon = { Icon(Icons.Filled.Add, contentDescription = "Add User") },
                     text = { Text("Add User") }
                 )
-                BadgedBox(
-                    badge = {
-                        syncProgress?.let { (current, total) ->
-                            Badge(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.offset(x = (-8).dp, y = 8.dp)
-                            ) {
-                                Text(
-                                    text = "$current/$total",
-                                    style = MaterialTheme.typography.labelSmall
-                                )
+                // Sync button - only show when user list size > 1
+                if (userCount > 1) {
+                    BadgedBox(
+                        badge = {
+                            syncProgress?.let { (current, total) ->
+                                Badge(
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.offset(x = (-8).dp, y = 8.dp)
+                                ) {
+                                    Text(
+                                        text = "$current/$total",
+                                        style = MaterialTheme.typography.labelSmall
+                                    )
+                                }
                             }
                         }
-                    }
-                ) {
-                    FloatingActionButton(
-                        onClick = { requestNotificationPermissionAndSync() },
-                        containerColor = if (isSyncing)
-                            MaterialTheme.colorScheme.secondaryContainer
-                        else
-                            MaterialTheme.colorScheme.primaryContainer
                     ) {
-                        if (isSyncing) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(24.dp),
-                                strokeWidth = 2.dp
-                            )
-                        } else {
-                            Icon(Icons.Filled.Sync, contentDescription = "Sync users")
+                        FloatingActionButton(
+                            onClick = { requestNotificationPermissionAndSync() },
+                            containerColor = if (isSyncing)
+                                MaterialTheme.colorScheme.secondaryContainer
+                            else
+                                MaterialTheme.colorScheme.primaryContainer
+                        ) {
+                            if (isSyncing) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Icon(Icons.Filled.Sync, contentDescription = "Sync users")
+                            }
                         }
                     }
                 }
@@ -231,46 +240,48 @@ fun UserListScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Search bar
-            TextField(
-                value = searchQuery,
-                onValueChange = { newValue ->
-                    viewModel.setSearchQuery(newValue)
-                    if (newValue.isEmpty()) {
-                        focusManager.clearFocus()
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                placeholder = { Text("Search by handle...") },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Filled.Search,
-                        contentDescription = "Search"
-                    )
-                },
-                trailingIcon = {
-                    if (searchQuery.isNotEmpty()) {
-                        IconButton(onClick = {
-                            viewModel.setSearchQuery("")
+            // Search bar - only show when user list size > 1
+            if (userCount > 1) {
+                TextField(
+                    value = searchQuery,
+                    onValueChange = { newValue ->
+                        viewModel.setSearchQuery(newValue)
+                        if (newValue.isEmpty()) {
                             focusManager.clearFocus()
-                        }) {
-                            Icon(
-                                imageVector = Icons.Filled.Close,
-                                contentDescription = "Clear search"
-                            )
                         }
-                    }
-                },
-                singleLine = true,
-                colors = TextFieldDefaults.colors(
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent
-                ),
-                shape = MaterialTheme.shapes.medium
-            )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    placeholder = { Text("Search by handle...") },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.Search,
+                            contentDescription = "Search"
+                        )
+                    },
+                    trailingIcon = {
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(onClick = {
+                                viewModel.setSearchQuery("")
+                                focusManager.clearFocus()
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Close,
+                                    contentDescription = "Clear search"
+                                )
+                            }
+                        }
+                    },
+                    singleLine = true,
+                    colors = TextFieldDefaults.colors(
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent
+                    ),
+                    shape = MaterialTheme.shapes.medium
+                )
+            }
 
             // User List
             when (val state = uiState) {

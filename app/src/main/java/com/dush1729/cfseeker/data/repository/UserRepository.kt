@@ -48,6 +48,10 @@ class UserRepository @Inject constructor(
     suspend fun getAllUserHandles(): List<String> {
         return db.getAllUserHandles()
     }
+
+    fun getUserCount(): Flow<Int> {
+        return db.getUserCount()
+    }
 }
 
 fun User.toUserEntity(): UserEntity = UserEntity(

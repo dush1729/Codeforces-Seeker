@@ -22,4 +22,8 @@ class AppDatabaseService @Inject constructor(private val appDatabase: AppDatabas
     override suspend fun getAllUserHandles(): List<String> {
         return appDatabase.userDao().getAllUserHandles()
     }
+
+    override fun getUserCount(): Flow<Int> {
+        return appDatabase.userDao().getUserCount()
+    }
 }
