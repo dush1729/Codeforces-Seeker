@@ -14,6 +14,7 @@ import androidx.work.WorkerParameters
 import com.dush1729.cfseeker.R
 import com.dush1729.cfseeker.analytics.AnalyticsService
 import com.dush1729.cfseeker.crashlytics.CrashlyticsService
+import com.dush1729.cfseeker.data.remote.config.RemoteConfigService
 import com.dush1729.cfseeker.data.repository.UserRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -26,6 +27,7 @@ class SyncUsersWorker @AssistedInject constructor(
     private val repository: UserRepository,
     private val analyticsService: AnalyticsService,
     private val crashlyticsService: CrashlyticsService,
+    private val remoteConfigService: RemoteConfigService,
 ) : CoroutineWorker(context, workerParams) {
 
     companion object {
@@ -65,7 +67,11 @@ class SyncUsersWorker @AssistedInject constructor(
             // Set foreground to show notification
             setForeground(createForegroundInfo(0, userHandles.size))
 
-            // Sync each user with 5 second delay
+            // Get delay between user syncs from remote config
+            val delaySeconds = remoteConfigService.getSyncAllUserDelaySeconds()
+            val delayMillis = delaySeconds * 1000
+
+            // Sync each user with configured delay
             userHandles.forEachIndexed { index, handle ->
                 try {
                     crashlyticsService.log("SyncUsersWorker: Syncing user $handle (${index + 1}/${userHandles.size})")
@@ -85,9 +91,9 @@ class SyncUsersWorker @AssistedInject constructor(
                     successCount++
                     crashlyticsService.log("SyncUsersWorker: Successfully synced $handle")
 
-                    // Wait 5 seconds before next user (except for last user)
+                    // Wait configured delay before next user (except for last user)
                     if (index < userHandles.size - 1) {
-                        delay(5000)
+                        delay(delayMillis)
                     }
                 } catch (e: Exception) {
                     // Continue with next user even if one fails

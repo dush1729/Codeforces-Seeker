@@ -5,14 +5,18 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "app_preferences")
 
 interface AppPreferences {
     suspend fun incrementLaunchCount(): Int
+    suspend fun setLastSyncAllTime(timestamp: Long)
+    suspend fun getLastSyncAllTime(): Long
 }
 
 class AppPreferencesImpl @Inject constructor(
@@ -20,6 +24,7 @@ class AppPreferencesImpl @Inject constructor(
 ) : AppPreferences {
     private object PreferencesKeys {
         val LAUNCH_COUNT = intPreferencesKey("launch_count")
+        val LAST_SYNC_ALL_TIME = longPreferencesKey("last_sync_all_time")
     }
 
     override suspend fun incrementLaunchCount(): Int {
@@ -30,5 +35,16 @@ class AppPreferencesImpl @Inject constructor(
             preferences[PreferencesKeys.LAUNCH_COUNT] = newCount
         }
         return newCount
+    }
+
+    override suspend fun setLastSyncAllTime(timestamp: Long) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.LAST_SYNC_ALL_TIME] = timestamp
+        }
+    }
+
+    override suspend fun getLastSyncAllTime(): Long {
+        val preferences = context.dataStore.data.first()
+        return preferences[PreferencesKeys.LAST_SYNC_ALL_TIME] ?: 0L
     }
 }

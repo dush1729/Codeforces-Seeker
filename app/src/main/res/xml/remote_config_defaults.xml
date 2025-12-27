@@ -13,4 +13,12 @@
         <key>sync_user_enabled</key>
         <value>true</value>
     </entry>
+    <entry>
+        <key>sync_all_cooldown_minutes</key>
+        <value>60</value>
+    </entry>
+    <entry>
+        <key>sync_all_user_delay_seconds</key>
+        <value>5</value>
+    </entry>
 </defaultsMap>

@@ -15,6 +15,7 @@ import com.dush1729.cfseeker.data.local.AppPreferences
 import com.dush1729.cfseeker.data.local.entity.UserRatingChanges
 import com.dush1729.cfseeker.data.repository.UserRepository
 import com.dush1729.cfseeker.ui.base.UiState
+import com.dush1729.cfseeker.utils.toRelativeTime
 import com.dush1729.cfseeker.worker.SyncUsersWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -190,24 +191,45 @@ class UserViewModel @Inject constructor(
     }
 
     fun syncAllUsers() {
-        crashlyticsService.log("UserViewModel: syncAllUsers called")
-        analyticsService.logBulkSyncStarted()
+        viewModelScope.launch {
+            crashlyticsService.log("UserViewModel: syncAllUsers called")
+            val cooldownMillis = remoteConfigService.getSyncAllCooldownMinutes() * 60 * 1000
+            val currentTime = System.currentTimeMillis()
+            val lastSyncAllTime = appPreferences.getLastSyncAllTime()
+            val timeSinceLastSync = currentTime - lastSyncAllTime
+            if (lastSyncAllTime > 0 && timeSinceLastSync < cooldownMillis) {
+                // Still in cooldown, show remaining time
+                val nextSyncTime = (lastSyncAllTime + cooldownMillis) / 1000 // Convert to seconds
+                val relativeTime = nextSyncTime.toRelativeTime()
+                val message = "You can sync again $relativeTime"
 
-        val syncWorkRequest = OneTimeWorkRequestBuilder<SyncUsersWorker>()
-            .setBackoffCriteria(
-                BackoffPolicy.EXPONENTIAL,
-                WorkRequest.MIN_BACKOFF_MILLIS,
-                TimeUnit.MILLISECONDS
+                _snackbarMessage.emit(message)
+                crashlyticsService.log("UserViewModel: Sync blocked, cooldown active. Next sync: $relativeTime")
+                return@launch
+            }
+
+            // Cooldown has passed, proceed with sync
+            analyticsService.logBulkSyncStarted()
+
+            // Update last sync time
+            appPreferences.setLastSyncAllTime(currentTime)
+
+            val syncWorkRequest = OneTimeWorkRequestBuilder<SyncUsersWorker>()
+                .setBackoffCriteria(
+                    BackoffPolicy.EXPONENTIAL,
+                    WorkRequest.MIN_BACKOFF_MILLIS,
+                    TimeUnit.MILLISECONDS
+                )
+                .build()
+
+            workManager.enqueueUniqueWork(
+                SyncUsersWorker.WORK_NAME,
+                ExistingWorkPolicy.KEEP,
+                syncWorkRequest
             )
-            .build()
 
-        workManager.enqueueUniqueWork(
-            SyncUsersWorker.WORK_NAME,
-            ExistingWorkPolicy.KEEP,
-            syncWorkRequest
-        )
-
-        crashlyticsService.log("UserViewModel: Work enqueued with ID: ${syncWorkRequest.id}")
+            crashlyticsService.log("UserViewModel: Work enqueued with ID: ${syncWorkRequest.id}")
+        }
     }
 
     // Remote Config feature flags

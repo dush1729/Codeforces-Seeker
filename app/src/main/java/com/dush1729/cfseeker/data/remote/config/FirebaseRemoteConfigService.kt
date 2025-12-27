@@ -69,4 +69,12 @@ class FirebaseRemoteConfigService @Inject constructor(
     override fun isSyncUserEnabled(): Boolean {
         return getBoolean(RemoteConfigService.SYNC_USER_ENABLED)
     }
+
+    override fun getSyncAllCooldownMinutes(): Long {
+        return getLong(RemoteConfigService.SYNC_ALL_COOLDOWN_MINUTES)
+    }
+
+    override fun getSyncAllUserDelaySeconds(): Long {
+        return getLong(RemoteConfigService.SYNC_ALL_USER_DELAY_SECONDS)
+    }
 }
