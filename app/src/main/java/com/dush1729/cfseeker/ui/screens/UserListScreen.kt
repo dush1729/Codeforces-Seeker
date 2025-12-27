@@ -62,6 +62,8 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -97,6 +99,9 @@ fun UserListScreen(
     val isSyncing by viewModel.isSyncing.collectAsStateWithLifecycle()
     val syncProgress by viewModel.syncProgress.collectAsStateWithLifecycle()
     val userCount by viewModel.userCount.collectAsStateWithLifecycle()
+    val isAddUserEnabled = remember { viewModel.isAddUserEnabled() }
+    val isSyncAllUsersEnabled = remember { viewModel.isSyncAllUsersEnabled() }
+    val isSyncUserEnabled = remember { viewModel.isSyncUserEnabled() }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
@@ -224,7 +229,15 @@ fun UserListScreen(
                             }
                         ) {
                             FloatingActionButton(
-                                onClick = { requestNotificationPermissionAndSync() },
+                                onClick = {
+                                    if (isSyncAllUsersEnabled) {
+                                        requestNotificationPermissionAndSync()
+                                    } else {
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar("Feature disabled")
+                                        }
+                                    }
+                                },
                                 containerColor = if (isSyncing)
                                     MaterialTheme.colorScheme.secondaryContainer
                                 else
@@ -242,9 +255,16 @@ fun UserListScreen(
                         }
                     }
                 }
+                // Add User button
                 ExtendedFloatingActionButton(
                     onClick = {
-                        showBottomSheet = true
+                        if (isAddUserEnabled) {
+                            showBottomSheet = true
+                        } else {
+                            scope.launch {
+                                snackbarHostState.showSnackbar("Feature disabled")
+                            }
+                        }
                     },
                     icon = { Icon(Icons.Filled.Add, contentDescription = "Add User") },
                     text = { Text("Add User") }
@@ -350,24 +370,46 @@ fun UserListScreen(
     }
 
     selectedUser?.let { user ->
+        val bottomSheetSnackbarHostState = remember { SnackbarHostState() }
+
+        // Collect snackbar messages while bottom sheet is open
+        LaunchedEffect(Unit) {
+            viewModel.snackbarMessage.collect { message ->
+                bottomSheetSnackbarHostState.showSnackbar(message)
+            }
+        }
+
         ModalBottomSheet(
             onDismissRequest = {
                 selectedUser = null
             }
         ) {
-            UserDetailsBottomSheet(
-                user = user,
-                onSyncClick = {
-                    viewModel.fetchUser(user.handle)
-                    selectedUser = null
-                },
-                onDeleteClick = {
-                    viewModel.deleteUser(user.handle)
-                },
-                onDismiss = {
-                    selectedUser = null
-                }
-            )
+            Box {
+                UserDetailsBottomSheet(
+                    user = user,
+                    onSyncClick = {
+                        viewModel.fetchUser(user.handle)
+                        selectedUser = null
+                    },
+                    onDeleteClick = {
+                        viewModel.deleteUser(user.handle)
+                    },
+                    onDismiss = {
+                        selectedUser = null
+                    },
+                    isSyncUserEnabled = isSyncUserEnabled,
+                    onFeatureDisabled = {
+                        scope.launch {
+                            bottomSheetSnackbarHostState.showSnackbar("Feature disabled")
+                        }
+                    }
+                )
+
+                SnackbarHost(
+                    hostState = bottomSheetSnackbarHostState,
+                    modifier = Modifier.align(Alignment.BottomCenter)
+                )
+            }
         }
     }
 }

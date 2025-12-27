@@ -1,0 +1,69 @@
+package com.dush1729.cfseeker.data.remote.config
+
+import android.util.Log
+import com.dush1729.cfseeker.BuildConfig
+import com.dush1729.cfseeker.R
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig
+import com.google.firebase.remoteconfig.remoteConfigSettings
+import kotlinx.coroutines.tasks.await
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlin.time.Duration.Companion.hours
+
+@Singleton
+class FirebaseRemoteConfigService @Inject constructor(
+    private val remoteConfig: FirebaseRemoteConfig
+) : RemoteConfigService {
+
+    init {
+        // Set default values from XML
+        remoteConfig.setDefaultsAsync(R.xml.remote_config_defaults)
+
+        // Set config settings
+        val configSettings = remoteConfigSettings {
+            minimumFetchIntervalInSeconds = if(BuildConfig.DEBUG) {
+                0
+            } else {
+                1.hours.inWholeSeconds
+            }
+        }
+        remoteConfig.setConfigSettingsAsync(configSettings)
+    }
+
+    override suspend fun fetchAndActivate(): Boolean {
+        return try {
+            remoteConfig.fetchAndActivate().await()
+        } catch (e: Exception) {
+            Log.e("RemoteConfig", "Error fetching remote config", e)
+            false
+        }
+    }
+
+    override fun getString(key: String): String {
+        return remoteConfig.getString(key)
+    }
+
+    override fun getBoolean(key: String): Boolean {
+        return remoteConfig.getBoolean(key)
+    }
+
+    override fun getLong(key: String): Long {
+        return remoteConfig.getLong(key)
+    }
+
+    override fun getDouble(key: String): Double {
+        return remoteConfig.getDouble(key)
+    }
+
+    override fun isAddUserEnabled(): Boolean {
+        return getBoolean(RemoteConfigService.ADD_USER_ENABLED)
+    }
+
+    override fun isSyncAllUsersEnabled(): Boolean {
+        return getBoolean(RemoteConfigService.SYNC_ALL_USERS_ENABLED)
+    }
+
+    override fun isSyncUserEnabled(): Boolean {
+        return getBoolean(RemoteConfigService.SYNC_USER_ENABLED)
+    }
+}

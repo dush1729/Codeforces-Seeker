@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<defaultsMap>
+    <!-- Feature flags -->
+    <entry>
+        <key>add_user_enabled</key>
+        <value>true</value>
+    </entry>
+    <entry>
+        <key>sync_all_users_enabled</key>
+        <value>true</value>
+    </entry>
+    <entry>
+        <key>sync_user_enabled</key>
+        <value>true</value>
+    </entry>
+</defaultsMap>

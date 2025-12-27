@@ -48,6 +48,8 @@ fun UserDetailsBottomSheet(
     onSyncClick: suspend () -> Unit,
     onDeleteClick: suspend () -> Unit,
     onDismiss: () -> Unit,
+    isSyncUserEnabled: Boolean = true,
+    onFeatureDisabled: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var isSyncing by remember { mutableStateOf(false) }
@@ -181,20 +183,23 @@ fun UserDetailsBottomSheet(
 
             Button(
                 onClick = {
-                    scope.launch {
-                        try {
-                            isSyncing = true
-                            errorMessage = null
-                            onSyncClick()
-                            isSyncing = false
-                        } catch (e: Exception) {
-                            isSyncing = false
-                            errorMessage = e.message ?: "Failed to sync user"
+                    if (isSyncUserEnabled) {
+                        scope.launch {
+                            try {
+                                isSyncing = true
+                                errorMessage = null
+                                onSyncClick()
+                                isSyncing = false
+                            } catch (e: Exception) {
+                                isSyncing = false
+                                errorMessage = e.message ?: "Failed to sync user"
+                            }
                         }
+                    } else {
+                        onFeatureDisabled()
                     }
                 },
-                modifier = Modifier.weight(1f),
-                enabled = !isSyncing
+                modifier = Modifier.weight(1f)
             ) {
                 if (isSyncing) {
                     CircularProgressIndicator(
