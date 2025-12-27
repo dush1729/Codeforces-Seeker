@@ -7,6 +7,9 @@ import com.dush1729.cfseeker.BuildConfig
 import com.dush1729.cfseeker.analytics.AnalyticsService
 import com.dush1729.cfseeker.analytics.DummyAnalyticsService
 import com.dush1729.cfseeker.analytics.FirebaseAnalyticsService
+import com.dush1729.cfseeker.crashlytics.CrashlyticsService
+import com.dush1729.cfseeker.crashlytics.DummyCrashlyticsService
+import com.dush1729.cfseeker.crashlytics.FirebaseCrashlyticsService
 import com.dush1729.cfseeker.data.local.AppDatabase
 import com.dush1729.cfseeker.data.local.AppDatabaseService
 import com.dush1729.cfseeker.data.remote.config.FirebaseRemoteConfigService
@@ -17,6 +20,8 @@ import com.dush1729.cfseeker.data.local.DatabaseService
 import com.dush1729.cfseeker.data.remote.api.NetworkService
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.google.firebase.crashlytics.ktx.crashlytics
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.ktx.remoteConfig
@@ -95,7 +100,26 @@ object ApplicationModule {
 
     @Singleton
     @Provides
-    fun provideRemoteConfigService(remoteConfig: FirebaseRemoteConfig): RemoteConfigService {
-        return FirebaseRemoteConfigService(remoteConfig)
+    fun provideFirebaseCrashlytics(): FirebaseCrashlytics {
+        return Firebase.crashlytics
+    }
+
+    @Singleton
+    @Provides
+    fun provideCrashlyticsService(crashlytics: FirebaseCrashlytics): CrashlyticsService {
+        return if (BuildConfig.DEBUG) {
+            DummyCrashlyticsService
+        } else {
+            FirebaseCrashlyticsService(crashlytics)
+        }
+    }
+
+    @Singleton
+    @Provides
+    fun provideRemoteConfigService(
+        remoteConfig: FirebaseRemoteConfig,
+        crashlyticsService: CrashlyticsService
+    ): RemoteConfigService {
+        return FirebaseRemoteConfigService(remoteConfig, crashlyticsService)
     }
 }

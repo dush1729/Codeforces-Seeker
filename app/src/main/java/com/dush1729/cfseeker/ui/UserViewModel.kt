@@ -9,6 +9,7 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.WorkRequest
 import com.dush1729.cfseeker.analytics.AnalyticsService
+import com.dush1729.cfseeker.crashlytics.CrashlyticsService
 import com.dush1729.cfseeker.data.remote.config.RemoteConfigService
 import com.dush1729.cfseeker.data.local.AppPreferences
 import com.dush1729.cfseeker.data.local.entity.UserRatingChanges
@@ -44,6 +45,7 @@ class UserViewModel @Inject constructor(
     private val repository: UserRepository,
     private val workManager: WorkManager,
     private val analyticsService: AnalyticsService,
+    private val crashlyticsService: CrashlyticsService,
     private val appPreferences: AppPreferences,
     private val remoteConfigService: RemoteConfigService
 ): ViewModel() {
@@ -95,6 +97,10 @@ class UserViewModel @Inject constructor(
                 }
                 .flowOn(Dispatchers.IO)
                 .catch {
+                    crashlyticsService.logException(it)
+                    crashlyticsService.setCustomKey("sort_option", sortOption.value.displayName)
+                    crashlyticsService.setCustomKey("search_query", searchQuery.value)
+                    crashlyticsService.setCustomKey("operation", "search_and_sort")
                     _uiState.value = UiState.Error(it.message ?: "")
                 }
                 .collect {
@@ -160,6 +166,9 @@ class UserViewModel @Inject constructor(
             _snackbarMessage.emit("Successfully synced $handle")
             analyticsService.logUserAdded(handle)
         } catch (e: Exception) {
+            crashlyticsService.logException(e)
+            crashlyticsService.setCustomKey("user_handle", handle)
+            crashlyticsService.setCustomKey("operation", "fetchUser")
             _snackbarMessage.emit("Failed to sync $handle: ${e.message}")
             analyticsService.logUserAddFailed(handle, e.message ?: "unknown")
         }
@@ -172,6 +181,9 @@ class UserViewModel @Inject constructor(
                 _snackbarMessage.emit("Deleted $handle")
                 analyticsService.logUserDeleted(handle)
             } catch (e: Exception) {
+                crashlyticsService.logException(e)
+                crashlyticsService.setCustomKey("user_handle", handle)
+                crashlyticsService.setCustomKey("operation", "delete")
                 _snackbarMessage.emit("Failed to delete $handle: ${e.message}")
             }
         }

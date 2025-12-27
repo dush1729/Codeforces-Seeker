@@ -13,6 +13,7 @@ import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
 import com.dush1729.cfseeker.R
 import com.dush1729.cfseeker.analytics.AnalyticsService
+import com.dush1729.cfseeker.crashlytics.CrashlyticsService
 import com.dush1729.cfseeker.data.repository.UserRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -23,7 +24,8 @@ class SyncUsersWorker @AssistedInject constructor(
     @Assisted private val context: Context,
     @Assisted workerParams: WorkerParameters,
     private val repository: UserRepository,
-    private val analyticsService: AnalyticsService
+    private val analyticsService: AnalyticsService,
+    private val crashlyticsService: CrashlyticsService,
 ) : CoroutineWorker(context, workerParams) {
 
     companion object {
@@ -90,6 +92,10 @@ class SyncUsersWorker @AssistedInject constructor(
                 } catch (e: Exception) {
                     // Continue with next user even if one fails
                     failureCount++
+                    crashlyticsService.logException(e)
+                    crashlyticsService.setCustomKey("user_handle", handle)
+                    crashlyticsService.setCustomKey("operation", "doWork")
+                    crashlyticsService.setCustomKey("sync_progress", "${index + 1}/${userHandles.size}")
                     android.util.Log.e("SyncUsersWorker", "Failed to sync $handle", e)
                     e.printStackTrace()
                 }
@@ -110,6 +116,10 @@ class SyncUsersWorker @AssistedInject constructor(
 
             Result.success()
         } catch (e: Exception) {
+            crashlyticsService.logException(e)
+            crashlyticsService.setCustomKey("operation", "doWorkWhole")
+            crashlyticsService.setCustomKey("success_count", successCount)
+            crashlyticsService.setCustomKey("failure_count", failureCount)
             android.util.Log.e("SyncUsersWorker", "doWork() failed", e)
             e.printStackTrace()
 

@@ -3,6 +3,7 @@ package com.dush1729.cfseeker.data.remote.config
 import android.util.Log
 import com.dush1729.cfseeker.BuildConfig
 import com.dush1729.cfseeker.R
+import com.dush1729.cfseeker.crashlytics.CrashlyticsService
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.remoteConfigSettings
 import kotlinx.coroutines.tasks.await
@@ -12,7 +13,8 @@ import kotlin.time.Duration.Companion.hours
 
 @Singleton
 class FirebaseRemoteConfigService @Inject constructor(
-    private val remoteConfig: FirebaseRemoteConfig
+    private val remoteConfig: FirebaseRemoteConfig,
+    private val crashlyticsService: CrashlyticsService
 ) : RemoteConfigService {
 
     init {
@@ -34,6 +36,8 @@ class FirebaseRemoteConfigService @Inject constructor(
         return try {
             remoteConfig.fetchAndActivate().await()
         } catch (e: Exception) {
+            crashlyticsService.logException(e)
+            crashlyticsService.setCustomKey("operation", "remote_config_fetch")
             Log.e("RemoteConfig", "Error fetching remote config", e)
             false
         }
