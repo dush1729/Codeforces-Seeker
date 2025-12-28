@@ -540,7 +540,7 @@ private fun UserList(
                 userRatingChange = userRatingChange,
                 sortOption = sortOption,
                 onClick = onUserCardClick,
-                modifier = Modifier.animateItem()
+                modifier = if (users.size < 50) Modifier.animateItem() else Modifier
             )
         }
     }
