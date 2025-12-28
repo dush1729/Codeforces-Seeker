@@ -1,10 +1,16 @@
 package com.dush1729.cfseeker.data.local.entity
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
-    tableName = "user"
+    tableName = "user",
+    indices = [
+        Index("handle"),
+        Index("lastSync"),
+        Index("rating")
+    ]
 )
 data class UserEntity(
     @PrimaryKey val handle: String,

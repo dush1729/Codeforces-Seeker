@@ -2,6 +2,8 @@ package com.dush1729.cfseeker.di.module
 
 import android.content.Context
 import androidx.room.Room
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.work.WorkManager
 import com.dush1729.cfseeker.BuildConfig
 import com.dush1729.cfseeker.analytics.AnalyticsService
@@ -37,6 +39,19 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object ApplicationModule {
+    private val MIGRATION_1_2 = object : Migration(1, 2) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // Add indices to user table
+            db.execSQL("CREATE INDEX IF NOT EXISTS index_user_handle ON user(handle)")
+            db.execSQL("CREATE INDEX IF NOT EXISTS index_user_lastSync ON user(lastSync)")
+            db.execSQL("CREATE INDEX IF NOT EXISTS index_user_rating ON user(rating)")
+
+            // Add indices to rating_change table
+            db.execSQL("CREATE INDEX IF NOT EXISTS index_rating_change_handle ON rating_change(handle)")
+            db.execSQL("CREATE INDEX IF NOT EXISTS index_rating_change_ratingUpdateTimeSeconds ON rating_change(ratingUpdateTimeSeconds)")
+        }
+    }
+
     @Singleton
     @Provides
     fun provideNetworkService(): NetworkService {
@@ -55,6 +70,7 @@ object ApplicationModule {
             context,
             AppDatabase::class.java,
             "app_database")
+            .addMigrations(MIGRATION_1_2)
             .build()
     }
 
