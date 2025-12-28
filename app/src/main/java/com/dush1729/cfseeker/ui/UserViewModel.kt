@@ -79,13 +79,13 @@ class UserViewModel @Inject constructor(
 
     init {
         // Track app launch
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val launchCount = appPreferences.incrementLaunchCount()
             analyticsService.logMilestoneLaunch(launchCount)
         }
 
         // Fetch remote config
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             remoteConfigService.fetchAndActivate()
         }
 

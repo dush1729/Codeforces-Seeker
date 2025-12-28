@@ -8,7 +8,9 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "app_preferences")
@@ -43,8 +45,8 @@ class AppPreferencesImpl @Inject constructor(
         }
     }
 
-    override suspend fun getLastSyncAllTime(): Long {
+    override suspend fun getLastSyncAllTime(): Long = withContext(Dispatchers.IO) {
         val preferences = context.dataStore.data.first()
-        return preferences[PreferencesKeys.LAST_SYNC_ALL_TIME] ?: 0L
+        preferences[PreferencesKeys.LAST_SYNC_ALL_TIME] ?: 0L
     }
 }
