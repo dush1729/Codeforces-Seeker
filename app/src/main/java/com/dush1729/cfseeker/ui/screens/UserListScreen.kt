@@ -63,6 +63,7 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
+import androidx.compose.material.icons.outlined.PersonSearch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -255,20 +256,22 @@ fun UserListScreen(
                         }
                     }
                 }
-                // Add User button
-                ExtendedFloatingActionButton(
-                    onClick = {
-                        if (isAddUserEnabled) {
-                            showBottomSheet = true
-                        } else {
-                            scope.launch {
-                                snackbarHostState.showSnackbar("Feature disabled")
+                // Add User button - only show when user list size > 0
+                if (userCount > 0) {
+                    ExtendedFloatingActionButton(
+                        onClick = {
+                            if (isAddUserEnabled) {
+                                showBottomSheet = true
+                            } else {
+                                scope.launch {
+                                    snackbarHostState.showSnackbar("Feature disabled")
+                                }
                             }
-                        }
-                    },
-                    icon = { Icon(Icons.Filled.Add, contentDescription = "Add User") },
-                    text = { Text("Add User") }
-                )
+                        },
+                        icon = { Icon(Icons.Filled.Add, contentDescription = "Add User") },
+                        text = { Text("Add User") }
+                    )
+                }
             }
         }
     ) { paddingValues ->
@@ -334,13 +337,30 @@ fun UserListScreen(
                 }
 
                 is UiState.Success -> {
-                    UserList(
-                        users = state.data,
-                        sortOption = currentSortOption,
-                        onUserCardClick = { user ->
-                            selectedUser = user
-                        }
-                    )
+                    if (state.data.isEmpty()) {
+                        // Empty user list
+                        EmptyUsersView(
+                            onAddUserClick = {
+                                if (isAddUserEnabled) {
+                                    showBottomSheet = true
+                                } else {
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar("Feature disabled")
+                                    }
+                                }
+                            },
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } else {
+                        // Show user list
+                        UserList(
+                            users = state.data,
+                            sortOption = currentSortOption,
+                            onUserCardClick = { user ->
+                                selectedUser = user
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -410,6 +430,51 @@ fun UserListScreen(
                     modifier = Modifier.align(Alignment.BottomCenter)
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun EmptyUsersView(
+    onAddUserClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(32.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.PersonSearch,
+                contentDescription = null,
+                modifier = Modifier.size(64.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+            Text(
+                text = "No users added yet",
+                style = MaterialTheme.typography.titleLarge,
+            )
+            Text(
+                text = "Add your first Codeforces user to get started",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            ExtendedFloatingActionButton(
+                onClick = onAddUserClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                icon = {
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = null
+                    )
+                },
+                text = { Text("Add User") }
+            )
         }
     }
 }
