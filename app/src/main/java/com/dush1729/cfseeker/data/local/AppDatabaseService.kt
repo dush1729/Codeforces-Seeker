@@ -1,5 +1,6 @@
 package com.dush1729.cfseeker.data.local
 
+import com.dush1729.cfseeker.data.local.entity.ContestEntity
 import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
 import com.dush1729.cfseeker.data.local.entity.UserEntity
 import com.dush1729.cfseeker.data.local.entity.UserRatingChanges
@@ -25,5 +26,13 @@ class AppDatabaseService @Inject constructor(private val appDatabase: AppDatabas
 
     override fun getUserCount(): Flow<Int> {
         return appDatabase.userDao().getUserCount()
+    }
+
+    override suspend fun addAllContests(contests: List<ContestEntity>) {
+        appDatabase.contestDao().insertAllContests(contests)
+    }
+
+    override fun getAllContests(): Flow<List<ContestEntity>> {
+        return appDatabase.contestDao().getAllContests()
     }
 }

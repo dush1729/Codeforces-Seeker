@@ -1,5 +1,6 @@
 package com.dush1729.cfseeker.data.local
 
+import com.dush1729.cfseeker.data.local.entity.ContestEntity
 import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
 import com.dush1729.cfseeker.data.local.entity.UserEntity
 import com.dush1729.cfseeker.data.local.entity.UserRatingChanges
@@ -15,4 +16,8 @@ interface DatabaseService {
     ): Flow<List<UserRatingChanges>>
     suspend fun getAllUserHandles(): List<String>
     fun getUserCount(): Flow<Int>
+
+    // Contest methods
+    suspend fun addAllContests(contests: List<ContestEntity>)
+    fun getAllContests(): Flow<List<ContestEntity>>
 }

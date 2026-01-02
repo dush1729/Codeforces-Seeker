@@ -52,6 +52,29 @@ object ApplicationModule {
         }
     }
 
+    private val MIGRATION_2_3 = object : Migration(2, 3) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // Create contest table
+            db.execSQL("""
+                CREATE TABLE IF NOT EXISTS `contest` (
+                    `id` INTEGER PRIMARY KEY NOT NULL,
+                    `name` TEXT NOT NULL,
+                    `type` TEXT NOT NULL,
+                    `phase` TEXT NOT NULL,
+                    `frozen` INTEGER NOT NULL,
+                    `durationSeconds` INTEGER NOT NULL,
+                    `startTimeSeconds` INTEGER NOT NULL,
+                    `relativeTimeSeconds` INTEGER NOT NULL
+                )
+            """)
+
+            // Add indices to contest table
+            db.execSQL("CREATE INDEX IF NOT EXISTS index_contest_id ON contest(id)")
+            db.execSQL("CREATE INDEX IF NOT EXISTS index_contest_phase ON contest(phase)")
+            db.execSQL("CREATE INDEX IF NOT EXISTS index_contest_startTimeSeconds ON contest(startTimeSeconds)")
+        }
+    }
+
     @Singleton
     @Provides
     fun provideNetworkService(): NetworkService {
@@ -70,7 +93,10 @@ object ApplicationModule {
             context,
             AppDatabase::class.java,
             "app_database")
-            .addMigrations(MIGRATION_1_2)
+            .addMigrations(
+                MIGRATION_1_2,
+                MIGRATION_2_3,
+                )
             .build()
     }
 
