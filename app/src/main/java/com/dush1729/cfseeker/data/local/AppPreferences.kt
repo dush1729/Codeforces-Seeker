@@ -19,6 +19,8 @@ interface AppPreferences {
     suspend fun incrementLaunchCount(): Int
     suspend fun setLastSyncAllTime(timestamp: Long)
     suspend fun getLastSyncAllTime(): Long
+    suspend fun setContestLastSyncTime(timestamp: Long)
+    suspend fun getContestLastSyncTime(): Long
 }
 
 class AppPreferencesImpl @Inject constructor(
@@ -27,6 +29,7 @@ class AppPreferencesImpl @Inject constructor(
     private object PreferencesKeys {
         val LAUNCH_COUNT = intPreferencesKey("launch_count")
         val LAST_SYNC_ALL_TIME = longPreferencesKey("last_sync_all_time")
+        val CONTEST_LAST_SYNC_TIME = longPreferencesKey("contest_last_sync_time")
     }
 
     override suspend fun incrementLaunchCount(): Int {
@@ -48,5 +51,16 @@ class AppPreferencesImpl @Inject constructor(
     override suspend fun getLastSyncAllTime(): Long = withContext(Dispatchers.IO) {
         val preferences = context.dataStore.data.first()
         preferences[PreferencesKeys.LAST_SYNC_ALL_TIME] ?: 0L
+    }
+
+    override suspend fun setContestLastSyncTime(timestamp: Long) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.CONTEST_LAST_SYNC_TIME] = timestamp
+        }
+    }
+
+    override suspend fun getContestLastSyncTime(): Long = withContext(Dispatchers.IO) {
+        val preferences = context.dataStore.data.first()
+        preferences[PreferencesKeys.CONTEST_LAST_SYNC_TIME] ?: 0L
     }
 }
