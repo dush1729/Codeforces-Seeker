@@ -10,6 +10,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.dush1729.cfseeker.analytics.AnalyticsService
+import com.dush1729.cfseeker.ui.ContestViewModel
 import com.dush1729.cfseeker.ui.UserViewModel
 import com.dush1729.cfseeker.ui.screens.MainScreen
 import com.dush1729.cfseeker.ui.theme.CFSeekerTheme
@@ -18,7 +19,8 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    private val viewModel: UserViewModel by viewModels()
+    private val userViewModel: UserViewModel by viewModels()
+    private val contestViewModel: ContestViewModel by viewModels()
 
     @Inject
     lateinit var analyticsService: AnalyticsService
@@ -34,7 +36,8 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     MainScreen(
-                        userViewModel = viewModel,
+                        userViewModel = userViewModel,
+                        contestViewModel = contestViewModel,
                         analyticsService = analyticsService
                     )
                 }
