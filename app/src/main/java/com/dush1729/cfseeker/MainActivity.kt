@@ -11,6 +11,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.dush1729.cfseeker.analytics.AnalyticsService
+import com.dush1729.cfseeker.crashlytics.CrashlyticsService
 import com.dush1729.cfseeker.navigation.CFSeekerNavGraph
 import com.dush1729.cfseeker.ui.ContestViewModel
 import com.dush1729.cfseeker.ui.UserViewModel
@@ -25,6 +26,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var analyticsService: AnalyticsService
+
+    @Inject
+    lateinit var crashlyticsService: CrashlyticsService
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,7 +46,8 @@ class MainActivity : ComponentActivity() {
                         navController = navController,
                         userViewModel = userViewModel,
                         contestViewModel = contestViewModel,
-                        analyticsService = analyticsService
+                        analyticsService = analyticsService,
+                        crashlyticsService = crashlyticsService
                     )
                 }
             }

@@ -7,6 +7,7 @@ interface AnalyticsService {
     fun logUserAdded(handle: String)
     fun logUserAddFailed(handle: String, error: String)
     fun logUserDeleted(handle: String)
+    fun logUserSyncedFromDetails(handle: String)
     fun logBulkSyncStarted()
     fun logBulkSyncCompleted(durationMs: Long, userCount: Int, successCount: Int, failureCount: Int)
 

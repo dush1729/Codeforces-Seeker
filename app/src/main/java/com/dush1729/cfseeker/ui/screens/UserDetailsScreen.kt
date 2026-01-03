@@ -49,6 +49,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.dush1729.cfseeker.R
+import com.dush1729.cfseeker.analytics.AnalyticsService
+import com.dush1729.cfseeker.crashlytics.CrashlyticsService
 import com.dush1729.cfseeker.data.local.entity.UserEntity
 import com.dush1729.cfseeker.ui.UserViewModel
 import com.dush1729.cfseeker.utils.getRatingColor
@@ -61,10 +63,18 @@ fun UserDetailsScreen(
     handle: String,
     navController: NavController,
     viewModel: UserViewModel,
+    analyticsService: AnalyticsService,
+    crashlyticsService: CrashlyticsService,
     modifier: Modifier = Modifier
 ) {
     val user by viewModel.getUserByHandle(handle).collectAsStateWithLifecycle(initialValue = null)
     val snackbarHostState = remember { SnackbarHostState() }
+
+    // Track screen view
+    LaunchedEffect(Unit) {
+        analyticsService.logScreenView("user_details")
+        crashlyticsService.log("Screen: UserDetails (handle=$handle)")
+    }
 
     // Collect snackbar messages
     LaunchedEffect(Unit) {
@@ -98,6 +108,8 @@ fun UserDetailsScreen(
                 viewModel = viewModel,
                 snackbarHostState = snackbarHostState,
                 onNavigateBack = { navController.popBackStack() },
+                analyticsService = analyticsService,
+                crashlyticsService = crashlyticsService,
                 modifier = Modifier.padding(paddingValues)
             )
         } ?: Box(
@@ -117,6 +129,8 @@ private fun UserDetailsContent(
     viewModel: UserViewModel,
     snackbarHostState: SnackbarHostState,
     onNavigateBack: () -> Unit,
+    analyticsService: AnalyticsService,
+    crashlyticsService: CrashlyticsService,
     modifier: Modifier = Modifier
 ) {
     var isSyncing by remember { mutableStateOf(false) }
@@ -257,11 +271,14 @@ private fun UserDetailsContent(
                             try {
                                 isSyncing = true
                                 errorMessage = null
+                                analyticsService.logUserSyncedFromDetails(user.handle)
+                                crashlyticsService.log("Action: Sync user from details (handle=${user.handle})")
                                 viewModel.fetchUser(user.handle)
                                 isSyncing = false
                             } catch (e: Exception) {
                                 isSyncing = false
                                 errorMessage = e.message ?: "Failed to sync user"
+                                crashlyticsService.logException(e)
                             }
                         }
                     } else {

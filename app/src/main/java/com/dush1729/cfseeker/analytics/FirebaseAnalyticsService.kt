@@ -87,4 +87,10 @@ class FirebaseAnalyticsService @Inject constructor(
             param("source", source)
         }
     }
+
+    override fun logUserSyncedFromDetails(handle: String) {
+        firebaseAnalytics.logEvent("user_synced_from_details") {
+            param("handle", handle)
+        }
+    }
 }

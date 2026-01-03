@@ -9,6 +9,7 @@ object DummyAnalyticsService : AnalyticsService {
     override fun logUserAdded(handle: String) {}
     override fun logUserAddFailed(handle: String, error: String) {}
     override fun logUserDeleted(handle: String) {}
+    override fun logUserSyncedFromDetails(handle: String) {}
     override fun logBulkSyncStarted() {}
     override fun logBulkSyncCompleted(durationMs: Long, userCount: Int, successCount: Int, failureCount: Int) {}
     override fun logSortChanged(sortOption: String) {}
