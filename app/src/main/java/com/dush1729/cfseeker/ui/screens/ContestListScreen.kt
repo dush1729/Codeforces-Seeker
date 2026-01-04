@@ -97,8 +97,7 @@ fun ContestListScreen(
                 val lastSync = lastSyncTime
                 if (lastSync != null) {
                     append("Last sync: ${lastSync.toRelativeTime()}")
-                    val nextSync = lastSync + (refreshIntervalMinutes * 60)
-                    append(", Next sync: ${nextSync.toRelativeTime()}")
+                    append(" • Auto syncs every $refreshIntervalMinutes minutes")
                 } else {
                     append("Syncing contests...")
                 }
