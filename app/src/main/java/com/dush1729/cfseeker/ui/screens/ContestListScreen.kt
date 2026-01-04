@@ -10,12 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
@@ -32,7 +27,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.layout.size
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dush1729.cfseeker.data.local.entity.ContestEntity
 import com.dush1729.cfseeker.ui.ContestPhase
@@ -51,9 +45,10 @@ fun ContestListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val selectedPhase by viewModel.selectedPhase.collectAsStateWithLifecycle()
-    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     val lastSyncTime by viewModel.lastSyncTime.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    val refreshIntervalMinutes = remember { viewModel.getRefreshIntervalMinutes() }
 
     // Collect snackbar messages
     LaunchedEffect(Unit) {
@@ -70,25 +65,6 @@ fun ContestListScreen(
             TopAppBar(
                 title = { Text("Contests") }
             )
-        },
-        floatingActionButton = {
-            // Always show refresh button
-            FloatingActionButton(
-                onClick = { viewModel.refreshContests() },
-                containerColor = if (isRefreshing)
-                    MaterialTheme.colorScheme.secondaryContainer
-                else
-                    MaterialTheme.colorScheme.primaryContainer
-            ) {
-                if (isRefreshing) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        strokeWidth = 2.dp
-                    )
-                } else {
-                    Icon(Icons.Filled.Refresh, contentDescription = "Refresh contests")
-                }
-            }
         }
     ) { paddingValues ->
         Column(
@@ -117,9 +93,16 @@ fun ContestListScreen(
             }
 
             // Last Sync Time Display
-            val syncTimeText = lastSyncTime?.let { syncTime ->
-                "Last synced: ${syncTime.toRelativeTime()}"
-            } ?: "Tap refresh to load latest contests"
+            val syncTimeText = buildString {
+                val lastSync = lastSyncTime
+                if (lastSync != null) {
+                    append("Last sync: ${lastSync.toRelativeTime()}")
+                    val nextSync = lastSync + (refreshIntervalMinutes * 60)
+                    append(", Next sync: ${nextSync.toRelativeTime()}")
+                } else {
+                    append("Syncing contests...")
+                }
+            }
 
             Text(
                 text = syncTimeText,
@@ -166,7 +149,7 @@ private fun ContestList(
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = 80.dp)
+        contentPadding = PaddingValues(bottom = 16.dp)
     ) {
         items(
             items = contests,

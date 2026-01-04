@@ -77,4 +77,8 @@ class FirebaseRemoteConfigService @Inject constructor(
     override fun getSyncAllUserDelaySeconds(): Long {
         return getLong(RemoteConfigService.SYNC_ALL_USER_DELAY_SECONDS)
     }
+
+    override fun getContestRefreshIntervalMinutes(): Long {
+        return getLong(RemoteConfigService.CONTEST_REFRESH_INTERVAL_MINUTES)
+    }
 }

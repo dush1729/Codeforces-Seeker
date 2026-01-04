@@ -21,4 +21,8 @@
         <key>sync_all_user_delay_seconds</key>
         <value>5</value>
     </entry>
+    <entry>
+        <key>contest_refresh_interval_minutes</key>
+        <value>15</value>
+    </entry>
 </defaultsMap>

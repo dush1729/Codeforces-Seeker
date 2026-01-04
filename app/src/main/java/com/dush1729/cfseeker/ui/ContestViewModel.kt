@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dush1729.cfseeker.crashlytics.CrashlyticsService
 import com.dush1729.cfseeker.data.local.entity.ContestEntity
+import com.dush1729.cfseeker.data.remote.config.RemoteConfigService
 import com.dush1729.cfseeker.data.repository.ContestRepository
 import com.dush1729.cfseeker.ui.base.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,7 +28,8 @@ enum class ContestPhase(val displayName: String, val phase: String?) {
 @HiltViewModel
 class ContestViewModel @Inject constructor(
     private val repository: ContestRepository,
-    private val crashlyticsService: CrashlyticsService
+    private val crashlyticsService: CrashlyticsService,
+    private val remoteConfigService: RemoteConfigService
 ): ViewModel() {
 
     private val _selectedPhase = MutableStateFlow(ContestPhase.UPCOMING)
@@ -66,14 +68,31 @@ class ContestViewModel @Inject constructor(
                 }
         }
 
-        // Load last sync time
+        // Load last sync time and auto-refresh if needed
         viewModelScope.launch(Dispatchers.IO) {
             _lastSyncTime.value = repository.getLastSyncTime()
+            autoRefreshIfNeeded()
+        }
+    }
+
+    private suspend fun autoRefreshIfNeeded() {
+        val lastSyncTime = repository.getLastSyncTime()
+        val currentTime = System.currentTimeMillis() / 1000
+        val refreshIntervalMinutes = remoteConfigService.getContestRefreshIntervalMinutes()
+        val refreshIntervalSeconds = refreshIntervalMinutes * 60
+
+        if (lastSyncTime == null || (currentTime - lastSyncTime) >= refreshIntervalSeconds) {
+            // Auto-refresh if never synced or interval has passed
+            refreshContests()
         }
     }
 
     fun setSelectedPhase(phase: ContestPhase) {
         _selectedPhase.value = phase
+    }
+
+    fun getRefreshIntervalMinutes(): Long {
+        return remoteConfigService.getContestRefreshIntervalMinutes()
     }
 
     fun refreshContests() {
