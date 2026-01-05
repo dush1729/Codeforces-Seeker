@@ -32,13 +32,15 @@ import com.dush1729.cfseeker.utils.toRelativeTime
 @Composable
 fun ContestCard(
     contest: ContestEntity,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null
 ) {
     Card(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 4.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        onClick = { onClick?.invoke() }
     ) {
         Column(
             modifier = Modifier

@@ -81,4 +81,8 @@ class FirebaseRemoteConfigService @Inject constructor(
     override fun getContestRefreshIntervalMinutes(): Long {
         return getLong(RemoteConfigService.CONTEST_REFRESH_INTERVAL_MINUTES)
     }
+
+    override fun getContestStandingsRefreshIntervalMinutes(): Long {
+        return getLong(RemoteConfigService.CONTEST_STANDINGS_REFRESH_INTERVAL_MINUTES)
+    }
 }

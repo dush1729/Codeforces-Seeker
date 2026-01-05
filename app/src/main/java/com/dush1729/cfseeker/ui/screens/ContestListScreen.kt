@@ -49,6 +49,7 @@ import com.dush1729.cfseeker.utils.toRelativeTime
 @Composable
 fun ContestListScreen(
     viewModel: ContestViewModel,
+    onContestClick: (contestId: Int, contestName: String, contestType: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -177,6 +178,7 @@ fun ContestListScreen(
                     } else {
                         ContestList(
                             contests = state.data,
+                            onContestClick = onContestClick,
                             modifier = Modifier.fillMaxSize()
                         )
                     }
@@ -189,6 +191,7 @@ fun ContestListScreen(
 @Composable
 private fun ContestList(
     contests: List<ContestEntity>,
+    onContestClick: (contestId: Int, contestName: String, contestType: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -199,7 +202,10 @@ private fun ContestList(
             items = contests,
             key = { it.id }
         ) { contest ->
-            ContestCard(contest = contest)
+            ContestCard(
+                contest = contest,
+                onClick = { onContestClick(contest.id, contest.name, contest.type) }
+            )
         }
     }
 }

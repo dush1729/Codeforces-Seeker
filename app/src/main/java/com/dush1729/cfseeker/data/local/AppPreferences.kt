@@ -21,6 +21,8 @@ interface AppPreferences {
     suspend fun getLastSyncAllTime(): Long
     suspend fun setContestLastSyncTime(timestamp: Long)
     suspend fun getContestLastSyncTime(): Long
+    suspend fun setContestStandingsLastSyncTime(contestId: Int, timestamp: Long)
+    suspend fun getContestStandingsLastSyncTime(contestId: Int): Long
 }
 
 class AppPreferencesImpl @Inject constructor(
@@ -62,5 +64,18 @@ class AppPreferencesImpl @Inject constructor(
     override suspend fun getContestLastSyncTime(): Long = withContext(Dispatchers.IO) {
         val preferences = context.dataStore.data.first()
         preferences[PreferencesKeys.CONTEST_LAST_SYNC_TIME] ?: 0L
+    }
+
+    override suspend fun setContestStandingsLastSyncTime(contestId: Int, timestamp: Long) {
+        context.dataStore.edit { preferences ->
+            val key = longPreferencesKey("contest_standings_sync_$contestId")
+            preferences[key] = timestamp
+        }
+    }
+
+    override suspend fun getContestStandingsLastSyncTime(contestId: Int): Long = withContext(Dispatchers.IO) {
+        val preferences = context.dataStore.data.first()
+        val key = longPreferencesKey("contest_standings_sync_$contestId")
+        preferences[key] ?: 0L
     }
 }

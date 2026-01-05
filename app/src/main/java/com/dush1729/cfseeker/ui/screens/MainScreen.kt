@@ -19,6 +19,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import com.dush1729.cfseeker.analytics.AnalyticsService
+import com.dush1729.cfseeker.navigation.Screen
 import com.dush1729.cfseeker.ui.ContestViewModel
 import com.dush1729.cfseeker.ui.UserViewModel
 import kotlinx.coroutines.launch
@@ -94,6 +95,9 @@ fun MainScreen(
                 )
                 1 -> ContestListScreen(
                     viewModel = contestViewModel,
+                    onContestClick = { contestId, contestName, contestType ->
+                        navController.navigate(Screen.ContestDetails.createRoute(contestId, contestName, contestType))
+                    },
                     modifier = Modifier.fillMaxSize()
                 )
                 2 -> AboutScreen(
