@@ -49,7 +49,7 @@ import com.dush1729.cfseeker.data.remote.model.ProblemResult
 import com.dush1729.cfseeker.ui.ContestDetailsViewModel
 import com.dush1729.cfseeker.utils.toRelativeTime
 import com.google.gson.Gson
-import kotlinx.coroutines.launch
+import androidx.core.net.toUri
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -194,6 +194,8 @@ private fun ProblemsContent(
     problems: List<ContestProblemEntity>,
     modifier: Modifier = Modifier
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+
     if (problems.isEmpty()) {
         Box(
             modifier = modifier.fillMaxSize(),
@@ -215,15 +217,31 @@ private fun ProblemsContent(
                 items = problems,
                 key = { "${it.contestId}_${it.index}" }
             ) { problem ->
-                ProblemCard(problem)
+                ProblemCard(
+                    problem = problem,
+                    onClick = {
+                        val url = if (problem.problemsetName != null) {
+                            "https://codeforces.com/problemset/problem/${problem.problemsetName}/${problem.index}"
+                        } else {
+                            "https://codeforces.com/contest/${problem.contestId}/problem/${problem.index}"
+                        }
+                        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW,
+                            url.toUri())
+                        context.startActivity(intent)
+                    }
+                )
             }
         }
     }
 }
 
 @Composable
-private fun ProblemCard(problem: ContestProblemEntity) {
+private fun ProblemCard(
+    problem: ContestProblemEntity,
+    onClick: () -> Unit
+) {
     Card(
+        onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp),
