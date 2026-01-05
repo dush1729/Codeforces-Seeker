@@ -70,7 +70,7 @@ class AppDatabaseService @Inject constructor(private val appDatabase: AppDatabas
         return appDatabase.contestStandingsDao().getContestProblems(contestId)
     }
 
-    override fun getContestStandings(contestId: Int): Flow<List<ContestStandingRowEntity>> {
-        return appDatabase.contestStandingsDao().getContestStandings(contestId)
+    override fun getContestStandings(contestId: Int, searchQuery: String): Flow<List<ContestStandingRowEntity>> {
+        return appDatabase.contestStandingsDao().getContestStandings(contestId, searchQuery)
     }
 }

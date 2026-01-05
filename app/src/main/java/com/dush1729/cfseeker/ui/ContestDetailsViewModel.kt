@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -34,14 +35,22 @@ class ContestDetailsViewModel @Inject constructor(
     private val _lastSyncTime = MutableStateFlow<Long?>(null)
     val lastSyncTime = _lastSyncTime.asStateFlow()
 
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery = _searchQuery.asStateFlow()
+
     fun getContestProblems(contestId: Int): Flow<List<ContestProblemEntity>> {
         return repository.getContestProblems(contestId)
             .flowOn(Dispatchers.IO)
     }
 
     fun getContestStandings(contestId: Int): Flow<List<ContestStandingRowEntity>> {
-        return repository.getContestStandings(contestId)
-            .flowOn(Dispatchers.IO)
+        return _searchQuery.flatMapLatest { query ->
+            repository.getContestStandings(contestId, query)
+        }.flowOn(Dispatchers.IO)
+    }
+
+    fun setSearchQuery(query: String) {
+        _searchQuery.value = query
     }
 
     fun loadLastSyncTime(contestId: Int) {

@@ -34,8 +34,8 @@ class ContestStandingsRepository @Inject constructor(
         return db.getContestProblems(contestId)
     }
 
-    fun getContestStandings(contestId: Int): Flow<List<ContestStandingRowEntity>> {
-        return db.getContestStandings(contestId)
+    fun getContestStandings(contestId: Int, searchQuery: String = ""): Flow<List<ContestStandingRowEntity>> {
+        return db.getContestStandings(contestId, searchQuery)
     }
 }
 

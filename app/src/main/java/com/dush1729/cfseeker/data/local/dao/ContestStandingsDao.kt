@@ -38,6 +38,6 @@ interface ContestStandingsDao {
     @Query("SELECT * FROM contest_problem WHERE contestId = :contestId ORDER BY `index` ASC")
     fun getContestProblems(contestId: Int): Flow<List<ContestProblemEntity>>
 
-    @Query("SELECT * FROM contest_standing_row WHERE contestId = :contestId ORDER BY rank ASC")
-    fun getContestStandings(contestId: Int): Flow<List<ContestStandingRowEntity>>
+    @Query("SELECT * FROM contest_standing_row WHERE contestId = :contestId AND (:searchQuery = '' OR memberHandles LIKE '%' || :searchQuery || '%') ORDER BY rank ASC")
+    fun getContestStandings(contestId: Int, searchQuery: String = ""): Flow<List<ContestStandingRowEntity>>
 }

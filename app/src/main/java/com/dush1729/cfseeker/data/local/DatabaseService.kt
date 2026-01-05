@@ -35,5 +35,5 @@ interface DatabaseService {
         standings: List<ContestStandingRowEntity>
     )
     fun getContestProblems(contestId: Int): Flow<List<ContestProblemEntity>>
-    fun getContestStandings(contestId: Int): Flow<List<ContestStandingRowEntity>>
+    fun getContestStandings(contestId: Int, searchQuery: String = ""): Flow<List<ContestStandingRowEntity>>
 }

@@ -14,6 +14,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,7 +30,10 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
+import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -67,6 +72,7 @@ fun ContestDetailsScreen(
     val problems by viewModel.getContestProblems(contestId).collectAsStateWithLifecycle(initialValue = emptyList())
     val standings by viewModel.getContestStandings(contestId).collectAsStateWithLifecycle(initialValue = emptyList())
     val lastSyncTime by viewModel.lastSyncTime.collectAsStateWithLifecycle()
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
 
     val refreshIntervalMinutes = remember { viewModel.getRefreshIntervalMinutes() }
 
@@ -116,6 +122,8 @@ fun ContestDetailsScreen(
             lastSyncTime = lastSyncTime,
             refreshIntervalMinutes = refreshIntervalMinutes,
             contestType = contestType,
+            searchQuery = searchQuery,
+            onSearchQueryChange = { viewModel.setSearchQuery(it) },
             modifier = Modifier.padding(paddingValues)
         )
     }
@@ -128,6 +136,8 @@ private fun ContestDetailsContent(
     lastSyncTime: Long?,
     refreshIntervalMinutes: Long,
     contestType: String,
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
@@ -167,6 +177,41 @@ private fun ContestDetailsContent(
         )
 
         Spacer(modifier = Modifier.height(8.dp))
+
+        // Search field (only for Standings tab)
+        if (selectedTabIndex == 1) {
+            TextField(
+                value = searchQuery,
+                onValueChange = onSearchQueryChange,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                placeholder = { Text("Search participants...") },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Filled.Search,
+                        contentDescription = "Search"
+                    )
+                },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { onSearchQueryChange("") }) {
+                            Icon(
+                                imageVector = Icons.Filled.Close,
+                                contentDescription = "Clear search"
+                            )
+                        }
+                    }
+                },
+                singleLine = true,
+                colors = TextFieldDefaults.colors(
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent
+                ),
+                shape = MaterialTheme.shapes.medium
+            )
+        }
 
         // Tab content
         when (selectedTabIndex) {
