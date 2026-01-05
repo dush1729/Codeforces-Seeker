@@ -27,6 +27,7 @@ import com.google.firebase.crashlytics.ktx.crashlytics
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.ktx.remoteConfig
+import com.google.gson.Gson
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -87,13 +88,59 @@ object ApplicationModule {
         }
     }
 
+    private val MIGRATION_4_5 = object : Migration(4, 5) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // Create contest_problem table
+            db.execSQL("""
+                CREATE TABLE IF NOT EXISTS `contest_problem` (
+                    `contestId` INTEGER NOT NULL,
+                    `problemsetName` TEXT,
+                    `index` TEXT NOT NULL,
+                    `name` TEXT NOT NULL,
+                    `type` TEXT NOT NULL,
+                    `points` REAL,
+                    `rating` INTEGER,
+                    `tags` TEXT NOT NULL,
+                    PRIMARY KEY(`contestId`, `index`)
+                )
+            """)
+
+            // Create contest_standing_row table
+            db.execSQL("""
+                CREATE TABLE IF NOT EXISTS `contest_standing_row` (
+                    `contestId` INTEGER NOT NULL,
+                    `rank` INTEGER NOT NULL,
+                    `points` REAL NOT NULL,
+                    `penalty` INTEGER NOT NULL,
+                    `successfulHackCount` INTEGER NOT NULL,
+                    `unsuccessfulHackCount` INTEGER NOT NULL,
+                    `lastSubmissionTimeSeconds` INTEGER,
+                    `participantType` TEXT NOT NULL,
+                    `teamId` INTEGER,
+                    `teamName` TEXT,
+                    `ghost` INTEGER NOT NULL,
+                    `room` INTEGER,
+                    `memberHandles` TEXT NOT NULL,
+                    `problemResults` TEXT NOT NULL,
+                    PRIMARY KEY(`contestId`, `rank`)
+                )
+            """)
+        }
+    }
+
     @Singleton
     @Provides
-    fun provideNetworkService(): NetworkService {
+    fun provideGson(): Gson {
+        return Gson()
+    }
+
+    @Singleton
+    @Provides
+    fun provideNetworkService(gson: Gson): NetworkService {
         return Retrofit
             .Builder()
             .baseUrl("https://codeforces.com/api/")
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
             .create(NetworkService::class.java)
     }
@@ -109,6 +156,7 @@ object ApplicationModule {
                 MIGRATION_1_2,
                 MIGRATION_2_3,
                 MIGRATION_3_4,
+                MIGRATION_4_5,
                 )
             .build()
     }

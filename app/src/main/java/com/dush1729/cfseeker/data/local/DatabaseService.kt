@@ -1,6 +1,8 @@
 package com.dush1729.cfseeker.data.local
 
 import com.dush1729.cfseeker.data.local.entity.ContestEntity
+import com.dush1729.cfseeker.data.local.entity.ContestProblemEntity
+import com.dush1729.cfseeker.data.local.entity.ContestStandingRowEntity
 import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
 import com.dush1729.cfseeker.data.local.entity.UserEntity
 import com.dush1729.cfseeker.data.local.entity.UserRatingChanges
@@ -25,4 +27,13 @@ interface DatabaseService {
     fun getUpcomingContests(): Flow<List<ContestEntity>>
     fun getPastContests(searchQuery: String = ""): Flow<List<ContestEntity>>
     fun getOngoingContests(): Flow<List<ContestEntity>>
+
+    // Contest standings methods
+    suspend fun insertContestStandings(
+        contestId: Int,
+        problems: List<ContestProblemEntity>,
+        standings: List<ContestStandingRowEntity>
+    )
+    fun getContestProblems(contestId: Int): Flow<List<ContestProblemEntity>>
+    fun getContestStandings(contestId: Int): Flow<List<ContestStandingRowEntity>>
 }

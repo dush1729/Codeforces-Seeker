@@ -1,6 +1,8 @@
 package com.dush1729.cfseeker.data.local
 
 import com.dush1729.cfseeker.data.local.entity.ContestEntity
+import com.dush1729.cfseeker.data.local.entity.ContestProblemEntity
+import com.dush1729.cfseeker.data.local.entity.ContestStandingRowEntity
 import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
 import com.dush1729.cfseeker.data.local.entity.UserEntity
 import com.dush1729.cfseeker.data.local.entity.UserRatingChanges
@@ -54,5 +56,21 @@ class AppDatabaseService @Inject constructor(private val appDatabase: AppDatabas
 
     override fun getOngoingContests(): Flow<List<ContestEntity>> {
         return appDatabase.contestDao().getOngoingContests()
+    }
+
+    override suspend fun insertContestStandings(
+        contestId: Int,
+        problems: List<ContestProblemEntity>,
+        standings: List<ContestStandingRowEntity>
+    ) {
+        appDatabase.contestStandingsDao().insertContestStandings(contestId, problems, standings)
+    }
+
+    override fun getContestProblems(contestId: Int): Flow<List<ContestProblemEntity>> {
+        return appDatabase.contestStandingsDao().getContestProblems(contestId)
+    }
+
+    override fun getContestStandings(contestId: Int): Flow<List<ContestStandingRowEntity>> {
+        return appDatabase.contestStandingsDao().getContestStandings(contestId)
     }
 }
