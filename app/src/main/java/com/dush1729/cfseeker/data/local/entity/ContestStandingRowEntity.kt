@@ -1,10 +1,12 @@
 package com.dush1729.cfseeker.data.local.entity
 
 import androidx.room.Entity
+import androidx.room.Index
 
 @Entity(
     tableName = "contest_standing_row",
-    primaryKeys = ["contestId", "rank"]
+    primaryKeys = ["contestId", "memberHandles"],
+    indices = [Index(value = ["contestId", "rank"])]
 )
 data class ContestStandingRowEntity(
     val contestId: Int,

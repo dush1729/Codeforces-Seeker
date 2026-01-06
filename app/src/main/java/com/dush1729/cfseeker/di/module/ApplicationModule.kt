@@ -128,6 +128,36 @@ object ApplicationModule {
         }
     }
 
+    private val MIGRATION_5_6 = object : Migration(5, 6) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // Drop and recreate contest_standing_row table with new primary key
+            // This fixes the bug where tied participants were not all stored
+            db.execSQL("DROP TABLE IF EXISTS `contest_standing_row`")
+            db.execSQL("""
+                CREATE TABLE IF NOT EXISTS `contest_standing_row` (
+                    `contestId` INTEGER NOT NULL,
+                    `rank` INTEGER NOT NULL,
+                    `points` REAL NOT NULL,
+                    `penalty` INTEGER NOT NULL,
+                    `successfulHackCount` INTEGER NOT NULL,
+                    `unsuccessfulHackCount` INTEGER NOT NULL,
+                    `lastSubmissionTimeSeconds` INTEGER,
+                    `participantType` TEXT NOT NULL,
+                    `teamId` INTEGER,
+                    `teamName` TEXT,
+                    `ghost` INTEGER NOT NULL,
+                    `room` INTEGER,
+                    `memberHandles` TEXT NOT NULL,
+                    `problemResults` TEXT NOT NULL,
+                    PRIMARY KEY(`contestId`, `memberHandles`)
+                )
+            """)
+
+            // Add index on (contestId, rank) for efficient ORDER BY rank queries
+            db.execSQL("CREATE INDEX IF NOT EXISTS index_contest_standing_contestId_rank ON contest_standing_row(contestId, rank)")
+        }
+    }
+
     @Singleton
     @Provides
     fun provideGson(): Gson {
@@ -157,6 +187,7 @@ object ApplicationModule {
                 MIGRATION_2_3,
                 MIGRATION_3_4,
                 MIGRATION_4_5,
+                MIGRATION_5_6,
                 )
             .build()
     }

@@ -378,7 +378,7 @@ private fun StandingsContent(
             ) {
                 items(
                     items = standings,
-                    key = { "${it.contestId}_${it.rank}" }
+                    key = { "${it.contestId}_${it.memberHandles}" }
                 ) { standing ->
                     StandingTableRow(standing = standing, showPenalty = showPenalty)
                     HorizontalDivider()
