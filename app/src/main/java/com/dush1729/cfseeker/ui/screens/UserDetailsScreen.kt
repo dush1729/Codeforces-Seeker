@@ -128,7 +128,11 @@ fun UserDetailsScreen(
             TopAppBar(
                 title = { Text(user?.handle ?: "User Details") },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = {
+                        if (navController.previousBackStackEntry != null) {
+                            navController.popBackStack()
+                        }
+                    }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
@@ -143,7 +147,11 @@ fun UserDetailsScreen(
                 user = currentUser,
                 viewModel = viewModel,
                 snackbarHostState = snackbarHostState,
-                onNavigateBack = { navController.popBackStack() },
+                onNavigateBack = {
+                    if (navController.previousBackStackEntry != null) {
+                        navController.popBackStack()
+                    }
+                },
                 analyticsService = analyticsService,
                 crashlyticsService = crashlyticsService,
                 modifier = Modifier.padding(paddingValues)
