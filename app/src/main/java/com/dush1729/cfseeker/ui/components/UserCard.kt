@@ -22,6 +22,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import androidx.compose.ui.platform.LocalContext
 import com.dush1729.cfseeker.R
 import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
 import com.dush1729.cfseeker.data.local.entity.UserEntity
@@ -56,7 +58,11 @@ fun UserCard(
         ) {
             // User Avatar
             AsyncImage(
-                model = userRatingChange.user.avatar,
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(userRatingChange.user.avatar)
+                    .size(96)
+                    .crossfade(false)
+                    .build(),
                 contentDescription = "User Avatar",
                 modifier = Modifier
                     .size(48.dp)
