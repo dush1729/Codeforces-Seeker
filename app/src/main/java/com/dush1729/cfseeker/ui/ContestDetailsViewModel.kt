@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.dush1729.cfseeker.crashlytics.CrashlyticsService
 import com.dush1729.cfseeker.data.local.entity.ContestProblemEntity
 import com.dush1729.cfseeker.data.local.entity.ContestStandingRowEntity
+import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
 import com.dush1729.cfseeker.data.repository.ContestStandingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -49,6 +50,12 @@ class ContestDetailsViewModel @Inject constructor(
         }.flowOn(Dispatchers.IO)
     }
 
+    fun getContestRatingChanges(contestId: Int): Flow<List<RatingChangeEntity>> {
+        return _searchQuery.flatMapLatest { query ->
+            repository.getContestRatingChanges(contestId, query)
+        }.flowOn(Dispatchers.IO)
+    }
+
     fun setSearchQuery(query: String) {
         _searchQuery.value = query
     }
@@ -84,10 +91,16 @@ class ContestDetailsViewModel @Inject constructor(
                 }
 
                 repository.fetchContestStandings(contestId)
+                // Also fetch rating changes
+                try {
+                    repository.fetchContestRatingChanges(contestId)
+                } catch (_: Exception) {
+                    // Rating changes may not be available for all contests (e.g., upcoming contests)
+                }
                 val currentTime = System.currentTimeMillis() / 1000
                 appPreferences.setContestStandingsLastSyncTime(contestId, currentTime)
                 _lastSyncTime.value = currentTime
-                _snackbarMessage.emit("Contest standings refreshed successfully")
+                _snackbarMessage.emit("Contest data refreshed successfully")
             } catch (e: Exception) {
                 crashlyticsService.logException(e)
                 crashlyticsService.setCustomKey("operation", "fetch_contest_standings")

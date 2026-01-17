@@ -36,4 +36,8 @@ interface DatabaseService {
     )
     fun getContestProblems(contestId: Int): Flow<List<ContestProblemEntity>>
     fun getContestStandings(contestId: Int, searchQuery: String = ""): Flow<List<ContestStandingRowEntity>>
+
+    // Contest rating changes methods
+    suspend fun insertRatingChangesIgnoreConflict(ratingChanges: List<RatingChangeEntity>)
+    fun getRatingChangesByContest(contestId: Int, searchQuery: String = ""): Flow<List<RatingChangeEntity>>
 }

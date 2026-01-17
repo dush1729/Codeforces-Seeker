@@ -8,7 +8,8 @@ import androidx.room.Index
     primaryKeys = ["handle", "contestId"],
     indices = [
         Index("handle"),
-        Index("ratingUpdateTimeSeconds")
+        Index("ratingUpdateTimeSeconds"),
+        Index(value = ["contestId", "source"])
     ]
 )
 data class RatingChangeEntity(
@@ -19,6 +20,6 @@ data class RatingChangeEntity(
     val oldRating: Int,
     val newRating: Int,
     val ratingUpdateTimeSeconds: Long,
-
-    val lastSync: Long
+    val lastSync: Long,
+    val source: String  // "USER" or "CONTEST"
 )

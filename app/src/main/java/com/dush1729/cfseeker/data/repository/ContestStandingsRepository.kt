@@ -3,9 +3,9 @@ package com.dush1729.cfseeker.data.repository
 import com.dush1729.cfseeker.data.local.DatabaseService
 import com.dush1729.cfseeker.data.local.entity.ContestProblemEntity
 import com.dush1729.cfseeker.data.local.entity.ContestStandingRowEntity
+import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
 import com.dush1729.cfseeker.data.remote.api.NetworkService
 import com.dush1729.cfseeker.data.remote.api.safeApiCall
-import com.dush1729.cfseeker.data.remote.model.ContestStandings
 import com.dush1729.cfseeker.data.remote.model.Problem
 import com.dush1729.cfseeker.data.remote.model.RanklistRow
 import com.google.gson.Gson
@@ -36,6 +36,18 @@ class ContestStandingsRepository @Inject constructor(
 
     fun getContestStandings(contestId: Int, searchQuery: String = ""): Flow<List<ContestStandingRowEntity>> {
         return db.getContestStandings(contestId, searchQuery)
+    }
+
+    suspend fun fetchContestRatingChanges(contestId: Int): Unit = withContext(Dispatchers.IO) {
+        val ratingChanges = safeApiCall {
+            api.getContestRatingChanges(contestId)
+        }.result ?: return@withContext
+
+        db.insertRatingChangesIgnoreConflict(ratingChanges.toRatingChangeEntity(source = "CONTEST"))
+    }
+
+    fun getContestRatingChanges(contestId: Int, searchQuery: String = ""): Flow<List<RatingChangeEntity>> {
+        return db.getRatingChangesByContest(contestId, searchQuery)
     }
 }
 

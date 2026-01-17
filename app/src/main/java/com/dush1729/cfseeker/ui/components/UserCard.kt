@@ -175,7 +175,8 @@ private fun UserCardPreview() {
                         oldRating = 3937,
                         newRating = 3979,
                         ratingUpdateTimeSeconds = System.currentTimeMillis() / 1000 - 86400 * 2,
-                        lastSync = System.currentTimeMillis()
+                        lastSync = System.currentTimeMillis(),
+                        source = "USER"
                     )
                 )
             )
@@ -250,7 +251,8 @@ private fun UserCardDarkPreview() {
                         oldRating = 3180,
                         newRating = 3150,
                         ratingUpdateTimeSeconds = System.currentTimeMillis() / 1000 - 3600,
-                        lastSync = System.currentTimeMillis()
+                        lastSync = System.currentTimeMillis(),
+                        source = "USER"
                     )
                 )
             )

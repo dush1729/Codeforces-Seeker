@@ -32,7 +32,7 @@ class UserRepository @Inject constructor(
 
         db.addUser(
             user = apiUser.toUserEntity(),
-            ratingChanges = apiRatingChanges.toRatingChangeEntity()
+            ratingChanges = apiRatingChanges.toRatingChangeEntity(source = "USER")
         )
     }
 
@@ -58,7 +58,7 @@ class UserRepository @Inject constructor(
 
                 db.addUser(
                     user = user.toUserEntity(),
-                    ratingChanges = apiRatingChanges.toRatingChangeEntity()
+                    ratingChanges = apiRatingChanges.toRatingChangeEntity(source = "USER")
                 )
 
                 // Notify progress - success
@@ -126,7 +126,7 @@ fun User.toUserEntity(): UserEntity = UserEntity(
     lastSync = System.currentTimeMillis() / 1000,
 )
 
-fun List<RatingChange>.toRatingChangeEntity(): List<RatingChangeEntity> = map { ratingChange ->
+fun List<RatingChange>.toRatingChangeEntity(source: String): List<RatingChangeEntity> = map { ratingChange ->
     RatingChangeEntity(
         handle = ratingChange.handle,
         contestId = ratingChange.contestId,
@@ -135,6 +135,7 @@ fun List<RatingChange>.toRatingChangeEntity(): List<RatingChangeEntity> = map { 
         oldRating = ratingChange.oldRating,
         newRating = ratingChange.newRating,
         ratingUpdateTimeSeconds = ratingChange.ratingUpdateTimeSeconds,
-        lastSync = System.currentTimeMillis() / 1000
+        lastSync = System.currentTimeMillis() / 1000,
+        source = source
     )
 }

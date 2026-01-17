@@ -158,6 +158,17 @@ object ApplicationModule {
         }
     }
 
+    private val MIGRATION_6_7 = object : Migration(6, 7) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // Add source column to rating_change table with default value 'USER'
+            // Existing entries are from user sync, so 'USER' is the correct default
+            db.execSQL("ALTER TABLE `rating_change` ADD COLUMN `source` TEXT NOT NULL DEFAULT 'USER'")
+
+            // Add composite index on (contestId, source) for efficient contest data deletion
+            db.execSQL("CREATE INDEX IF NOT EXISTS index_rating_change_contestId_source ON rating_change(contestId, source)")
+        }
+    }
+
     @Singleton
     @Provides
     fun provideGson(): Gson {
@@ -188,7 +199,8 @@ object ApplicationModule {
                 MIGRATION_3_4,
                 MIGRATION_4_5,
                 MIGRATION_5_6,
-                )
+                MIGRATION_6_7,
+            )
             .build()
     }
 

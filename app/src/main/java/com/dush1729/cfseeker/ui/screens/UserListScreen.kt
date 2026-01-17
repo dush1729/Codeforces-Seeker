@@ -625,7 +625,8 @@ private fun UserListPreview() {
                             oldRating = 3937,
                             newRating = 3979,
                             ratingUpdateTimeSeconds = System.currentTimeMillis() / 1000 - 86400,
-                            lastSync = System.currentTimeMillis()
+                            lastSync = System.currentTimeMillis(),
+                            source = "USER"
                         )
                     )
                 ),

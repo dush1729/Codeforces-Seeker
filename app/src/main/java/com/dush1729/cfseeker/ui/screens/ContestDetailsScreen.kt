@@ -51,6 +51,7 @@ import com.dush1729.cfseeker.analytics.AnalyticsService
 import com.dush1729.cfseeker.crashlytics.CrashlyticsService
 import com.dush1729.cfseeker.data.local.entity.ContestProblemEntity
 import com.dush1729.cfseeker.data.local.entity.ContestStandingRowEntity
+import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
 import com.dush1729.cfseeker.data.remote.model.ProblemResult
 import com.dush1729.cfseeker.ui.ContestDetailsViewModel
 import com.dush1729.cfseeker.utils.toRelativeTime
@@ -72,6 +73,7 @@ fun ContestDetailsScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val problems by viewModel.getContestProblems(contestId).collectAsStateWithLifecycle(initialValue = emptyList())
     val standings by viewModel.getContestStandings(contestId).collectAsStateWithLifecycle(initialValue = emptyList())
+    val ratingChanges by viewModel.getContestRatingChanges(contestId).collectAsStateWithLifecycle(initialValue = emptyList())
     val lastSyncTime by viewModel.lastSyncTime.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
@@ -122,6 +124,7 @@ fun ContestDetailsScreen(
         ContestDetailsContent(
             problems = problems,
             standings = standings,
+            ratingChanges = ratingChanges,
             lastSyncTime = lastSyncTime,
             refreshIntervalMinutes = refreshIntervalMinutes,
             contestType = contestType,
@@ -137,6 +140,7 @@ fun ContestDetailsScreen(
 private fun ContestDetailsContent(
     problems: List<ContestProblemEntity>,
     standings: List<ContestStandingRowEntity>,
+    ratingChanges: List<RatingChangeEntity>,
     lastSyncTime: Long?,
     refreshIntervalMinutes: Long,
     contestType: String,
@@ -146,7 +150,7 @@ private fun ContestDetailsContent(
     modifier: Modifier = Modifier
 ) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Problems", "Standings")
+    val tabs = listOf("Problems", "Standings", "Ratings")
 
     Column(
         modifier = modifier
@@ -190,8 +194,8 @@ private fun ContestDetailsContent(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Search field (only for Standings tab)
-        if (selectedTabIndex == 1) {
+        // Search field (for Standings and Ratings tabs)
+        if (selectedTabIndex == 1 || selectedTabIndex == 2) {
             TextField(
                 value = searchQuery,
                 onValueChange = onSearchQueryChange,
@@ -239,6 +243,13 @@ private fun ContestDetailsContent(
                 StandingsContent(
                     standings = standings,
                     contestType = contestType,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+            2 -> {
+                // Ratings Tab
+                RatingsContent(
+                    ratingChanges = ratingChanges,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -494,6 +505,138 @@ private fun StandingTableRow(standing: ContestStandingRowEntity, showPenalty: Bo
             text = "$solvedCount/${problemResults.size}",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.weight(0.8f)
+        )
+    }
+}
+
+@Composable
+private fun RatingsContent(
+    ratingChanges: List<RatingChangeEntity>,
+    modifier: Modifier = Modifier
+) {
+    if (ratingChanges.isEmpty()) {
+        Box(
+            modifier = modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "No rating changes available",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    } else {
+        Column(modifier = modifier) {
+            // Table header
+            RatingTableHeader()
+            HorizontalDivider()
+
+            LazyColumn(
+                contentPadding = PaddingValues(vertical = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(1.dp)
+            ) {
+                items(
+                    items = ratingChanges,
+                    key = { "${it.contestId}_${it.handle}" }
+                ) { ratingChange ->
+                    RatingTableRow(ratingChange = ratingChange)
+                    HorizontalDivider()
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun RatingTableHeader() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "#",
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(0.5f)
+        )
+        Text(
+            text = "Handle",
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(2f)
+        )
+        Text(
+            text = "Old",
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(0.7f)
+        )
+        Text(
+            text = "New",
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(0.7f)
+        )
+        Text(
+            text = "Change",
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(0.8f)
+        )
+    }
+}
+
+@Composable
+private fun RatingTableRow(ratingChange: RatingChangeEntity) {
+    val delta = ratingChange.newRating - ratingChange.oldRating
+    val deltaColor = when {
+        delta > 0 -> Color(0xFF4CAF50) // Green
+        delta < 0 -> Color(0xFFF44336) // Red
+        else -> MaterialTheme.colorScheme.onSurface
+    }
+    val deltaText = when {
+        delta > 0 -> "+$delta"
+        else -> delta.toString()
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = ratingChange.contestRank.toString(),
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.weight(0.5f)
+        )
+        Text(
+            text = ratingChange.handle,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.weight(2f),
+            maxLines = 1
+        )
+        Text(
+            text = ratingChange.oldRating.toString(),
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.weight(0.7f)
+        )
+        Text(
+            text = ratingChange.newRating.toString(),
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.weight(0.7f)
+        )
+        Text(
+            text = deltaText,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Bold,
+            color = deltaColor,
             modifier = Modifier.weight(0.8f)
         )
     }

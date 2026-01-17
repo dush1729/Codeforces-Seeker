@@ -28,4 +28,9 @@ interface NetworkService {
         @Query("showUnofficial") showUnofficial: Boolean? = null,
         @Query("room") room: Int? = null
     ): CodeforcesApiSingleResponse<ContestStandings>
+
+    @GET("contest.ratingChanges")
+    suspend fun getContestRatingChanges(
+        @Query("contestId") contestId: Int
+    ): CodeforcesApiResponse<RatingChange>
 }

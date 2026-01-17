@@ -73,4 +73,12 @@ class AppDatabaseService @Inject constructor(private val appDatabase: AppDatabas
     override fun getContestStandings(contestId: Int, searchQuery: String): Flow<List<ContestStandingRowEntity>> {
         return appDatabase.contestStandingsDao().getContestStandings(contestId, searchQuery)
     }
+
+    override suspend fun insertRatingChangesIgnoreConflict(ratingChanges: List<RatingChangeEntity>) {
+        appDatabase.userDao().insertRatingChangesIgnoreConflict(ratingChanges)
+    }
+
+    override fun getRatingChangesByContest(contestId: Int, searchQuery: String): Flow<List<RatingChangeEntity>> {
+        return appDatabase.userDao().getRatingChangesByContest(contestId, searchQuery)
+    }
 }
