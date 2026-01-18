@@ -40,6 +40,9 @@ interface RemoteConfigService {
     fun getContestRefreshIntervalMinutes(): Long
     fun getContestStandingsRefreshIntervalMinutes(): Long
 
+    // Users info refresh settings
+    fun getUsersInfoRefreshIntervalMinutes(): Long
+
     companion object {
         const val ADD_USER_ENABLED = "add_user_enabled"
         const val SYNC_ALL_USERS_ENABLED = "sync_all_users_enabled"
@@ -48,5 +51,6 @@ interface RemoteConfigService {
         const val SYNC_ALL_USER_DELAY_SECONDS = "sync_all_user_delay_seconds"
         const val CONTEST_REFRESH_INTERVAL_MINUTES = "contest_refresh_interval_minutes"
         const val CONTEST_STANDINGS_REFRESH_INTERVAL_MINUTES = "contest_standings_refresh_interval_minutes"
+        const val USERS_INFO_REFRESH_INTERVAL_MINUTES = "users_info_refresh_interval_minutes"
     }
 }

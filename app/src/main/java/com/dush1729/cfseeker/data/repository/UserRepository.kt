@@ -103,6 +103,17 @@ class UserRepository @Inject constructor(
     fun getRatingChangesByHandle(handle: String, searchQuery: String = ""): Flow<List<RatingChangeEntity>> {
         return db.getRatingChangesByHandle(handle, searchQuery)
     }
+
+    // Fetches only user info (no rating changes) for all users - single API call
+    suspend fun fetchUsersInfo(handles: List<String>): Unit = withContext(Dispatchers.IO) {
+        if (handles.isEmpty()) return@withContext
+
+        val apiUsers: List<User> = safeApiCall {
+            api.getUser(handles.joinToString(";"))
+        }.result ?: return@withContext
+
+        db.upsertUsers(apiUsers.map { it.toUserEntity() })
+    }
 }
 
 fun User.toUserEntity(): UserEntity = UserEntity(

@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface DatabaseService {
     suspend fun addUser(user: UserEntity, ratingChanges: List<RatingChangeEntity>)
+    suspend fun upsertUsers(users: List<UserEntity>)
     suspend fun deleteUser(handle: String)
     fun getAllUserRatingChanges(
         sortBy: String = SortOption.LAST_RATING_UPDATE.value,

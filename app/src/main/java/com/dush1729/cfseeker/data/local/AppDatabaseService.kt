@@ -14,6 +14,10 @@ class AppDatabaseService @Inject constructor(private val appDatabase: AppDatabas
         appDatabase.userDao().addUser(user, ratingChanges)
     }
 
+    override suspend fun upsertUsers(users: List<UserEntity>) {
+        appDatabase.userDao().upsertUsers(users)
+    }
+
     override suspend fun deleteUser(handle: String) {
         appDatabase.userDao().deleteUserAndRatingChanges(handle)
     }

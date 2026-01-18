@@ -109,30 +109,42 @@ fun UserCard(
 
             // Rating info (delta + new rating)
             latestRatingChange?.let { ratingChange ->
+                val userRating = userRatingChange.user.rating
+                val needsSync = userRating != null && userRating != ratingChange.newRating
+
                 Column(
                     horizontalAlignment = Alignment.End,
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    val delta = ratingChange.newRating - ratingChange.oldRating
-                    val deltaText = if (delta > 0) "+$delta" else delta.toString()
-                    val deltaColor = when {
-                        delta > 0 -> RatingPositive
-                        delta < 0 -> RatingNegative
-                        else -> MaterialTheme.colorScheme.onSurfaceVariant
+                    if (needsSync) {
+                        // Show sync required when user.rating doesn't match latest rating change
+                        Text(
+                            text = "Sync required",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    } else {
+                        // Show rating delta
+                        val delta = ratingChange.newRating - ratingChange.oldRating
+                        val deltaText = if (delta > 0) "+$delta" else delta.toString()
+                        val deltaColor = when {
+                            delta > 0 -> RatingPositive
+                            delta < 0 -> RatingNegative
+                            else -> MaterialTheme.colorScheme.onSurfaceVariant
+                        }
+
+                        Text(
+                            text = deltaText,
+                            style = MaterialTheme.typography.titleSmall,
+                            color = deltaColor
+                        )
                     }
 
-                    // Rating delta
+                    // New rating (from user info, which is more up-to-date)
                     Text(
-                        text = deltaText,
-                        style = MaterialTheme.typography.titleSmall,
-                        color = deltaColor
-                    )
-
-                    // New rating
-                    Text(
-                        text = ratingChange.newRating.toString(),
+                        text = (userRating ?: ratingChange.newRating).toString(),
                         style = MaterialTheme.typography.bodyLarge,
-                        color = getRatingColor(ratingChange.newRating)
+                        color = getRatingColor(userRating ?: ratingChange.newRating)
                     )
                 }
             }

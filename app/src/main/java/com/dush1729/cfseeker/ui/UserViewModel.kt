@@ -69,6 +69,12 @@ class UserViewModel @Inject constructor(
     private val _snackbarMessage = MutableSharedFlow<String>()
     val snackbarMessage = _snackbarMessage.asSharedFlow()
 
+    private val _lastSyncTime = MutableStateFlow(0L)
+    val lastSyncTime = _lastSyncTime.asStateFlow()
+
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing = _isRefreshing.asStateFlow()
+
     val userCount: StateFlow<Int> = repository.getUserCount()
         .flowOn(Dispatchers.IO)
         .stateIn(
@@ -87,6 +93,12 @@ class UserViewModel @Inject constructor(
         // Fetch remote config
         viewModelScope.launch(Dispatchers.IO) {
             remoteConfigService.fetchAndActivate()
+        }
+
+        // Load last sync time and auto-refresh if needed
+        viewModelScope.launch(Dispatchers.IO) {
+            _lastSyncTime.value = appPreferences.getUsersInfoLastSyncTime()
+            autoRefreshIfNeeded()
         }
 
         viewModelScope.launch {
@@ -149,6 +161,41 @@ class UserViewModel @Inject constructor(
 
                     crashlyticsService.log("UserViewModel: Sync status: isRunning=$isRunning")
                 }
+        }
+    }
+
+    private suspend fun autoRefreshIfNeeded() {
+        val lastSyncTime = appPreferences.getUsersInfoLastSyncTime()
+        val currentTime = System.currentTimeMillis() / 1000
+        val refreshIntervalMinutes = remoteConfigService.getUsersInfoRefreshIntervalMinutes()
+        val refreshIntervalSeconds = refreshIntervalMinutes * 60
+
+        if (currentTime - lastSyncTime >= refreshIntervalSeconds) {
+            refreshUsersInfo()
+        }
+    }
+
+    fun getRefreshIntervalMinutes(): Long {
+        return remoteConfigService.getUsersInfoRefreshIntervalMinutes()
+    }
+
+    private fun refreshUsersInfo() {
+        viewModelScope.launch {
+            try {
+                _isRefreshing.value = true
+                val handles = repository.getAllUserHandles()
+                if (handles.isNotEmpty()) {
+                    repository.fetchUsersInfo(handles)
+                    val currentTime = System.currentTimeMillis() / 1000
+                    appPreferences.setUsersInfoLastSyncTime(currentTime)
+                    _lastSyncTime.value = currentTime
+                }
+            } catch (e: Exception) {
+                crashlyticsService.logException(e)
+                crashlyticsService.setCustomKey("operation", "refresh_users_info")
+            } finally {
+                _isRefreshing.value = false
+            }
         }
     }
 

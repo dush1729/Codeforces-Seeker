@@ -28,6 +28,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -92,6 +93,7 @@ import com.dush1729.cfseeker.ui.components.ErrorState
 import com.dush1729.cfseeker.ui.components.LoadingState
 import com.dush1729.cfseeker.ui.components.UserCard
 import com.dush1729.cfseeker.ui.theme.CFSeekerTheme
+import com.dush1729.cfseeker.utils.toRelativeTime
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -107,8 +109,11 @@ fun UserListScreen(
     val isSyncing by viewModel.isSyncing.collectAsStateWithLifecycle()
     val syncProgress by viewModel.syncProgress.collectAsStateWithLifecycle()
     val userCount by viewModel.userCount.collectAsStateWithLifecycle()
+    val lastSyncTime by viewModel.lastSyncTime.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     val isAddUserEnabled = remember { viewModel.isAddUserEnabled() }
     val isSyncAllUsersEnabled = remember { viewModel.isSyncAllUsersEnabled() }
+    val refreshIntervalMinutes = remember { viewModel.getRefreshIntervalMinutes() }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
@@ -284,6 +289,25 @@ fun UserListScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
+            // Last Sync Time Display - only show when there are users and sync has happened
+            if (userCount > 0) {
+                if (lastSyncTime > 0) {
+                    Text(
+                        text = "Last sync: ${lastSyncTime.toRelativeTime()} • Auto syncs every $refreshIntervalMinutes minutes",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                    )
+                }
+
+                // Sync progress indicator
+                if (isRefreshing) {
+                    LinearProgressIndicator(
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+
             // Search bar - only show when user list size > 1
             if (userCount > 1) {
                 TextField(

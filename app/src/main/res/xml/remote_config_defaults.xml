@@ -29,4 +29,8 @@
         <key>contest_standings_refresh_interval_minutes</key>
         <value>15</value>
     </entry>
+    <entry>
+        <key>users_info_refresh_interval_minutes</key>
+        <value>15</value>
+    </entry>
 </defaultsMap>
