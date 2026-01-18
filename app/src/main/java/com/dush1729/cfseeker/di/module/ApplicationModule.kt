@@ -169,6 +169,19 @@ object ApplicationModule {
         }
     }
 
+    private val MIGRATION_7_8 = object : Migration(7, 8) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // Drop old indices
+            db.execSQL("DROP INDEX IF EXISTS index_rating_change_handle")
+            db.execSQL("DROP INDEX IF EXISTS index_rating_change_ratingUpdateTimeSeconds")
+            db.execSQL("DROP INDEX IF EXISTS index_rating_change_contestId_source")
+
+            // Create new optimized indices
+            db.execSQL("CREATE INDEX IF NOT EXISTS index_rating_change_handle_source_time ON rating_change(handle, source, ratingUpdateTimeSeconds)")
+            db.execSQL("CREATE INDEX IF NOT EXISTS index_rating_change_contestId_rank ON rating_change(contestId, contestRank)")
+        }
+    }
+
     @Singleton
     @Provides
     fun provideGson(): Gson {
@@ -200,6 +213,7 @@ object ApplicationModule {
                 MIGRATION_4_5,
                 MIGRATION_5_6,
                 MIGRATION_6_7,
+                MIGRATION_7_8,
             )
             .build()
     }

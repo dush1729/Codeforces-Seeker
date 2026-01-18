@@ -43,7 +43,7 @@ interface UserDao {
     @Transaction
     @Query("""
         SELECT user.* FROM user
-        LEFT JOIN rating_change ON user.handle = rating_change.handle
+        LEFT JOIN rating_change ON user.handle = rating_change.handle AND rating_change.source = 'USER'
         WHERE user.handle LIKE '%' || :searchQuery || '%'
         GROUP BY user.handle
         ORDER BY
@@ -67,7 +67,7 @@ interface UserDao {
     @Query("SELECT * FROM user WHERE handle = :handle")
     fun getUserByHandle(handle: String): Flow<UserEntity>
 
-    @Query("SELECT * FROM rating_change WHERE handle = :handle AND contestName LIKE '%' || :searchQuery || '%' ORDER BY ratingUpdateTimeSeconds DESC")
+    @Query("SELECT * FROM rating_change WHERE handle = :handle AND source = 'USER' AND contestName LIKE '%' || :searchQuery || '%' ORDER BY ratingUpdateTimeSeconds DESC")
     fun getRatingChangesByHandle(handle: String, searchQuery: String = ""): Flow<List<RatingChangeEntity>>
 
     @Query("SELECT * FROM rating_change WHERE contestId = :contestId AND (:searchQuery = '' OR handle LIKE '%' || :searchQuery || '%') ORDER BY contestRank ASC")
