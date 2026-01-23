@@ -1,6 +1,7 @@
 package com.dush1729.cfseeker.data.repository
 
 import com.dush1729.cfseeker.data.local.AppPreferences
+import com.dush1729.cfseeker.data.local.ContestCacheInfo
 import com.dush1729.cfseeker.data.local.DatabaseService
 import com.dush1729.cfseeker.data.local.entity.ContestEntity
 import com.dush1729.cfseeker.data.remote.api.NetworkService
@@ -40,6 +41,14 @@ class ContestRepository @Inject constructor(
     suspend fun getLastSyncTime(): Long? {
         val timestamp = preferences.getContestLastSyncTime()
         return if (timestamp > 0) timestamp else null
+    }
+
+    suspend fun getCacheInfo(): ContestCacheInfo = withContext(Dispatchers.IO) {
+        db.getContestCacheInfo()
+    }
+
+    suspend fun clearCache(): Unit = withContext(Dispatchers.IO) {
+        db.clearContestCache()
     }
 }
 

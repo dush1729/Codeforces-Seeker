@@ -85,4 +85,16 @@ class AppDatabaseService @Inject constructor(private val appDatabase: AppDatabas
     override fun getRatingChangesByContest(contestId: Int, searchQuery: String): Flow<List<RatingChangeEntity>> {
         return appDatabase.contestStandingsDao().getRatingChangesByContest(contestId, searchQuery)
     }
+
+    override suspend fun getContestCacheInfo(): ContestCacheInfo {
+        return ContestCacheInfo(
+            problemCount = appDatabase.contestStandingsDao().getContestProblemCount(),
+            standingCount = appDatabase.contestStandingsDao().getContestStandingCount(),
+            ratingChangeCount = appDatabase.contestStandingsDao().getContestRatingChangeCount()
+        )
+    }
+
+    override suspend fun clearContestCache() {
+        appDatabase.contestStandingsDao().clearContestCache()
+    }
 }

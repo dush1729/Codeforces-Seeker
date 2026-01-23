@@ -3,6 +3,7 @@ package com.dush1729.cfseeker.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dush1729.cfseeker.crashlytics.CrashlyticsService
+import com.dush1729.cfseeker.data.local.ContestCacheInfo
 import com.dush1729.cfseeker.data.local.entity.ContestEntity
 import com.dush1729.cfseeker.data.remote.config.RemoteConfigService
 import com.dush1729.cfseeker.data.repository.ContestRepository
@@ -118,6 +119,23 @@ class ContestViewModel @Inject constructor(
                 _snackbarMessage.emit("Failed to refresh contests: ${e.message}")
             } finally {
                 _isRefreshing.value = false
+            }
+        }
+    }
+
+    suspend fun getCacheInfo(): ContestCacheInfo {
+        return repository.getCacheInfo()
+    }
+
+    fun clearCache() {
+        viewModelScope.launch {
+            try {
+                repository.clearCache()
+                _snackbarMessage.emit("Cache cleared successfully")
+            } catch (e: Exception) {
+                crashlyticsService.logException(e)
+                crashlyticsService.setCustomKey("operation", "clear_contest_cache")
+                _snackbarMessage.emit("Failed to clear cache: ${e.message}")
             }
         }
     }

@@ -8,6 +8,7 @@ import com.dush1729.cfseeker.data.local.entity.UserEntity
 import com.dush1729.cfseeker.data.local.entity.UserRatingChanges
 import com.dush1729.cfseeker.ui.SortOption
 import kotlinx.coroutines.flow.Flow
+import java.util.Locale
 
 interface DatabaseService {
     suspend fun addUser(user: UserEntity, ratingChanges: List<RatingChangeEntity>)
@@ -41,4 +42,32 @@ interface DatabaseService {
     // Contest rating changes methods
     suspend fun insertRatingChangesIgnoreConflict(ratingChanges: List<RatingChangeEntity>)
     fun getRatingChangesByContest(contestId: Int, searchQuery: String = ""): Flow<List<RatingChangeEntity>>
+
+    // Contest cache info methods
+    suspend fun getContestCacheInfo(): ContestCacheInfo
+    suspend fun clearContestCache()
+}
+
+data class ContestCacheInfo(
+    val problemCount: Int,
+    val standingCount: Int,
+    val ratingChangeCount: Int
+) {
+    // Estimated average bytes per row
+    private val problemAvgBytes = 150
+    private val standingAvgBytes = 300
+    private val ratingChangeAvgBytes = 120
+
+    val problemSizeBytes: Long get() = problemCount.toLong() * problemAvgBytes
+    val standingSizeBytes: Long get() = standingCount.toLong() * standingAvgBytes
+    val ratingChangeSizeBytes: Long get() = ratingChangeCount.toLong() * ratingChangeAvgBytes
+    val totalSizeBytes: Long get() = problemSizeBytes + standingSizeBytes + ratingChangeSizeBytes
+
+    fun formatSize(bytes: Long): String {
+        return when {
+            bytes < 1024 -> "$bytes B"
+            bytes < 1024 * 1024 -> String.format(Locale.US, "%.1f KB", bytes / 1024.0)
+            else -> String.format(Locale.US, "%.1f MB", bytes / (1024.0 * 1024.0))
+        }
+    }
 }

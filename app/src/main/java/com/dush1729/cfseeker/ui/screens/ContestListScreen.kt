@@ -12,10 +12,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -25,6 +29,7 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
@@ -32,7 +37,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import com.dush1729.cfseeker.data.local.ContestCacheInfo
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -59,8 +69,12 @@ fun ContestListScreen(
     val lastSyncTime by viewModel.lastSyncTime.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     val refreshIntervalMinutes = remember { viewModel.getRefreshIntervalMinutes() }
+
+    var showClearCacheDialog by remember { mutableStateOf(false) }
+    var cacheInfo by remember { mutableStateOf(ContestCacheInfo(0, 0, 0)) }
 
     // Collect snackbar messages
     LaunchedEffect(Unit) {
@@ -75,7 +89,22 @@ fun ContestListScreen(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Contests") }
+                title = { Text("Contests") },
+                actions = {
+                    FilledTonalIconButton(
+                        onClick = {
+                            scope.launch {
+                                cacheInfo = viewModel.getCacheInfo()
+                                showClearCacheDialog = true
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Delete,
+                            contentDescription = "Clear cache"
+                        )
+                    }
+                }
             )
         }
     ) { paddingValues ->
@@ -194,6 +223,45 @@ fun ContestListScreen(
                 }
             }
         }
+    }
+
+    if (showClearCacheDialog) {
+        AlertDialog(
+            onDismissRequest = { showClearCacheDialog = false },
+            icon = { Icon(Icons.Filled.Delete, contentDescription = null) },
+            title = { Text("Clear Contest Cache") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("This will delete cached contest data:")
+                    Text("• Standings: ${cacheInfo.formatSize(cacheInfo.standingSizeBytes)}")
+                    Text("• Rating changes: ${cacheInfo.formatSize(cacheInfo.ratingChangeSizeBytes)}")
+                    Text(
+                        "Total: ${cacheInfo.formatSize(cacheInfo.totalSizeBytes)}",
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                    Text(
+                        "Contest list will not be deleted.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showClearCacheDialog = false
+                        viewModel.clearCache()
+                    }
+                ) {
+                    Text("Clear")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearCacheDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
 

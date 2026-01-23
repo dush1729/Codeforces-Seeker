@@ -50,4 +50,31 @@ interface ContestStandingsDao {
 
     @Query("SELECT * FROM rating_change WHERE contestId = :contestId AND (:searchQuery = '' OR handle LIKE '%' || :searchQuery || '%') ORDER BY contestRank ASC")
     fun getRatingChangesByContest(contestId: Int, searchQuery: String = ""): Flow<List<RatingChangeEntity>>
+
+    // Count queries
+    @Query("SELECT COUNT(*) FROM contest_problem")
+    suspend fun getContestProblemCount(): Int
+
+    @Query("SELECT COUNT(*) FROM contest_standing_row")
+    suspend fun getContestStandingCount(): Int
+
+    @Query("SELECT COUNT(*) FROM rating_change WHERE source = 'CONTEST'")
+    suspend fun getContestRatingChangeCount(): Int
+
+    // Delete all queries
+    @Query("DELETE FROM contest_problem")
+    suspend fun deleteAllContestProblems()
+
+    @Query("DELETE FROM contest_standing_row")
+    suspend fun deleteAllContestStandings()
+
+    @Query("DELETE FROM rating_change WHERE source = 'CONTEST'")
+    suspend fun deleteAllContestRatingChanges()
+
+    @Transaction
+    suspend fun clearContestCache() {
+        deleteAllContestProblems()
+        deleteAllContestStandings()
+        deleteAllContestRatingChanges()
+    }
 }
