@@ -16,11 +16,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -41,6 +43,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import android.widget.Toast
@@ -156,6 +159,7 @@ private fun ContestDetailsContent(
     modifier: Modifier = Modifier
 ) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
+    var hideSpoilers by remember { mutableStateOf(true) }
     val tabs = listOf("Problems", "Standings", "Ratings")
 
     Column(
@@ -235,12 +239,26 @@ private fun ContestDetailsContent(
             )
         }
 
+        // Filter chip for Problems tab
+        if (selectedTabIndex == 0) {
+            FilterChip(
+                selected = hideSpoilers,
+                onClick = { hideSpoilers = !hideSpoilers },
+                label = { Text("Hide spoilers") },
+                leadingIcon = if (hideSpoilers) {
+                    { Icon(imageVector = Icons.Filled.Check, contentDescription = null) }
+                } else null,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
+        }
+
         // Tab content
         when (selectedTabIndex) {
             0 -> {
                 // Problems Tab
                 ProblemsContent(
                     problems = problems,
+                    hideSpoilers = hideSpoilers,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -266,6 +284,7 @@ private fun ContestDetailsContent(
 @Composable
 private fun ProblemsContent(
     problems: List<ContestProblemEntity>,
+    hideSpoilers: Boolean,
     modifier: Modifier = Modifier
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -293,6 +312,7 @@ private fun ProblemsContent(
             ) { problem ->
                 ProblemCard(
                     problem = problem,
+                    hideSpoilers = hideSpoilers,
                     onClick = {
                         val url = if (problem.problemsetName != null) {
                             "https://codeforces.com/problemset/problem/${problem.problemsetName}/${problem.index}"
@@ -312,6 +332,7 @@ private fun ProblemsContent(
 @Composable
 private fun ProblemCard(
     problem: ContestProblemEntity,
+    hideSpoilers: Boolean,
     onClick: () -> Unit
 ) {
     Card(
@@ -346,7 +367,7 @@ private fun ProblemCard(
                 )
             }
 
-            if (problem.rating != null || problem.points != null) {
+            if (!hideSpoilers && (problem.rating != null || problem.points != null)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -368,7 +389,7 @@ private fun ProblemCard(
                 }
             }
 
-            if (problem.tags.isNotEmpty()) {
+            if (!hideSpoilers && problem.tags.isNotEmpty()) {
                 Text(
                     text = "Tags: ${problem.tags.replace(",", ", ")}",
                     style = MaterialTheme.typography.bodySmall,
