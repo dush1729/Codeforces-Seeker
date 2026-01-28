@@ -46,6 +46,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import android.os.Build
 import android.widget.Toast
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -486,9 +487,22 @@ private fun StandingTableHeader(showPenalty: Boolean) {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun StandingTableRow(standing: ContestStandingRowEntity, showPenalty: Boolean) {
+private fun Modifier.copyToClipboardOnLongPress(text: String): Modifier {
     val clipboardManager = LocalClipboardManager.current
     val context = LocalContext.current
+    return combinedClickable(
+        onClick = {},
+        onLongClick = {
+            clipboardManager.setText(AnnotatedString(text))
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+            }
+        }
+    )
+}
+
+@Composable
+private fun StandingTableRow(standing: ContestStandingRowEntity, showPenalty: Boolean) {
     val gson = remember { Gson() }
     val problemResults = remember(standing.problemResults) {
         try {
@@ -502,13 +516,7 @@ private fun StandingTableRow(standing: ContestStandingRowEntity, showPenalty: Bo
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .combinedClickable(
-                onClick = {},
-                onLongClick = {
-                    clipboardManager.setText(AnnotatedString(standing.memberHandles))
-                    Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
-                }
-            )
+            .copyToClipboardOnLongPress(standing.memberHandles)
             .padding(horizontal = 8.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -642,6 +650,7 @@ private fun RatingTableRow(ratingChange: RatingChangeEntity) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .copyToClipboardOnLongPress(ratingChange.handle)
             .padding(horizontal = 8.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
