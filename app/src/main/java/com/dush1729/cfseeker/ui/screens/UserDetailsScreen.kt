@@ -73,6 +73,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -490,6 +491,8 @@ private fun RatingChart(
         }
     }
 
+    val uriHandler = LocalUriHandler.current
+
     Column(modifier = modifier) {
         // Selected contest info display - always visible since selectedRatingChange is non-null
         val currentIndex = sortedChanges.indexOfFirst { it.contestId == selectedRatingChange.contestId }
@@ -497,6 +500,9 @@ private fun RatingChart(
         val isLast = currentIndex == sortedChanges.size - 1
 
         Card(
+            onClick = {
+                uriHandler.openUri("https://codeforces.com/contest/${selectedRatingChange.contestId}")
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 8.dp),
@@ -893,6 +899,7 @@ private fun RatingsContent(
 private fun RatingChangeCard(
     ratingChange: com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
 ) {
+    val uriHandler = LocalUriHandler.current
     val ratingDelta = ratingChange.newRating - ratingChange.oldRating
     val deltaColor = getRatingDeltaColor(
         ratingChange.oldRating,
@@ -901,6 +908,9 @@ private fun RatingChangeCard(
     )
 
     Card(
+        onClick = {
+            uriHandler.openUri("https://codeforces.com/contest/${ratingChange.contestId}")
+        },
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp),
