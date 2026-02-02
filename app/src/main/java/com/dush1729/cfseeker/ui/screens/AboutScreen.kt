@@ -124,14 +124,14 @@ fun AboutScreen(
                     )
                 },
                 title = "Share App",
-                description = "Share CF Seeker with others",
+                description = "Share Codeforces Seeker with others",
                 onClick = {
                     analyticsService.logAppShared("about")
                     val shareIntent = android.content.Intent().apply {
                         action = android.content.Intent.ACTION_SEND
                         putExtra(
                             android.content.Intent.EXTRA_TEXT,
-                            "Check out CF Seeker on Google Play!\nhttps://play.google.com/store/apps/details?id=com.dush1729.cfseeker"
+                            "Check out Codeforces Seeker on Google Play!\nhttps://play.google.com/store/apps/details?id=com.dush1729.cfseeker"
                         )
                         type = "text/plain"
                     }
