@@ -25,6 +25,7 @@ import com.dush1729.cfseeker.ui.UserViewModel
 import kotlinx.coroutines.launch
 
 @Composable
+// TODO: Decouple ViewModel here
 fun MainScreen(
     navController: NavController,
     userViewModel: UserViewModel,

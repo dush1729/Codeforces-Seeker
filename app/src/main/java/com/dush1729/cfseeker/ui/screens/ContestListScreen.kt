@@ -58,6 +58,7 @@ import com.dush1729.cfseeker.utils.toRelativeTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+// TODO: Decouple ViewModel here
 fun ContestListScreen(
     viewModel: ContestViewModel,
     onContestClick: (contestId: Int, contestName: String, contestType: String) -> Unit,

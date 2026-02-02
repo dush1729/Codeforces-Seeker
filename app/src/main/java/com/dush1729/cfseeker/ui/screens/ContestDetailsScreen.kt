@@ -70,6 +70,7 @@ import com.google.gson.Gson
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+// TODO: Decouple ViewModel here
 fun ContestDetailsScreen(
     contestId: Int,
     contestName: String,

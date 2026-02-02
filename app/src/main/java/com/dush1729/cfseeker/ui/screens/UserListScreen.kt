@@ -94,6 +94,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+// TODO: Decouple ViewModel here
 fun UserListScreen(
     navController: NavController,
     viewModel: UserViewModel,

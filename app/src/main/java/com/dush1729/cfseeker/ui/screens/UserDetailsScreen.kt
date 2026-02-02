@@ -96,6 +96,7 @@ import androidx.core.graphics.toColorInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+// TODO: Decouple ViewModel here
 fun UserDetailsScreen(
     handle: String,
     navController: NavController,
