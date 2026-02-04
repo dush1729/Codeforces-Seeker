@@ -38,11 +38,19 @@ interface DatabaseService {
         standings: List<ContestStandingRowEntity>
     )
     fun getContestProblems(contestId: Int): Flow<List<ContestProblemEntity>>
-    fun getContestStandings(contestId: Int, searchQuery: String = ""): Flow<List<ContestStandingRowEntity>>
+    fun getContestStandings(
+        contestId: Int,
+        searchQuery: String = "",
+        showLocalUsersOnly: Boolean = false
+    ): Flow<List<ContestStandingRowEntity>>
 
     // Contest rating changes methods
     suspend fun insertRatingChangesIgnoreConflict(ratingChanges: List<RatingChangeEntity>)
-    fun getRatingChangesByContest(contestId: Int, searchQuery: String = ""): Flow<List<RatingChangeEntity>>
+    fun getRatingChangesByContest(
+        contestId: Int,
+        searchQuery: String = "",
+        showLocalUsersOnly: Boolean = false
+    ): Flow<List<RatingChangeEntity>>
 
     // Contest cache info methods
     suspend fun getContestCacheInfo(): ContestCacheInfo

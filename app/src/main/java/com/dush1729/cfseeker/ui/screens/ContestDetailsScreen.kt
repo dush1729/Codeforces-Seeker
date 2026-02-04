@@ -87,6 +87,7 @@ fun ContestDetailsScreen(
     val ratingChanges by viewModel.getContestRatingChanges(contestId).collectAsStateWithLifecycle(initialValue = emptyList())
     val lastSyncTime by viewModel.lastSyncTime.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+    val showLocalUsersOnly by viewModel.showLocalUsersOnly.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
 
     val refreshIntervalMinutes = remember { viewModel.getRefreshIntervalMinutes() }
@@ -141,6 +142,8 @@ fun ContestDetailsScreen(
             contestType = contestType,
             searchQuery = searchQuery,
             onSearchQueryChange = { viewModel.setSearchQuery(it) },
+            showLocalUsersOnly = showLocalUsersOnly,
+            onShowLocalUsersOnlyChange = { viewModel.setShowLocalUsersOnly(it) },
             isRefreshing = isRefreshing,
             modifier = Modifier.padding(paddingValues)
         )
@@ -157,6 +160,8 @@ private fun ContestDetailsContent(
     contestType: String,
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
+    showLocalUsersOnly: Boolean,
+    onShowLocalUsersOnlyChange: (Boolean) -> Unit,
     isRefreshing: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -206,14 +211,25 @@ private fun ContestDetailsContent(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Search field (for Standings and Ratings tabs)
+        // Filter chip and search field (for Standings and Ratings tabs)
         if (selectedTabIndex == 1 || selectedTabIndex == 2) {
+            // Filter chip for local users
+            FilterChip(
+                selected = showLocalUsersOnly,
+                onClick = { onShowLocalUsersOnlyChange(!showLocalUsersOnly) },
+                label = { Text("Show Local Users") },
+                leadingIcon = if (showLocalUsersOnly) {
+                    { Icon(imageVector = Icons.Filled.Check, contentDescription = null) }
+                } else null,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
             TextField(
                 value = searchQuery,
                 onValueChange = onSearchQueryChange,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp),
+                    .padding(bottom = 8.dp),
                 placeholder = { Text("Search participants...") },
                 leadingIcon = {
                     Icon(
@@ -250,7 +266,7 @@ private fun ContestDetailsContent(
                 leadingIcon = if (hideSpoilers) {
                     { Icon(imageVector = Icons.Filled.Check, contentDescription = null) }
                 } else null,
-                modifier = Modifier.padding(vertical = 8.dp)
+                modifier = Modifier.padding(bottom = 8.dp)
             )
         }
 

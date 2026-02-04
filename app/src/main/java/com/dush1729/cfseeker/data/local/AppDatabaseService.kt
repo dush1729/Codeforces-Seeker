@@ -78,16 +78,24 @@ class AppDatabaseService @Inject constructor(private val appDatabase: AppDatabas
         return appDatabase.contestStandingsDao().getContestProblems(contestId)
     }
 
-    override fun getContestStandings(contestId: Int, searchQuery: String): Flow<List<ContestStandingRowEntity>> {
-        return appDatabase.contestStandingsDao().getContestStandings(contestId, searchQuery)
+    override fun getContestStandings(
+        contestId: Int,
+        searchQuery: String,
+        showLocalUsersOnly: Boolean
+    ): Flow<List<ContestStandingRowEntity>> {
+        return appDatabase.contestStandingsDao().getContestStandings(contestId, searchQuery, showLocalUsersOnly)
     }
 
     override suspend fun insertRatingChangesIgnoreConflict(ratingChanges: List<RatingChangeEntity>) {
         appDatabase.contestStandingsDao().insertRatingChangesIgnoreConflict(ratingChanges)
     }
 
-    override fun getRatingChangesByContest(contestId: Int, searchQuery: String): Flow<List<RatingChangeEntity>> {
-        return appDatabase.contestStandingsDao().getRatingChangesByContest(contestId, searchQuery)
+    override fun getRatingChangesByContest(
+        contestId: Int,
+        searchQuery: String,
+        showLocalUsersOnly: Boolean
+    ): Flow<List<RatingChangeEntity>> {
+        return appDatabase.contestStandingsDao().getRatingChangesByContest(contestId, searchQuery, showLocalUsersOnly)
     }
 
     override suspend fun getContestCacheInfo(): ContestCacheInfo {

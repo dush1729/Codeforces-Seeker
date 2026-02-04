@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
@@ -43,6 +44,9 @@ class ContestDetailsViewModel @Inject constructor(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery = _searchQuery.asStateFlow()
 
+    private val _showLocalUsersOnly = MutableStateFlow(true)
+    val showLocalUsersOnly = _showLocalUsersOnly.asStateFlow()
+
     fun getContestProblems(contestId: Int): Flow<List<ContestProblemEntity>> {
         return repository.getContestProblems(contestId)
             .flowOn(Dispatchers.IO)
@@ -50,25 +54,34 @@ class ContestDetailsViewModel @Inject constructor(
 
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     fun getContestStandings(contestId: Int): Flow<List<ContestStandingRowEntity>> {
-        return _searchQuery
+        return combine(_searchQuery, _showLocalUsersOnly) { query, localOnly ->
+            Pair(query, localOnly)
+        }
             .debounce(300)
             .distinctUntilChanged()
-            .flatMapLatest { query ->
-                repository.getContestStandings(contestId, query)
+            .flatMapLatest { (query, localOnly) ->
+                repository.getContestStandings(contestId, query, localOnly)
             }.flowOn(Dispatchers.IO)
     }
 
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     fun getContestRatingChanges(contestId: Int): Flow<List<RatingChangeEntity>> {
-        return _searchQuery
+        return combine(_searchQuery, _showLocalUsersOnly) { query, localOnly ->
+            Pair(query, localOnly)
+        }
             .debounce(300)
-            .flatMapLatest { query ->
-                repository.getContestRatingChanges(contestId, query)
+            .distinctUntilChanged()
+            .flatMapLatest { (query, localOnly) ->
+                repository.getContestRatingChanges(contestId, query, localOnly)
             }.flowOn(Dispatchers.IO)
     }
 
     fun setSearchQuery(query: String) {
         _searchQuery.value = query
+    }
+
+    fun setShowLocalUsersOnly(show: Boolean) {
+        _showLocalUsersOnly.value = show
     }
 
     fun loadLastSyncTime(contestId: Int) {

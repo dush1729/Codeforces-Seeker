@@ -34,8 +34,12 @@ class ContestStandingsRepository @Inject constructor(
         return db.getContestProblems(contestId)
     }
 
-    fun getContestStandings(contestId: Int, searchQuery: String = ""): Flow<List<ContestStandingRowEntity>> {
-        return db.getContestStandings(contestId, searchQuery)
+    fun getContestStandings(
+        contestId: Int,
+        searchQuery: String = "",
+        showLocalUsersOnly: Boolean = false
+    ): Flow<List<ContestStandingRowEntity>> {
+        return db.getContestStandings(contestId, searchQuery, showLocalUsersOnly)
     }
 
     suspend fun fetchContestRatingChanges(contestId: Int): Unit = withContext(Dispatchers.IO) {
@@ -46,8 +50,12 @@ class ContestStandingsRepository @Inject constructor(
         db.insertRatingChangesIgnoreConflict(ratingChanges.toRatingChangeEntity(source = "CONTEST"))
     }
 
-    fun getContestRatingChanges(contestId: Int, searchQuery: String = ""): Flow<List<RatingChangeEntity>> {
-        return db.getRatingChangesByContest(contestId, searchQuery)
+    fun getContestRatingChanges(
+        contestId: Int,
+        searchQuery: String = "",
+        showLocalUsersOnly: Boolean = false
+    ): Flow<List<RatingChangeEntity>> {
+        return db.getRatingChangesByContest(contestId, searchQuery, showLocalUsersOnly)
     }
 }
 
