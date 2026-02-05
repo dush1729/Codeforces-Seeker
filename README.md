@@ -116,6 +116,9 @@ Fully migrated from XML-based UI to Jetpack Compose for a modern, declarative UI
 
 ### Release History
 
+#### v4.1
+- Native debug symbols for better crash analysis
+
 #### v4.0 - Contest Filters & Performance
 - "Show local only" filter in standings and rating changes
 - "Hide spoilers" filter chip for problems
