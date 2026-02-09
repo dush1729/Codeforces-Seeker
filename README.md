@@ -116,6 +116,10 @@ Fully migrated from XML-based UI to Jetpack Compose for a modern, declarative UI
 
 ### Release History
 
+#### v4.2 - Room Migration fix
+- Fix Room migration crash for users upgrading from older versions
+- Send DB version to Firebase Crashlytics for better debugging
+
 #### v4.1
 - Native debug symbols for better crash analysis
 
