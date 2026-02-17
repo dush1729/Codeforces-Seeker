@@ -20,23 +20,23 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import com.dush1729.cfseeker.analytics.AnalyticsService
 import com.dush1729.cfseeker.navigation.Screen
+import com.dush1729.cfseeker.platform.PlatformActions
 import com.dush1729.cfseeker.ui.ContestViewModel
 import com.dush1729.cfseeker.ui.UserViewModel
 import kotlinx.coroutines.launch
 
 @Composable
-// TODO: Decouple ViewModel here
 fun MainScreen(
     navController: NavController,
     userViewModel: UserViewModel,
     contestViewModel: ContestViewModel,
     analyticsService: AnalyticsService,
+    platformActions: PlatformActions,
     modifier: Modifier = Modifier
 ) {
     val pagerState = rememberPagerState(pageCount = { 3 })
     val scope = rememberCoroutineScope()
 
-    // Sync analytics when page changes
     LaunchedEffect(pagerState.currentPage) {
         when (pagerState.currentPage) {
             0 -> analyticsService.logScreenView("users")
@@ -103,6 +103,7 @@ fun MainScreen(
                 )
                 2 -> AboutScreen(
                     analyticsService = analyticsService,
+                    platformActions = platformActions,
                     modifier = Modifier.fillMaxSize()
                 )
             }

@@ -46,12 +46,9 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import android.os.Build
-import android.widget.Toast
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -70,7 +67,6 @@ import kotlinx.serialization.json.Json
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-// TODO: Decouple ViewModel here
 fun ContestDetailsScreen(
     contestId: Int,
     contestName: String,
@@ -92,14 +88,12 @@ fun ContestDetailsScreen(
 
     val refreshIntervalMinutes = remember { viewModel.getRefreshIntervalMinutes() }
 
-    // Track screen view and load last sync time
     LaunchedEffect(Unit) {
         analyticsService.logScreenView("contest_details")
         crashlyticsService.log("Screen: ContestDetails (contestId=$contestId)")
         viewModel.loadLastSyncTime(contestId)
     }
 
-    // Collect snackbar messages
     LaunchedEffect(Unit) {
         viewModel.snackbarMessage.collect { message ->
             snackbarHostState.showSnackbar(message)
@@ -174,7 +168,6 @@ private fun ContestDetailsContent(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        // Tabs
         SingleChoiceSegmentedButtonRow(
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -191,7 +184,6 @@ private fun ContestDetailsContent(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Last Sync Time Display
         val syncPrefix = lastSyncTime?.let { "Last sync: ${it.toRelativeTime()}" } ?: "Not synced yet"
         val syncTimeText = "$syncPrefix • Auto syncs every $refreshIntervalMinutes minutes"
 
@@ -202,7 +194,6 @@ private fun ContestDetailsContent(
             modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp)
         )
 
-        // Sync progress indicator
         if (isRefreshing) {
             LinearProgressIndicator(
                 modifier = Modifier.fillMaxWidth()
@@ -211,9 +202,7 @@ private fun ContestDetailsContent(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Filter chip and search field (for Standings and Ratings tabs)
         if (selectedTabIndex == 1 || selectedTabIndex == 2) {
-            // Filter chip for local users
             FilterChip(
                 selected = showLocalUsersOnly,
                 onClick = { onShowLocalUsersOnlyChange(!showLocalUsersOnly) },
@@ -257,7 +246,6 @@ private fun ContestDetailsContent(
             )
         }
 
-        // Filter chip for Problems tab
         if (selectedTabIndex == 0) {
             FilterChip(
                 selected = hideSpoilers,
@@ -270,10 +258,8 @@ private fun ContestDetailsContent(
             )
         }
 
-        // Tab content
         when (selectedTabIndex) {
             0 -> {
-                // Problems Tab
                 ProblemsContent(
                     problems = problems,
                     hideSpoilers = hideSpoilers,
@@ -281,7 +267,6 @@ private fun ContestDetailsContent(
                 )
             }
             1 -> {
-                // Standings Tab
                 StandingsContent(
                     standings = standings,
                     contestType = contestType,
@@ -289,7 +274,6 @@ private fun ContestDetailsContent(
                 )
             }
             2 -> {
-                // Ratings Tab
                 RatingsContent(
                     ratingChanges = ratingChanges,
                     modifier = Modifier.weight(1f)
@@ -437,7 +421,6 @@ private fun StandingsContent(
         val showPenalty = contestType == "ICPC"
 
         Column(modifier = modifier) {
-            // Table header
             StandingTableHeader(showPenalty = showPenalty)
             HorizontalDivider()
 
@@ -504,14 +487,10 @@ private fun StandingTableHeader(showPenalty: Boolean) {
 @Composable
 private fun Modifier.copyToClipboardOnLongPress(text: String): Modifier {
     val clipboardManager = LocalClipboardManager.current
-    val context = LocalContext.current
     return combinedClickable(
         onClick = {},
         onLongClick = {
             clipboardManager.setText(AnnotatedString(text))
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
-            }
         }
     )
 }
@@ -587,7 +566,6 @@ private fun RatingsContent(
         }
     } else {
         Column(modifier = modifier) {
-            // Table header
             RatingTableHeader()
             HorizontalDivider()
 
@@ -652,8 +630,8 @@ private fun RatingTableHeader() {
 private fun RatingTableRow(ratingChange: RatingChangeEntity) {
     val delta = ratingChange.newRating - ratingChange.oldRating
     val deltaColor = when {
-        delta > 0 -> Color(0xFF4CAF50) // Green
-        delta < 0 -> Color(0xFFF44336) // Red
+        delta > 0 -> Color(0xFF4CAF50)
+        delta < 0 -> Color(0xFFF44336)
         else -> MaterialTheme.colorScheme.onSurface
     }
     val deltaText = when {

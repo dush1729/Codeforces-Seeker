@@ -10,6 +10,7 @@ import com.dush1729.cfseeker.data.remote.model.Contest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
 
 class ContestRepository(
     private val api: CodeforcesApi,
@@ -22,7 +23,7 @@ class ContestRepository(
         }.result ?: emptyList()
 
         db.addAllContests(apiContests.toContestEntity())
-        preferences.setContestLastSyncTime(System.currentTimeMillis() / 1000)
+        preferences.setContestLastSyncTime(Clock.System.now().epochSeconds)
     }
 
     fun getUpcomingContests(): Flow<List<ContestEntity>> {

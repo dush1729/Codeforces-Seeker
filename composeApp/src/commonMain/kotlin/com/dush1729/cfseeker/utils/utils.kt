@@ -93,22 +93,22 @@ fun getRatingColor(rating: Int?): Color {
     }
 }
 
-fun getRatingBackgroundColors(): List<Pair<Int, Int>> {
-    // Returns list of (rating threshold, android color with alpha) for chart backgrounds
-    // Alpha is 0x40 (25% opacity) for subtle background bands
+fun getRatingBackgroundColors(): List<Pair<Int, Color>> {
+    // Returns list of (rating threshold, Compose Color with alpha) for chart backgrounds
     return listOf(
-        0 to android.graphics.Color.argb(0x40, 0x80, 0x80, 0x80),      // Newbie: Gray
-        1200 to android.graphics.Color.argb(0x40, 0x00, 0x80, 0x00),   // Pupil: Green
-        1400 to android.graphics.Color.argb(0x40, 0x03, 0xA8, 0x9E),   // Specialist: Cyan
-        1600 to android.graphics.Color.argb(0x40, 0x00, 0x00, 0xFF),   // Expert: Blue
-        1900 to android.graphics.Color.argb(0x40, 0xAA, 0x00, 0xAA),   // Candidate Master: Violet
-        2100 to android.graphics.Color.argb(0x40, 0xFF, 0x8C, 0x00),   // Master: Orange
-        2300 to android.graphics.Color.argb(0x40, 0xFF, 0x8C, 0x00),   // International Master: Orange
-        2400 to android.graphics.Color.argb(0x40, 0xFF, 0x00, 0x00),   // Grandmaster: Red
-        2600 to android.graphics.Color.argb(0x40, 0xCC, 0x00, 0x00),   // International Grandmaster: Dark Red
-        3000 to android.graphics.Color.argb(0x40, 0xAA, 0x00, 0x00)    // Legendary Grandmaster: Darker Red
+        0 to Color(0x40808080),      // Newbie: Gray
+        1200 to Color(0x40008000),   // Pupil: Green
+        1400 to Color(0x4003A89E),   // Specialist: Cyan
+        1600 to Color(0x400000FF),   // Expert: Blue
+        1900 to Color(0x40AA00AA),   // Candidate Master: Violet
+        2100 to Color(0x40FF8C00),   // Master: Orange
+        2300 to Color(0x40FF8C00),   // International Master: Orange
+        2400 to Color(0x40FF0000),   // Grandmaster: Red
+        2600 to Color(0x40CC0000),   // International Grandmaster: Dark Red
+        3000 to Color(0x40AA0000)    // Legendary Grandmaster: Darker Red
     )
 }
+
 fun <T: Number> T.isPowerOfTwo(): Boolean {
     val value = this.toLong()
     return value > 0 && (value and (value - 1)) == 0L

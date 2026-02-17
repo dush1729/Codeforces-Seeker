@@ -58,7 +58,6 @@ import com.dush1729.cfseeker.utils.toRelativeTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-// TODO: Decouple ViewModel here
 fun ContestListScreen(
     viewModel: ContestViewModel,
     onContestClick: (contestId: Int, contestName: String, contestType: String) -> Unit,
@@ -77,7 +76,6 @@ fun ContestListScreen(
     var showClearCacheDialog by remember { mutableStateOf(false) }
     var cacheInfo by remember { mutableStateOf(ContestCacheInfo(0, 0, 0)) }
 
-    // Collect snackbar messages
     LaunchedEffect(Unit) {
         viewModel.snackbarMessage.collect { message ->
             snackbarHostState.showSnackbar(message)
@@ -114,7 +112,6 @@ fun ContestListScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Segmented Button Filter
             SingleChoiceSegmentedButtonRow(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -134,7 +131,6 @@ fun ContestListScreen(
                 }
             }
 
-            // Last Sync Time Display
             val syncTimeText = buildString {
                 val lastSync = lastSyncTime
                 if (lastSync != null) {
@@ -152,14 +148,12 @@ fun ContestListScreen(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
             )
 
-            // Sync progress indicator
             if (isRefreshing) {
                 LinearProgressIndicator(
                     modifier = Modifier.fillMaxWidth()
                 )
             }
 
-            // Search field (only for past contests)
             if (selectedPhase == ContestPhase.PAST) {
                 TextField(
                     value = searchQuery,
@@ -194,7 +188,6 @@ fun ContestListScreen(
                 )
             }
 
-            // Contest List
             when (val state = uiState) {
                 is UiState.Loading -> {
                     LoadingState(modifier = Modifier.fillMaxSize())

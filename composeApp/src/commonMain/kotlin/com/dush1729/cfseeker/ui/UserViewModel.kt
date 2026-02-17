@@ -2,22 +2,16 @@ package com.dush1729.cfseeker.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.work.BackoffPolicy
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkInfo
-import androidx.work.WorkManager
-import androidx.work.WorkRequest
-import androidx.work.workDataOf
 import com.dush1729.cfseeker.analytics.AnalyticsService
 import com.dush1729.cfseeker.crashlytics.CrashlyticsService
 import com.dush1729.cfseeker.data.remote.config.RemoteConfigService
 import com.dush1729.cfseeker.data.local.AppPreferences
 import com.dush1729.cfseeker.data.local.view.UserWithLatestRatingChangeView
 import com.dush1729.cfseeker.data.repository.UserRepository
+import com.dush1729.cfseeker.platform.BackgroundSyncScheduler
+import com.dush1729.cfseeker.platform.SyncStatus
 import com.dush1729.cfseeker.ui.base.UiState
 import com.dush1729.cfseeker.utils.toRelativeTime
-import com.dush1729.cfseeker.worker.SyncUsersWorker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,11 +26,11 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.util.concurrent.TimeUnit
+import kotlinx.datetime.Clock
 
 class UserViewModel(
     private val repository: UserRepository,
-    private val workManager: WorkManager,
+    private val backgroundSyncScheduler: BackgroundSyncScheduler,
     private val analyticsService: AnalyticsService,
     private val crashlyticsService: CrashlyticsService,
     private val appPreferences: AppPreferences,
@@ -92,18 +86,15 @@ class UserViewModel(
         )
 
     init {
-        // Track app launch
         viewModelScope.launch(Dispatchers.IO) {
             val launchCount = appPreferences.incrementLaunchCount()
             analyticsService.logMilestoneLaunch(launchCount)
         }
 
-        // Fetch remote config
         viewModelScope.launch(Dispatchers.IO) {
             remoteConfigService.fetchAndActivate()
         }
 
-        // Load last sync time and auto-refresh if needed
         viewModelScope.launch(Dispatchers.IO) {
             _lastSyncTime.value = appPreferences.getUsersInfoLastSyncTime()
             autoRefreshIfNeeded()
@@ -131,50 +122,44 @@ class UserViewModel(
 
         viewModelScope.launch {
             var wasRunning = false
-            workManager.getWorkInfosForUniqueWorkFlow(SyncUsersWorker.WORK_NAME)
-                .collect { workInfos ->
-                    val runningWork = workInfos.firstOrNull {
-                        it.state == WorkInfo.State.RUNNING || it.state == WorkInfo.State.ENQUEUED
-                    }
-                    val completedWork = workInfos.firstOrNull {
-                        it.state == WorkInfo.State.SUCCEEDED || it.state == WorkInfo.State.FAILED
-                    }
-
-                    val isRunning = runningWork != null
-                    _isSyncing.value = isRunning
-
-                    if (runningWork != null) {
-                        val current = runningWork.progress.getInt(SyncUsersWorker.KEY_PROGRESS_CURRENT, 0)
-                        val total = runningWork.progress.getInt(SyncUsersWorker.KEY_PROGRESS_TOTAL, 0)
-                        _syncProgress.value = if (total > 0) Pair(current, total) else null
-                        crashlyticsService.log("UserViewModel: Sync progress: $current/$total")
-                        wasRunning = true
-                    } else {
-                        _syncProgress.value = null
-
-                        // Show completion message when sync finishes
-                        if (wasRunning && completedWork != null) {
-                            when (completedWork.state) {
-                                WorkInfo.State.SUCCEEDED -> {
-                                    _snackbarMessage.emit("All users synced successfully")
-                                }
-                                WorkInfo.State.FAILED -> {
-                                    _snackbarMessage.emit("Sync failed")
-                                }
-                                else -> {}
+            backgroundSyncScheduler.observeSyncStatus()
+                .collect { status ->
+                    when (status) {
+                        is SyncStatus.Running -> {
+                            _isSyncing.value = true
+                            _syncProgress.value = if (status.total > 0) Pair(status.current, status.total) else null
+                            crashlyticsService.log("UserViewModel: Sync progress: ${status.current}/${status.total}")
+                            wasRunning = true
+                        }
+                        is SyncStatus.Succeeded -> {
+                            _isSyncing.value = false
+                            _syncProgress.value = null
+                            if (wasRunning) {
+                                _snackbarMessage.emit("All users synced successfully")
+                                wasRunning = false
                             }
-                            wasRunning = false
+                        }
+                        is SyncStatus.Failed -> {
+                            _isSyncing.value = false
+                            _syncProgress.value = null
+                            if (wasRunning) {
+                                _snackbarMessage.emit("Sync failed")
+                                wasRunning = false
+                            }
+                        }
+                        is SyncStatus.Idle -> {
+                            _isSyncing.value = false
+                            _syncProgress.value = null
                         }
                     }
-
-                    crashlyticsService.log("UserViewModel: Sync status: isRunning=$isRunning")
+                    crashlyticsService.log("UserViewModel: Sync status: $status")
                 }
         }
     }
 
     private suspend fun autoRefreshIfNeeded() {
         val lastSyncTime = appPreferences.getUsersInfoLastSyncTime()
-        val currentTime = System.currentTimeMillis() / 1000
+        val currentTime = Clock.System.now().epochSeconds
         val refreshIntervalMinutes = remoteConfigService.getUsersInfoRefreshIntervalMinutes()
         val refreshIntervalSeconds = refreshIntervalMinutes * 60
 
@@ -194,7 +179,7 @@ class UserViewModel(
                 val handles = repository.getAllUserHandles()
                 if (handles.isNotEmpty()) {
                     repository.fetchUsersInfo(handles)
-                    val currentTime = System.currentTimeMillis() / 1000
+                    val currentTime = Clock.System.now().epochSeconds
                     appPreferences.setUsersInfoLastSyncTime(currentTime)
                     _lastSyncTime.value = currentTime
                 }
@@ -247,12 +232,11 @@ class UserViewModel(
 
     suspend fun canSyncAllUsers(): Boolean {
         val cooldownMillis = remoteConfigService.getSyncAllCooldownMinutes() * 60 * 1000
-        val currentTime = System.currentTimeMillis()
+        val currentTime = Clock.System.now().toEpochMilliseconds()
         val lastSyncAllTime = appPreferences.getLastSyncAllTime()
         val timeSinceLastSync = currentTime - lastSyncAllTime
         if (timeSinceLastSync < cooldownMillis) {
-            // Still in cooldown, show remaining time
-            val nextSyncTime = (lastSyncAllTime + cooldownMillis) / 1000 // Convert to seconds
+            val nextSyncTime = (lastSyncAllTime + cooldownMillis) / 1000
             val relativeTime = nextSyncTime.toRelativeTime()
             val message = "You can sync again $relativeTime"
 
@@ -270,52 +254,28 @@ class UserViewModel(
                 return@launch
             }
 
-            // Get outdated user handles from cached StateFlow
             val outdatedHandles = _outdatedUserHandles.value
             if (outdatedHandles.isEmpty()) {
                 _snackbarMessage.emit("No users need syncing")
                 return@launch
             }
 
-            // Cooldown has passed, proceed with sync
             analyticsService.logBulkSyncStarted()
+            appPreferences.setLastSyncAllTime(Clock.System.now().toEpochMilliseconds())
 
-            // Update last sync time
-            appPreferences.setLastSyncAllTime(System.currentTimeMillis())
+            backgroundSyncScheduler.scheduleSyncUsers(outdatedHandles)
 
-            val syncWorkRequest = OneTimeWorkRequestBuilder<SyncUsersWorker>()
-                .setInputData(
-                    workDataOf(SyncUsersWorker.KEY_USER_HANDLES to outdatedHandles.toTypedArray())
-                )
-                .setBackoffCriteria(
-                    BackoffPolicy.EXPONENTIAL,
-                    WorkRequest.MIN_BACKOFF_MILLIS,
-                    TimeUnit.MILLISECONDS
-                )
-                .build()
-
-            workManager.enqueueUniqueWork(
-                SyncUsersWorker.WORK_NAME,
-                ExistingWorkPolicy.KEEP,
-                syncWorkRequest
-            )
-
-            crashlyticsService.log("UserViewModel: Work enqueued with ID: ${syncWorkRequest.id}, syncing ${outdatedHandles.size} outdated users")
+            crashlyticsService.log("UserViewModel: Sync scheduled for ${outdatedHandles.size} outdated users")
         }
     }
 
-    // Get user by handle
     fun getUserByHandle(handle: String) = repository.getUserByHandle(handle)
-
-    // Get rating changes by handle
     fun getRatingChangesByHandle(handle: String, searchQuery: String = "") = repository.getRatingChangesByHandle(handle, searchQuery)
 
-    // Remote Config feature flags
     fun isAddUserEnabled() = remoteConfigService.isAddUserEnabled()
     fun isSyncAllUsersEnabled() = remoteConfigService.isSyncAllUsersEnabled()
     fun isSyncUserEnabled() = remoteConfigService.isSyncUserEnabled()
 
-    // Crashlytics logging
     fun logToCrashlytics(message: String) {
         crashlyticsService.log(message)
     }

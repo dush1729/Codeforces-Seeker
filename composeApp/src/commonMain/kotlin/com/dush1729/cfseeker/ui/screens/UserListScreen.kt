@@ -58,11 +58,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import android.Manifest
-import android.content.pm.PackageManager
-import android.os.Build
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.outlined.PersonSearch
@@ -72,23 +67,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.dush1729.cfseeker.data.local.view.UserWithLatestRatingChangeView
 import com.dush1729.cfseeker.navigation.Screen
+import com.dush1729.cfseeker.platform.rememberRequestPermissionAndSync
 import com.dush1729.cfseeker.ui.SortOption
 import com.dush1729.cfseeker.ui.UserViewModel
 import com.dush1729.cfseeker.ui.base.UiState
 import com.dush1729.cfseeker.ui.components.ErrorState
 import com.dush1729.cfseeker.ui.components.LoadingState
 import com.dush1729.cfseeker.ui.components.UserCard
-import com.dush1729.cfseeker.ui.theme.CFSeekerTheme
 import com.dush1729.cfseeker.utils.toRelativeTime
 import kotlinx.coroutines.launch
 
@@ -113,7 +105,6 @@ fun UserListScreen(
     val isSyncAllUsersEnabled = remember { viewModel.isSyncAllUsersEnabled() }
     val refreshIntervalMinutes = remember { viewModel.getRefreshIntervalMinutes() }
     val scope = rememberCoroutineScope()
-    val context = LocalContext.current
     val focusManager = LocalFocusManager.current
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -131,31 +122,11 @@ fun UserListScreen(
     var showSortMenu by remember { mutableStateOf(false) }
     var showSyncDialog by remember { mutableStateOf(false) }
 
-    // Permission launcher for Android 13+
-    val notificationPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
-            viewModel.syncAllUsers()
-        } else {
-            viewModel.logToCrashlytics("UserListScreen: Notification permission denied")
-        }
-    }
-
-    fun requestNotificationPermissionAndSync() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            when (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)) {
-                PackageManager.PERMISSION_GRANTED -> {
-                    viewModel.syncAllUsers()
-                }
-                else -> {
-                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                }
-            }
-        } else {
-            viewModel.syncAllUsers()
-        }
-    }
+    // Platform-specific notification permission handling
+    val requestPermissionAndSync = rememberRequestPermissionAndSync(
+        onSync = { viewModel.syncAllUsers() },
+        onDenied = { viewModel.logToCrashlytics("UserListScreen: Notification permission denied") }
+    )
 
     Scaffold(
         modifier = modifier
@@ -425,7 +396,7 @@ fun UserListScreen(
                 Button(
                     onClick = {
                         showSyncDialog = false
-                        requestNotificationPermissionAndSync()
+                        requestPermissionAndSync()
                     }
                 ) {
                     Text("Sync")
@@ -628,70 +599,5 @@ private fun UserList(
                 modifier = if (users.size < 50) Modifier.animateItem() else Modifier
             )
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun UserListPreview() {
-    CFSeekerTheme {
-        UserList(
-            users = listOf(
-                UserWithLatestRatingChangeView(
-                    handle = "tourist",
-                    avatar = null,
-                    city = "St. Petersburg",
-                    contribution = 100,
-                    country = "Russia",
-                    email = null,
-                    firstName = "Gennady",
-                    friendOfCount = 5000,
-                    lastName = "Korotkevich",
-                    lastOnlineTimeSeconds = System.currentTimeMillis() / 1000,
-                    maxRank = "legendary grandmaster",
-                    maxRating = 3979,
-                    organization = null,
-                    rank = "legendary grandmaster",
-                    rating = 3979,
-                    registrationTimeSeconds = 1234567890,
-                    titlePhoto = "",
-                    lastSync = System.currentTimeMillis() / 1000,
-                    latestContestId = 1234,
-                    latestContestName = "Codeforces Round #XXX",
-                    latestContestRank = 1,
-                    latestOldRating = 3937,
-                    latestNewRating = 3979,
-                    latestRatingUpdateTimeSeconds = System.currentTimeMillis() / 1000 - 86400,
-                    isRatingOutdated = false
-                ),
-                UserWithLatestRatingChangeView(
-                    handle = "newuser",
-                    avatar = null,
-                    city = null,
-                    contribution = 0,
-                    country = null,
-                    email = null,
-                    firstName = null,
-                    friendOfCount = 0,
-                    lastName = null,
-                    lastOnlineTimeSeconds = System.currentTimeMillis() / 1000,
-                    maxRank = null,
-                    maxRating = null,
-                    organization = null,
-                    rank = null,
-                    rating = null,
-                    registrationTimeSeconds = 1234567890,
-                    titlePhoto = "",
-                    lastSync = System.currentTimeMillis(),
-                    latestContestId = null,
-                    latestContestName = null,
-                    latestContestRank = null,
-                    latestOldRating = null,
-                    latestNewRating = null,
-                    latestRatingUpdateTimeSeconds = null,
-                    isRatingOutdated = false
-                )
-            )
-        )
     }
 }

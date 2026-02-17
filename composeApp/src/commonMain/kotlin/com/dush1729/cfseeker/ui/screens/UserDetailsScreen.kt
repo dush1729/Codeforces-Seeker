@@ -63,24 +63,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
-import com.dush1729.cfseeker.R
 import com.dush1729.cfseeker.analytics.AnalyticsService
 import com.dush1729.cfseeker.crashlytics.CrashlyticsService
 import com.dush1729.cfseeker.data.local.entity.UserEntity
@@ -92,7 +88,6 @@ import com.dush1729.cfseeker.utils.getRatingColor
 import com.dush1729.cfseeker.utils.toFormattedDate
 import com.dush1729.cfseeker.utils.toRelativeTime
 import kotlinx.coroutines.launch
-import androidx.core.graphics.toColorInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -206,9 +201,7 @@ private fun UserDetailsContent(
                 modifier = Modifier
                     .size(64.dp)
                     .clip(CircleShape),
-                contentScale = ContentScale.Crop,
-                placeholder = painterResource(id = R.drawable.ic_launcher_foreground),
-                error = painterResource(id = R.drawable.ic_launcher_foreground)
+                contentScale = ContentScale.Crop
             )
 
             Column {
@@ -549,7 +542,7 @@ private fun RatingChart(
                             color = getRatingColor(selectedRatingChange.oldRating)
                         )
                         Text(
-                            text = "→",
+                            text = "\u2192",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -714,32 +707,28 @@ private fun RatingChart(
                         val y1 = chartHeight - ((visibleEnd - minRating + padding) / (ratingRange + 2 * padding)) * chartHeight
                         val y2 = chartHeight - ((visibleStart - minRating + padding) / (ratingRange + 2 * padding)) * chartHeight
 
-                        val paint = Paint().asFrameworkPaint().apply {
-                            this.color = color
-                            style = android.graphics.Paint.Style.FILL
-                        }
-
-                        drawContext.canvas.nativeCanvas.drawRect(
-                            chartStartX,
-                            y1.coerceAtLeast(0f),
-                            fullWidth,
-                            y2.coerceAtMost(chartHeight),
-                            paint
+                        drawRect(
+                            color = color,
+                            topLeft = Offset(chartStartX, y1.coerceAtLeast(0f)),
+                            size = Size(
+                                fullWidth - chartStartX,
+                                (y2.coerceAtMost(chartHeight) - y1.coerceAtLeast(0f)).coerceAtLeast(0f)
+                            )
                         )
                     }
                 }
 
                 // Draw grid lines
-                val gridPaint = Paint().asFrameworkPaint().apply {
-                    color = "#30FFFFFF".toColorInt()
-                    strokeWidth = 1f
-                }
+                val gridColor = Color(0x30FFFFFF)
 
                 // Horizontal grid lines
                 for (i in 0..4) {
                     val y = chartHeight * i / 4f
-                    drawContext.canvas.nativeCanvas.drawLine(
-                        chartStartX, y, fullWidth, y, gridPaint
+                    drawLine(
+                        color = gridColor,
+                        start = Offset(chartStartX, y),
+                        end = Offset(fullWidth, y),
+                        strokeWidth = 1f
                     )
                 }
 
@@ -995,7 +984,7 @@ private fun SectionTitle(title: String) {
 private fun DetailRow(
     label: String,
     value: String,
-    valueColor: androidx.compose.ui.graphics.Color? = null
+    valueColor: Color? = null
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),

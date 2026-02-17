@@ -13,6 +13,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
+
 class UserRepository(
     private val api: CodeforcesApi,
     private val db: DatabaseService
@@ -135,7 +137,7 @@ fun User.toUserEntity(): UserEntity = UserEntity(
     rating = rating,
     registrationTimeSeconds = registrationTimeSeconds,
     titlePhoto = titlePhoto,
-    lastSync = System.currentTimeMillis() / 1000,
+    lastSync = Clock.System.now().epochSeconds,
 )
 
 fun List<RatingChange>.toRatingChangeEntity(source: String): List<RatingChangeEntity> = map { ratingChange ->
@@ -147,7 +149,7 @@ fun List<RatingChange>.toRatingChangeEntity(source: String): List<RatingChangeEn
         oldRating = ratingChange.oldRating,
         newRating = ratingChange.newRating,
         ratingUpdateTimeSeconds = ratingChange.ratingUpdateTimeSeconds,
-        lastSync = System.currentTimeMillis() / 1000,
+        lastSync = Clock.System.now().epochSeconds,
         source = source
     )
 }

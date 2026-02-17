@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.dush1729.cfseeker.analytics.AnalyticsService
 import com.dush1729.cfseeker.crashlytics.CrashlyticsService
+import com.dush1729.cfseeker.platform.PlatformActions
 import com.dush1729.cfseeker.ui.ContestDetailsViewModel
 import com.dush1729.cfseeker.ui.ContestViewModel
 import com.dush1729.cfseeker.ui.UserViewModel
@@ -22,7 +23,8 @@ fun CFSeekerNavGraph(
     userViewModel: UserViewModel,
     contestViewModel: ContestViewModel,
     analyticsService: AnalyticsService,
-    crashlyticsService: CrashlyticsService
+    crashlyticsService: CrashlyticsService,
+    platformActions: PlatformActions
 ) {
     NavHost(
         navController = navController,
@@ -33,7 +35,8 @@ fun CFSeekerNavGraph(
                 navController = navController,
                 userViewModel = userViewModel,
                 contestViewModel = contestViewModel,
-                analyticsService = analyticsService
+                analyticsService = analyticsService,
+                platformActions = platformActions
             )
         }
 

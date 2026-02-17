@@ -21,6 +21,10 @@ import com.dush1729.cfseeker.data.remote.config.RemoteConfigService
 import com.dush1729.cfseeker.data.repository.ContestRepository
 import com.dush1729.cfseeker.data.repository.ContestStandingsRepository
 import com.dush1729.cfseeker.data.repository.UserRepository
+import com.dush1729.cfseeker.platform.AndroidBackgroundSyncScheduler
+import com.dush1729.cfseeker.platform.AndroidPlatformActions
+import com.dush1729.cfseeker.platform.BackgroundSyncScheduler
+import com.dush1729.cfseeker.platform.PlatformActions
 import com.dush1729.cfseeker.ui.ContestDetailsViewModel
 import com.dush1729.cfseeker.ui.ContestViewModel
 import com.dush1729.cfseeker.ui.UserViewModel
@@ -51,6 +55,10 @@ val androidModule = module {
 
     // WorkManager
     single { WorkManager.getInstance(androidContext()) }
+
+    // Platform
+    single<BackgroundSyncScheduler> { AndroidBackgroundSyncScheduler(get()) }
+    single<PlatformActions> { AndroidPlatformActions(androidContext()) }
 
     // Firebase
     single { Firebase.analytics }

@@ -7,6 +7,8 @@ import com.dush1729.cfseeker.data.local.entity.ContestProblemEntity
 import com.dush1729.cfseeker.data.local.entity.ContestStandingRowEntity
 import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
 import com.dush1729.cfseeker.data.repository.ContestStandingsRepository
+import com.dush1729.cfseeker.data.local.AppPreferences
+import com.dush1729.cfseeker.data.remote.config.RemoteConfigService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -21,12 +23,13 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 
 class ContestDetailsViewModel(
     private val repository: ContestStandingsRepository,
     private val crashlyticsService: CrashlyticsService,
-    private val appPreferences: com.dush1729.cfseeker.data.local.AppPreferences,
-    private val remoteConfigService: com.dush1729.cfseeker.data.remote.config.RemoteConfigService
+    private val appPreferences: AppPreferences,
+    private val remoteConfigService: RemoteConfigService
 ) : ViewModel() {
 
     private val _snackbarMessage = MutableSharedFlow<String>()
@@ -97,28 +100,23 @@ class ContestDetailsViewModel(
             try {
                 _isRefreshing.value = true
 
-                // Check if we should refresh based on last sync time
                 if (!forceRefresh) {
                     val lastSyncTime = appPreferences.getContestStandingsLastSyncTime(contestId)
-                    val currentTime = System.currentTimeMillis() / 1000
+                    val currentTime = Clock.System.now().epochSeconds
                     val refreshIntervalMinutes = remoteConfigService.getContestStandingsRefreshIntervalMinutes()
                     val refreshIntervalSeconds = refreshIntervalMinutes * 60
 
                     if (lastSyncTime > 0 && (currentTime - lastSyncTime) < refreshIntervalSeconds) {
-                        // Data is still fresh, no need to refresh
                         _isRefreshing.value = false
                         return@launch
                     }
                 }
 
                 repository.fetchContestStandings(contestId)
-                // Also fetch rating changes
                 try {
                     repository.fetchContestRatingChanges(contestId)
-                } catch (_: Exception) {
-                    // Rating changes may not be available for all contests (e.g., upcoming contests)
-                }
-                val currentTime = System.currentTimeMillis() / 1000
+                } catch (_: Exception) {}
+                val currentTime = Clock.System.now().epochSeconds
                 appPreferences.setContestStandingsLastSyncTime(contestId, currentTime)
                 _lastSyncTime.value = currentTime
                 _snackbarMessage.emit("Contest data refreshed successfully")

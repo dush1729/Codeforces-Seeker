@@ -13,6 +13,7 @@ import com.dush1729.cfseeker.analytics.AnalyticsService
 import com.dush1729.cfseeker.crashlytics.CrashlyticsService
 import com.dush1729.cfseeker.data.local.AppDatabase
 import com.dush1729.cfseeker.navigation.CFSeekerNavGraph
+import com.dush1729.cfseeker.platform.PlatformActions
 import com.dush1729.cfseeker.ui.ContestViewModel
 import com.dush1729.cfseeker.ui.UserViewModel
 import com.dush1729.cfseeker.ui.theme.CFSeekerTheme
@@ -25,6 +26,7 @@ class MainActivity : ComponentActivity() {
 
     private val analyticsService: AnalyticsService by inject()
     private val crashlyticsService: CrashlyticsService by inject()
+    private val platformActions: PlatformActions by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,7 +46,8 @@ class MainActivity : ComponentActivity() {
                         userViewModel = userViewModel,
                         contestViewModel = contestViewModel,
                         analyticsService = analyticsService,
-                        crashlyticsService = crashlyticsService
+                        crashlyticsService = crashlyticsService,
+                        platformActions = platformActions
                     )
                 }
             }

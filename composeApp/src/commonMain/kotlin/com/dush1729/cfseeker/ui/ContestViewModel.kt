@@ -18,10 +18,11 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 
 enum class ContestPhase(val displayName: String, val phase: String?) {
     UPCOMING("Upcoming", "BEFORE"),
-    ONGOING("Ongoing", null),  // null = everything else (not BEFORE, not FINISHED)
+    ONGOING("Ongoing", null),
     PAST("Past", "FINISHED")
 }
 
@@ -72,7 +73,6 @@ class ContestViewModel(
                 }
         }
 
-        // Load last sync time and auto-refresh if needed
         viewModelScope.launch(Dispatchers.IO) {
             _lastSyncTime.value = repository.getLastSyncTime()
             autoRefreshIfNeeded()
@@ -81,12 +81,11 @@ class ContestViewModel(
 
     private suspend fun autoRefreshIfNeeded() {
         val lastSyncTime = repository.getLastSyncTime()
-        val currentTime = System.currentTimeMillis() / 1000
+        val currentTime = Clock.System.now().epochSeconds
         val refreshIntervalMinutes = remoteConfigService.getContestRefreshIntervalMinutes()
         val refreshIntervalSeconds = refreshIntervalMinutes * 60
 
         if (lastSyncTime == null || (currentTime - lastSyncTime) >= refreshIntervalSeconds) {
-            // Auto-refresh if never synced or interval has passed
             refreshContests()
         }
     }

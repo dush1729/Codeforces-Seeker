@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -24,30 +26,22 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.dush1729.cfseeker.BuildConfig
-import com.dush1729.cfseeker.R
 import com.dush1729.cfseeker.analytics.AnalyticsService
-import com.dush1729.cfseeker.analytics.DummyAnalyticsService
-import com.dush1729.cfseeker.ui.theme.CFSeekerTheme
-import com.dush1729.cfseeker.utils.openPlayStore
-import com.dush1729.cfseeker.utils.openUrl
+import com.dush1729.cfseeker.platform.PlatformActions
+import com.dush1729.cfseeker.platform.appVersionName
+
+private const val GITHUB_URL = "https://github.com/dush1729/CF-Seeker"
+private const val FEEDBACK_URL = "https://docs.google.com/forms/d/e/1FAIpQLScMAsX0GYBHgGeX0xJQBumuEQDgdamuuJNFWv1ag4FXi19Nng/viewform?usp=dialog"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutScreen(
     analyticsService: AnalyticsService,
+    platformActions: PlatformActions,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
-    val githubUrl = stringResource(R.string.github_url)
-    val feedbackUrl = stringResource(R.string.feedback_form_url)
-
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -76,7 +70,7 @@ fun AboutScreen(
                 description = "Share feedback or report bugs",
                 onClick = {
                     analyticsService.logFeedbackOpened()
-                    openUrl(context, feedbackUrl)
+                    platformActions.openUrl(FEEDBACK_URL)
                 }
             )
 
@@ -84,7 +78,7 @@ fun AboutScreen(
             AboutCard(
                 icon = {
                     Icon(
-                        painter = painterResource(R.drawable.ic_github),
+                        imageVector = Icons.Filled.Code,
                         contentDescription = "GitHub",
                         modifier = Modifier.size(32.dp)
                     )
@@ -93,7 +87,7 @@ fun AboutScreen(
                 description = "View source code on GitHub",
                 onClick = {
                     analyticsService.logGitHubOpened()
-                    openUrl(context, githubUrl)
+                    platformActions.openUrl(GITHUB_URL)
                 }
             )
 
@@ -101,7 +95,7 @@ fun AboutScreen(
             AboutCard(
                 icon = {
                     Icon(
-                        painter = painterResource(R.drawable.ic_play_store),
+                        imageVector = Icons.Filled.Star,
                         contentDescription = "Rate",
                         modifier = Modifier.size(32.dp)
                     )
@@ -110,7 +104,7 @@ fun AboutScreen(
                 description = "Rate and review the app on Play Store",
                 onClick = {
                     analyticsService.logPlayStoreOpened("about_screen")
-                    openPlayStore(context)
+                    platformActions.openPlayStore()
                 }
             )
 
@@ -127,15 +121,9 @@ fun AboutScreen(
                 description = "Share Codeforces Seeker with others",
                 onClick = {
                     analyticsService.logAppShared("about")
-                    val shareIntent = android.content.Intent().apply {
-                        action = android.content.Intent.ACTION_SEND
-                        putExtra(
-                            android.content.Intent.EXTRA_TEXT,
-                            "Check out Codeforces Seeker on Google Play!\nhttps://play.google.com/store/apps/details?id=com.dush1729.cfseeker"
-                        )
-                        type = "text/plain"
-                    }
-                    context.startActivity(android.content.Intent.createChooser(shareIntent, "Share via"))
+                    platformActions.shareText(
+                        "Check out Codeforces Seeker on Google Play!\nhttps://play.google.com/store/apps/details?id=com.dush1729.cfseeker"
+                    )
                 }
             )
 
@@ -143,7 +131,7 @@ fun AboutScreen(
 
             // Version Info
             Text(
-                text = "Version ${BuildConfig.VERSION_NAME}",
+                text = "Version $appVersionName",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.fillMaxWidth(),
@@ -190,13 +178,5 @@ private fun AboutCard(
                 )
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun AboutScreenPreview() {
-    CFSeekerTheme {
-        AboutScreen(analyticsService = DummyAnalyticsService)
     }
 }
