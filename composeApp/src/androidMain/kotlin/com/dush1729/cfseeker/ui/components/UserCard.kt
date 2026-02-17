@@ -22,8 +22,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
 import androidx.compose.ui.platform.LocalContext
 import com.dush1729.cfseeker.R
 import com.dush1729.cfseeker.data.local.view.UserWithLatestRatingChangeView
@@ -61,7 +61,6 @@ fun UserCard(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(user.avatar)
                     .size(96)
-                    .crossfade(false)
                     .build(),
                 contentDescription = "User Avatar",
                 modifier = Modifier

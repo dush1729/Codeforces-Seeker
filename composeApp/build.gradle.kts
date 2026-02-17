@@ -43,10 +43,6 @@ kotlin {
             // Ktor Android engine
             implementation(libs.ktor.client.okhttp)
 
-            implementation(libs.androidx.lifecycle.viewmodel.ktx)
-
-            implementation(libs.coil)
-
             // Koin
             implementation(libs.koin.android)
             implementation(libs.koin.compose)
@@ -59,10 +55,7 @@ kotlin {
             implementation(libs.androidx.compose.material3)
             implementation(libs.androidx.compose.foundation)
             implementation(libs.androidx.activity.compose)
-            implementation(libs.androidx.lifecycle.runtime.compose)
-            implementation(libs.coil.compose)
             implementation(libs.androidx.compose.material.icons.extended)
-            implementation(libs.androidx.navigation.compose)
 
             // Firebase
             implementation(libs.firebase.analytics)
@@ -89,6 +82,18 @@ kotlin {
 
             // Koin
             implementation(libs.koin.core)
+
+            // Navigation & Lifecycle (JetBrains multiplatform)
+            implementation(libs.navigation.compose)
+            implementation(libs.lifecycle.viewmodel.compose)
+            implementation(libs.lifecycle.runtime.compose)
+
+            // Coil (KMP)
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor3)
+
+            // kotlinx-datetime
+            implementation(libs.kotlinx.datetime)
         }
 
         val iosX64Main by getting

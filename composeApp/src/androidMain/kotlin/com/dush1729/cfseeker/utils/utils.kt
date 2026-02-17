@@ -10,16 +10,17 @@ import com.dush1729.cfseeker.ui.theme.CFMaster
 import com.dush1729.cfseeker.ui.theme.CFNewbie
 import com.dush1729.cfseeker.ui.theme.CFPupil
 import com.dush1729.cfseeker.ui.theme.CFSpecialist
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlin.math.abs
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 fun <T: Number> T.toRelativeTime(): String {
     // 1. Get the current time in seconds
-    val nowSeconds = System.currentTimeMillis() / 1000
+    val nowSeconds = Clock.System.now().epochSeconds
     val timestampSeconds = toLong()
 
     // 2. Calculate the difference (Duration)
@@ -69,10 +70,12 @@ fun <T: Number> T.toRelativeTime(): String {
 }
 
 fun <T: Number> T.toFormattedDate(): String {
-    val timestampMillis = toLong() * 1000 // Convert seconds to milliseconds
-    val date = Date(timestampMillis)
-    val formatter = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
-    return formatter.format(date)
+    val instant = Instant.fromEpochSeconds(toLong())
+    val localDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
+    val month = localDateTime.month.name.take(3).lowercase().replaceFirstChar { it.uppercase() }
+    val day = localDateTime.dayOfMonth.toString().padStart(2, '0')
+    val year = localDateTime.year
+    return "$month $day, $year"
 }
 
 fun getRatingColor(rating: Int?): Color {
