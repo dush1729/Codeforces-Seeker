@@ -1,12 +1,16 @@
 package com.dush1729.cfseeker.navigation
 
-sealed class Screen(val route: String) {
-    data object Main : Screen("main")
-    data object UserDetails : Screen("user/{handle}") {
-        fun createRoute(handle: String) = "user/$handle"
-    }
-    data object ContestDetails : Screen("contest/{contestId}/{contestName}/{contestType}") {
-        fun createRoute(contestId: Int, contestName: String, contestType: String) =
-            "contest/$contestId/$contestName/$contestType"
-    }
-}
+import kotlinx.serialization.Serializable
+
+@Serializable
+data object MainRoute
+
+@Serializable
+data class UserDetailsRoute(val handle: String)
+
+@Serializable
+data class ContestDetailsRoute(
+    val contestId: Int,
+    val contestName: String,
+    val contestType: String
+)

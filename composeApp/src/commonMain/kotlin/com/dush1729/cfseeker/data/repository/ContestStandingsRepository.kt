@@ -11,7 +11,7 @@ import com.dush1729.cfseeker.data.remote.model.ProblemResult
 import com.dush1729.cfseeker.data.remote.model.RanklistRow
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.coroutines.Dispatchers
+import com.dush1729.cfseeker.platform.ioDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
@@ -19,7 +19,7 @@ class ContestStandingsRepository(
     private val api: CodeforcesApi,
     private val db: DatabaseService
 ) {
-    suspend fun fetchContestStandings(contestId: Int): Unit = withContext(Dispatchers.IO) {
+    suspend fun fetchContestStandings(contestId: Int): Unit = withContext(ioDispatcher) {
         val response = safeApiCall {
             api.getContestStandings(contestId = contestId)
         }.result ?: return@withContext
@@ -42,7 +42,7 @@ class ContestStandingsRepository(
         return db.getContestStandings(contestId, searchQuery, showLocalUsersOnly)
     }
 
-    suspend fun fetchContestRatingChanges(contestId: Int): Unit = withContext(Dispatchers.IO) {
+    suspend fun fetchContestRatingChanges(contestId: Int): Unit = withContext(ioDispatcher) {
         val ratingChanges = safeApiCall {
             api.getContestRatingChanges(contestId)
         }.result ?: return@withContext

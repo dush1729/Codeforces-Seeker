@@ -43,19 +43,12 @@ kotlin {
             // Ktor Android engine
             implementation(libs.ktor.client.okhttp)
 
-            // Koin
+            // Koin Android
             implementation(libs.koin.android)
-            implementation(libs.koin.compose)
-            implementation(libs.koin.compose.viewmodel)
 
-            // Compose
-            implementation(libs.androidx.compose.ui)
-            implementation(libs.androidx.compose.ui.graphics)
+            // Compose (Android-specific)
             implementation(libs.androidx.compose.ui.tooling.preview)
-            implementation(libs.androidx.compose.material3)
-            implementation(libs.androidx.compose.foundation)
             implementation(libs.androidx.activity.compose)
-            implementation(libs.androidx.compose.material.icons.extended)
 
             // Firebase
             implementation(libs.firebase.analytics)
@@ -70,6 +63,13 @@ kotlin {
         }
 
         commonMain.dependencies {
+            // Compose Multiplatform
+            implementation(compose.material3)
+            implementation(compose.foundation)
+            implementation(compose.ui)
+            implementation(compose.components.resources)
+            implementation(compose.materialIconsExtended)
+
             // Ktor
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
@@ -82,6 +82,8 @@ kotlin {
 
             // Koin
             implementation(libs.koin.core)
+            implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
 
             // Navigation & Lifecycle (JetBrains multiplatform)
             implementation(libs.navigation.compose)
@@ -172,6 +174,12 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+}
+
+compose.resources {
+    publicResClass = false
+    packageOfResClass = "com.dush1729.cfseeker.resources"
+    generateResClass = auto
 }
 
 room {

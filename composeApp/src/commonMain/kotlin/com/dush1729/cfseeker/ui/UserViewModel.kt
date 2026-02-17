@@ -12,7 +12,7 @@ import com.dush1729.cfseeker.platform.BackgroundSyncScheduler
 import com.dush1729.cfseeker.platform.SyncStatus
 import com.dush1729.cfseeker.ui.base.UiState
 import com.dush1729.cfseeker.utils.toRelativeTime
-import kotlinx.coroutines.Dispatchers
+import com.dush1729.cfseeker.platform.ioDispatcher
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -62,7 +62,7 @@ class UserViewModel(
     val isRefreshing = _isRefreshing.asStateFlow()
 
     val userCount: StateFlow<Int> = repository.getUserCount()
-        .flowOn(Dispatchers.IO)
+        .flowOn(ioDispatcher)
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -70,7 +70,7 @@ class UserViewModel(
         )
 
     private val _outdatedUserHandles = repository.getOutdatedUserHandles()
-        .flowOn(Dispatchers.IO)
+        .flowOn(ioDispatcher)
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -86,16 +86,16 @@ class UserViewModel(
         )
 
     init {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(ioDispatcher) {
             val launchCount = appPreferences.incrementLaunchCount()
             analyticsService.logMilestoneLaunch(launchCount)
         }
 
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(ioDispatcher) {
             remoteConfigService.fetchAndActivate()
         }
 
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(ioDispatcher) {
             _lastSyncTime.value = appPreferences.getUsersInfoLastSyncTime()
             autoRefreshIfNeeded()
         }
@@ -107,7 +107,7 @@ class UserViewModel(
                 .flatMapLatest { (sortOption, searchQuery) ->
                     repository.getUsersWithLatestRatingChange(sortOption.value, searchQuery)
                 }
-                .flowOn(Dispatchers.IO)
+                .flowOn(ioDispatcher)
                 .catch {
                     crashlyticsService.logException(it)
                     crashlyticsService.setCustomKey("sort_option", sortOption.value.displayName)

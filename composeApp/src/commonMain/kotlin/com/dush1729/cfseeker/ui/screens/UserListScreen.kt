@@ -73,7 +73,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.dush1729.cfseeker.data.local.view.UserWithLatestRatingChangeView
-import com.dush1729.cfseeker.navigation.Screen
+import com.dush1729.cfseeker.navigation.UserDetailsRoute
 import com.dush1729.cfseeker.platform.rememberRequestPermissionAndSync
 import com.dush1729.cfseeker.ui.SortOption
 import com.dush1729.cfseeker.ui.UserViewModel
@@ -346,7 +346,7 @@ fun UserListScreen(
                             users = state.data,
                             sortOption = currentSortOption,
                             onUserCardClick = { handle ->
-                                navController.navigate(Screen.UserDetails.createRoute(handle))
+                                navController.navigate(UserDetailsRoute(handle))
                             }
                         )
                     }

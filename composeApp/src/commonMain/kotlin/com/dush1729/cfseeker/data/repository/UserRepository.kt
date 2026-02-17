@@ -9,7 +9,7 @@ import com.dush1729.cfseeker.data.remote.api.safeApiCall
 import com.dush1729.cfseeker.data.remote.model.RatingChange
 import com.dush1729.cfseeker.data.remote.model.User
 import com.dush1729.cfseeker.ui.SortOption
-import kotlinx.coroutines.Dispatchers
+import com.dush1729.cfseeker.platform.ioDispatcher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -20,7 +20,7 @@ class UserRepository(
     private val db: DatabaseService
 ) {
     // makes 1 api call for user info + 1 call for rating changes
-    suspend fun fetchUser(handle: String): Unit = withContext(Dispatchers.IO) {
+    suspend fun fetchUser(handle: String): Unit = withContext(ioDispatcher) {
         val apiUser: User = safeApiCall {
             api.getUser(handle)
         }.result?.firstOrNull() ?: return@withContext
@@ -40,7 +40,7 @@ class UserRepository(
         handles: List<String>,
         delayMillis: Long,
         onProgress: suspend (index: Int, total: Int, handle: String, exception: Exception?) -> Unit = { _, _, _, _ -> }
-    ): Unit = withContext(Dispatchers.IO) {
+    ): Unit = withContext(ioDispatcher) {
         if (handles.isEmpty()) return@withContext
 
         // Make 1 API call to get all users
@@ -76,7 +76,7 @@ class UserRepository(
         }
     }
 
-    suspend fun deleteUser(handle: String) : Unit = withContext(Dispatchers.IO) {
+    suspend fun deleteUser(handle: String) : Unit = withContext(ioDispatcher) {
         db.deleteUser(handle)
     }
 
@@ -108,7 +108,7 @@ class UserRepository(
     }
 
     // Fetches only user info (no rating changes) for all users - single API call
-    suspend fun fetchUsersInfo(handles: List<String>): Unit = withContext(Dispatchers.IO) {
+    suspend fun fetchUsersInfo(handles: List<String>): Unit = withContext(ioDispatcher) {
         if (handles.isEmpty()) return@withContext
 
         val apiUsers: List<User> = safeApiCall {

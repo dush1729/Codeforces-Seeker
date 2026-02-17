@@ -7,7 +7,7 @@ import com.dush1729.cfseeker.data.local.entity.ContestEntity
 import com.dush1729.cfseeker.data.remote.api.CodeforcesApi
 import com.dush1729.cfseeker.data.remote.api.safeApiCall
 import com.dush1729.cfseeker.data.remote.model.Contest
-import kotlinx.coroutines.Dispatchers
+import com.dush1729.cfseeker.platform.ioDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
@@ -17,7 +17,7 @@ class ContestRepository(
     private val db: DatabaseService,
     private val preferences: AppPreferences
 ) {
-    suspend fun fetchContests(): Unit = withContext(Dispatchers.IO) {
+    suspend fun fetchContests(): Unit = withContext(ioDispatcher) {
         val apiContests: List<Contest> = safeApiCall {
             api.getContests(gym = false)
         }.result ?: emptyList()
@@ -43,11 +43,11 @@ class ContestRepository(
         return if (timestamp > 0) timestamp else null
     }
 
-    suspend fun getCacheInfo(): ContestCacheInfo = withContext(Dispatchers.IO) {
+    suspend fun getCacheInfo(): ContestCacheInfo = withContext(ioDispatcher) {
         db.getContestCacheInfo()
     }
 
-    suspend fun clearCache(): Unit = withContext(Dispatchers.IO) {
+    suspend fun clearCache(): Unit = withContext(ioDispatcher) {
         val contestIds = db.clearContestCache()
         preferences.clearContestPreferences(contestIds)
     }

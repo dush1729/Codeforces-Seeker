@@ -8,7 +8,7 @@ import com.dush1729.cfseeker.data.local.entity.ContestEntity
 import com.dush1729.cfseeker.data.remote.config.RemoteConfigService
 import com.dush1729.cfseeker.data.repository.ContestRepository
 import com.dush1729.cfseeker.ui.base.UiState
-import kotlinx.coroutines.Dispatchers
+import com.dush1729.cfseeker.platform.ioDispatcher
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -62,7 +62,7 @@ class ContestViewModel(
                         ContestPhase.PAST -> repository.getPastContests(searchQuery)
                     }
                 }
-                .flowOn(Dispatchers.IO)
+                .flowOn(ioDispatcher)
                 .catch { exception ->
                     crashlyticsService.logException(exception)
                     crashlyticsService.setCustomKey("operation", "observe_contests")
@@ -73,7 +73,7 @@ class ContestViewModel(
                 }
         }
 
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(ioDispatcher) {
             _lastSyncTime.value = repository.getLastSyncTime()
             autoRefreshIfNeeded()
         }

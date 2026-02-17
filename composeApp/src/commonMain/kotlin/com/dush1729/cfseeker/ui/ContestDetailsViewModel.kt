@@ -9,7 +9,7 @@ import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
 import com.dush1729.cfseeker.data.repository.ContestStandingsRepository
 import com.dush1729.cfseeker.data.local.AppPreferences
 import com.dush1729.cfseeker.data.remote.config.RemoteConfigService
-import kotlinx.coroutines.Dispatchers
+import com.dush1729.cfseeker.platform.ioDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -49,7 +49,7 @@ class ContestDetailsViewModel(
 
     fun getContestProblems(contestId: Int): Flow<List<ContestProblemEntity>> {
         return repository.getContestProblems(contestId)
-            .flowOn(Dispatchers.IO)
+            .flowOn(ioDispatcher)
     }
 
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
@@ -61,7 +61,7 @@ class ContestDetailsViewModel(
             .distinctUntilChanged()
             .flatMapLatest { (query, localOnly) ->
                 repository.getContestStandings(contestId, query, localOnly)
-            }.flowOn(Dispatchers.IO)
+            }.flowOn(ioDispatcher)
     }
 
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
@@ -73,7 +73,7 @@ class ContestDetailsViewModel(
             .distinctUntilChanged()
             .flatMapLatest { (query, localOnly) ->
                 repository.getContestRatingChanges(contestId, query, localOnly)
-            }.flowOn(Dispatchers.IO)
+            }.flowOn(ioDispatcher)
     }
 
     fun setSearchQuery(query: String) {

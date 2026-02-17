@@ -2,10 +2,9 @@ package com.dush1729.cfseeker.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.navArgument
+import androidx.navigation.toRoute
 import com.dush1729.cfseeker.analytics.AnalyticsService
 import com.dush1729.cfseeker.crashlytics.CrashlyticsService
 import com.dush1729.cfseeker.platform.PlatformActions
@@ -28,9 +27,9 @@ fun CFSeekerNavGraph(
 ) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Main.route
+        startDestination = MainRoute
     ) {
-        composable(Screen.Main.route) {
+        composable<MainRoute> {
             MainScreen(
                 navController = navController,
                 userViewModel = userViewModel,
@@ -40,13 +39,10 @@ fun CFSeekerNavGraph(
             )
         }
 
-        composable(
-            route = Screen.UserDetails.route,
-            arguments = listOf(navArgument("handle") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val handle = backStackEntry.arguments?.getString("handle") ?: return@composable
+        composable<UserDetailsRoute> { backStackEntry ->
+            val route = backStackEntry.toRoute<UserDetailsRoute>()
             UserDetailsScreen(
-                handle = handle,
+                handle = route.handle,
                 navController = navController,
                 viewModel = userViewModel,
                 analyticsService = analyticsService,
@@ -54,22 +50,13 @@ fun CFSeekerNavGraph(
             )
         }
 
-        composable(
-            route = Screen.ContestDetails.route,
-            arguments = listOf(
-                navArgument("contestId") { type = NavType.IntType },
-                navArgument("contestName") { type = NavType.StringType },
-                navArgument("contestType") { type = NavType.StringType }
-            )
-        ) { backStackEntry ->
-            val contestId = backStackEntry.arguments?.getInt("contestId") ?: return@composable
-            val contestName = backStackEntry.arguments?.getString("contestName") ?: return@composable
-            val contestType = backStackEntry.arguments?.getString("contestType") ?: return@composable
+        composable<ContestDetailsRoute> { backStackEntry ->
+            val route = backStackEntry.toRoute<ContestDetailsRoute>()
             val contestDetailsViewModel: ContestDetailsViewModel = koinViewModel()
             ContestDetailsScreen(
-                contestId = contestId,
-                contestName = contestName,
-                contestType = contestType,
+                contestId = route.contestId,
+                contestName = route.contestName,
+                contestType = route.contestType,
                 navController = navController,
                 viewModel = contestDetailsViewModel,
                 analyticsService = analyticsService,
