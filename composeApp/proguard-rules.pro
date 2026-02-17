@@ -76,13 +76,11 @@
 -keep class kotlinx.coroutines.** { *; }
 
 #---------------------------------
-# Hilt / Dagger Rules
+# Koin Rules
 #---------------------------------
 
-# Hilt generates its own proguard rules, but these help ensure safety
--keep class dagger.hilt.** { *; }
--keep class javax.inject.** { *; }
--keep class * extends dagger.hilt.android.internal.managers.ViewComponentManager$FragmentContextWrapper { *; }
+-dontwarn org.koin.**
+-keep class org.koin.** { *; }
 
 #---------------------------------
 # Firebase Rules

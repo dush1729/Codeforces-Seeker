@@ -10,9 +10,8 @@ import com.dush1729.cfseeker.data.remote.model.Contest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
-class ContestRepository @Inject constructor(
+class ContestRepository(
     private val api: CodeforcesApi,
     private val db: DatabaseService,
     private val preferences: AppPreferences

@@ -18,7 +18,6 @@ import com.dush1729.cfseeker.data.repository.UserRepository
 import com.dush1729.cfseeker.ui.base.UiState
 import com.dush1729.cfseeker.utils.toRelativeTime
 import com.dush1729.cfseeker.worker.SyncUsersWorker
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,7 +33,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 
 enum class SortOption(val value: String, val displayName: String) {
     LAST_RATING_UPDATE("LAST_RATING_UPDATE", "default"),
@@ -43,8 +41,7 @@ enum class SortOption(val value: String, val displayName: String) {
     LAST_SYNC("LAST_SYNC", "last sync"),
 }
 
-@HiltViewModel
-class UserViewModel @Inject constructor(
+class UserViewModel(
     private val repository: UserRepository,
     private val workManager: WorkManager,
     private val analyticsService: AnalyticsService,

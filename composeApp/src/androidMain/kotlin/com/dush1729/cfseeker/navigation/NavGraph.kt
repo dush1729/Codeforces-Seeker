@@ -1,7 +1,6 @@
 package com.dush1729.cfseeker.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -15,6 +14,7 @@ import com.dush1729.cfseeker.ui.UserViewModel
 import com.dush1729.cfseeker.ui.screens.ContestDetailsScreen
 import com.dush1729.cfseeker.ui.screens.MainScreen
 import com.dush1729.cfseeker.ui.screens.UserDetailsScreen
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun CFSeekerNavGraph(
@@ -62,7 +62,7 @@ fun CFSeekerNavGraph(
             val contestId = backStackEntry.arguments?.getInt("contestId") ?: return@composable
             val contestName = backStackEntry.arguments?.getString("contestName") ?: return@composable
             val contestType = backStackEntry.arguments?.getString("contestType") ?: return@composable
-            val contestDetailsViewModel: ContestDetailsViewModel = hiltViewModel()
+            val contestDetailsViewModel: ContestDetailsViewModel = koinViewModel()
             ContestDetailsScreen(
                 contestId = contestId,
                 contestName = contestName,

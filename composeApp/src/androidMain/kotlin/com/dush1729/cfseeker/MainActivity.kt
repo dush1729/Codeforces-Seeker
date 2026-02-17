@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -17,19 +16,15 @@ import com.dush1729.cfseeker.navigation.CFSeekerNavGraph
 import com.dush1729.cfseeker.ui.ContestViewModel
 import com.dush1729.cfseeker.ui.UserViewModel
 import com.dush1729.cfseeker.ui.theme.CFSeekerTheme
-import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
+import org.koin.android.ext.android.inject
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
-@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    private val userViewModel: UserViewModel by viewModels()
-    private val contestViewModel: ContestViewModel by viewModels()
+    private val userViewModel: UserViewModel by viewModel()
+    private val contestViewModel: ContestViewModel by viewModel()
 
-    @Inject
-    lateinit var analyticsService: AnalyticsService
-
-    @Inject
-    lateinit var crashlyticsService: CrashlyticsService
+    private val analyticsService: AnalyticsService by inject()
+    private val crashlyticsService: CrashlyticsService by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

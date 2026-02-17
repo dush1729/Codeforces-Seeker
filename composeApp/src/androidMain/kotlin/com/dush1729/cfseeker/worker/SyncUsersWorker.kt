@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.pm.ServiceInfo
 import android.os.Build
 import androidx.core.app.NotificationCompat
-import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.Data
 import androidx.work.ForegroundInfo
@@ -16,14 +15,11 @@ import com.dush1729.cfseeker.analytics.AnalyticsService
 import com.dush1729.cfseeker.crashlytics.CrashlyticsService
 import com.dush1729.cfseeker.data.remote.config.RemoteConfigService
 import com.dush1729.cfseeker.data.repository.UserRepository
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedInject
 import kotlinx.coroutines.delay
 
-@HiltWorker
-class SyncUsersWorker @AssistedInject constructor(
-    @Assisted private val context: Context,
-    @Assisted workerParams: WorkerParameters,
+class SyncUsersWorker(
+    private val context: Context,
+    workerParams: WorkerParameters,
     private val repository: UserRepository,
     private val analyticsService: AnalyticsService,
     private val crashlyticsService: CrashlyticsService,

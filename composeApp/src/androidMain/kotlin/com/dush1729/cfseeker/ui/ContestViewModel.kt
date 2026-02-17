@@ -8,7 +8,6 @@ import com.dush1729.cfseeker.data.local.entity.ContestEntity
 import com.dush1729.cfseeker.data.remote.config.RemoteConfigService
 import com.dush1729.cfseeker.data.repository.ContestRepository
 import com.dush1729.cfseeker.ui.base.UiState
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +18,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 enum class ContestPhase(val displayName: String, val phase: String?) {
     UPCOMING("Upcoming", "BEFORE"),
@@ -27,8 +25,7 @@ enum class ContestPhase(val displayName: String, val phase: String?) {
     PAST("Past", "FINISHED")
 }
 
-@HiltViewModel
-class ContestViewModel @Inject constructor(
+class ContestViewModel(
     private val repository: ContestRepository,
     private val crashlyticsService: CrashlyticsService,
     private val remoteConfigService: RemoteConfigService

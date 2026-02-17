@@ -13,10 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
-import kotlin.String
-
-class UserRepository @Inject constructor(
+class UserRepository(
     private val api: CodeforcesApi,
     private val db: DatabaseService
 ) {

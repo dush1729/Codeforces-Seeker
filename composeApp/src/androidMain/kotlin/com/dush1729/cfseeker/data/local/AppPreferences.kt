@@ -7,11 +7,9 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "app_preferences")
 
@@ -28,8 +26,8 @@ interface AppPreferences {
     suspend fun clearContestPreferences(contestIds: List<Int>)
 }
 
-class AppPreferencesImpl @Inject constructor(
-    @ApplicationContext private val context: Context
+class AppPreferencesImpl(
+    private val context: Context
 ) : AppPreferences {
     private object PreferencesKeys {
         val LAUNCH_COUNT = intPreferencesKey("launch_count")

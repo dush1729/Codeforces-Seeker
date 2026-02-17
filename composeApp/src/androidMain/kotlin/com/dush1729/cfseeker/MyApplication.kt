@@ -1,18 +1,39 @@
 package com.dush1729.cfseeker
 
 import android.app.Application
-import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
-import dagger.hilt.android.HiltAndroidApp
-import javax.inject.Inject
+import com.dush1729.cfseeker.analytics.AnalyticsService
+import com.dush1729.cfseeker.crashlytics.CrashlyticsService
+import com.dush1729.cfseeker.data.remote.config.RemoteConfigService
+import com.dush1729.cfseeker.data.repository.UserRepository
+import com.dush1729.cfseeker.di.androidModule
+import com.dush1729.cfseeker.di.commonModule
+import com.dush1729.cfseeker.worker.SyncUsersWorkerFactory
+import org.koin.android.ext.android.get
+import org.koin.android.ext.koin.androidContext
+import org.koin.android.ext.koin.androidLogger
+import org.koin.core.context.startKoin
 
-@HiltAndroidApp
-class MyApplication: Application(), Configuration.Provider {
-    @Inject
-    lateinit var workerFactory: HiltWorkerFactory
+class MyApplication : Application(), Configuration.Provider {
+
+    override fun onCreate() {
+        super.onCreate()
+        startKoin {
+            androidLogger()
+            androidContext(this@MyApplication)
+            modules(commonModule, androidModule)
+        }
+    }
 
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
-            .setWorkerFactory(workerFactory)
+            .setWorkerFactory(
+                SyncUsersWorkerFactory(
+                    repository = get<UserRepository>(),
+                    analyticsService = get<AnalyticsService>(),
+                    crashlyticsService = get<CrashlyticsService>(),
+                    remoteConfigService = get<RemoteConfigService>()
+                )
+            )
             .build()
 }

@@ -9,7 +9,6 @@ plugins {
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.kotlin.serialization)
     id("kotlin-kapt")
-    id("com.google.dagger.hilt.android")
     alias(libs.plugins.google.services)
     alias(libs.plugins.firebase.crashlytics)
 }
@@ -50,7 +49,10 @@ kotlin {
 
             implementation(libs.coil)
 
-            implementation(libs.hilt.android)
+            // Koin
+            implementation(libs.koin.android)
+            implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
 
             // Compose
             implementation(libs.androidx.compose.ui)
@@ -63,7 +65,6 @@ kotlin {
             implementation(libs.coil.compose)
             implementation(libs.androidx.compose.material.icons.extended)
             implementation(libs.androidx.navigation.compose)
-            implementation(libs.androidx.hilt.navigation.compose)
 
             // Firebase
             implementation(libs.firebase.analytics)
@@ -72,7 +73,6 @@ kotlin {
 
             // WorkManager
             implementation(libs.androidx.work.runtime.ktx)
-            implementation(libs.androidx.hilt.work)
 
             // DataStore
             implementation(libs.androidx.datastore.preferences)
@@ -84,6 +84,9 @@ kotlin {
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.kotlinx.json)
             implementation(libs.kotlinx.serialization.json)
+
+            // Koin
+            implementation(libs.koin.core)
         }
 
         val iosX64Main by getting
@@ -175,10 +178,8 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(platform(libs.firebase.bom))
 
-    // kapt dependencies must be in top-level dependencies block
+    // kapt dependencies must be in top-level dependencies block (Room only)
     "kapt"(libs.androidx.room.compiler)
-    "kapt"(libs.hilt.compiler)
-    "kapt"(libs.androidx.hilt.compiler)
 
     // Test dependencies
     testImplementation(libs.junit)

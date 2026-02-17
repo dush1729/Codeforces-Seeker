@@ -14,9 +14,8 @@ import kotlinx.serialization.json.Json
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
-class ContestStandingsRepository @Inject constructor(
+class ContestStandingsRepository(
     private val api: CodeforcesApi,
     private val db: DatabaseService
 ) {
