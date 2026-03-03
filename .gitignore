@@ -33,3 +33,6 @@ keystore.properties
 # Xcode user data
 xcuserdata/
 *.xcworkspace/
+
+# Xcode export
+ExportOptions.plist
