@@ -124,8 +124,8 @@ android {
         applicationId = "com.dush1729.cfseeker"
         minSdk = 24
         targetSdk = 36
-        versionCode = 16
-        versionName = "4.2"
+        versionCode = 17
+        versionName = "5.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
