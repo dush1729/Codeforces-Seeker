@@ -3,7 +3,6 @@ package com.dush1729.cfseeker.platform
 import android.content.Context
 import android.content.Intent
 import androidx.core.net.toUri
-import com.dush1729.cfseeker.BuildConfig
 
 class AndroidPlatformActions(private val context: Context) : PlatformActions {
     override fun openPlayStore(packageName: String) {
@@ -34,7 +33,5 @@ class AndroidPlatformActions(private val context: Context) : PlatformActions {
         context.startActivity(chooserIntent)
     }
 }
-
-actual val appVersionName: String = BuildConfig.VERSION_NAME
 
 actual val isIos: Boolean = false

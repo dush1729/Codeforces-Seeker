@@ -5,6 +5,6 @@ interface PlatformActions {
     fun shareText(text: String, title: String = "Share via")
 }
 
-expect val appVersionName: String
+const val appVersionName: String = "5.0"
 
 expect val isIos: Boolean
