@@ -36,6 +36,7 @@ import com.dush1729.cfseeker.platform.isIos
 
 private const val GITHUB_URL = "https://github.com/dush1729/CF-Seeker"
 private const val FEEDBACK_URL = "https://docs.google.com/forms/d/e/1FAIpQLScMAsX0GYBHgGeX0xJQBumuEQDgdamuuJNFWv1ag4FXi19Nng/viewform?usp=dialog"
+private const val APP_STORE_URL = "https://apps.apple.com/app/codeforces-seeker/id6759670793"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -94,7 +95,24 @@ fun AboutScreen(
                 }
             )
 
-            if (!isIos) {
+            if (isIos) {
+                // App Store Card
+                AboutCard(
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Filled.Star,
+                            contentDescription = "Rate",
+                            modifier = Modifier.size(32.dp)
+                        )
+                    },
+                    title = "Rate on App Store",
+                    description = "Rate and review the app on App Store",
+                    onClick = {
+                        analyticsService.logPlayStoreOpened("about_screen")
+                        uriHandler.openUri(APP_STORE_URL)
+                    }
+                )
+            } else {
                 // Play Store Card
                 AboutCard(
                     icon = {
