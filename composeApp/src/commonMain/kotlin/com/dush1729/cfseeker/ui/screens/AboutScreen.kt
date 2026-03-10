@@ -26,6 +26,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.dush1729.cfseeker.analytics.AnalyticsService
@@ -51,6 +52,7 @@ fun AboutScreen(
             )
         }
     ) { paddingValues ->
+        val uriHandler = LocalUriHandler.current
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -71,7 +73,7 @@ fun AboutScreen(
                 description = "Share feedback or report bugs",
                 onClick = {
                     analyticsService.logFeedbackOpened()
-                    platformActions.openUrl(FEEDBACK_URL)
+                    uriHandler.openUri(FEEDBACK_URL)
                 }
             )
 
@@ -88,7 +90,7 @@ fun AboutScreen(
                 description = "View source code on GitHub",
                 onClick = {
                     analyticsService.logGitHubOpened()
-                    platformActions.openUrl(GITHUB_URL)
+                    uriHandler.openUri(GITHUB_URL)
                 }
             )
 
