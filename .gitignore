@@ -29,3 +29,10 @@ keystore.properties
 
 # Android App Bundles
 *.aab
+
+# Xcode user data
+xcuserdata/
+*.xcworkspace/
+
+# Xcode export
+ExportOptions.plist

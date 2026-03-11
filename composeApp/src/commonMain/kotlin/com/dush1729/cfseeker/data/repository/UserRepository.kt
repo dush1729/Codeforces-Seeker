@@ -1,0 +1,155 @@
+package com.dush1729.cfseeker.data.repository
+
+import com.dush1729.cfseeker.data.local.DatabaseService
+import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
+import com.dush1729.cfseeker.data.local.entity.UserEntity
+import com.dush1729.cfseeker.data.local.view.UserWithLatestRatingChangeView
+import com.dush1729.cfseeker.data.remote.api.CodeforcesApi
+import com.dush1729.cfseeker.data.remote.api.safeApiCall
+import com.dush1729.cfseeker.data.remote.model.RatingChange
+import com.dush1729.cfseeker.data.remote.model.User
+import com.dush1729.cfseeker.ui.SortOption
+import com.dush1729.cfseeker.platform.ioDispatcher
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
+
+class UserRepository(
+    private val api: CodeforcesApi,
+    private val db: DatabaseService
+) {
+    // makes 1 api call for user info + 1 call for rating changes
+    suspend fun fetchUser(handle: String): Unit = withContext(ioDispatcher) {
+        val apiUser: User = safeApiCall {
+            api.getUser(handle)
+        }.result?.firstOrNull() ?: return@withContext
+
+        val apiRatingChanges: List<RatingChange> = safeApiCall {
+            api.getRatingChanges(handle)
+        }.result ?: emptyList()
+
+        db.addUser(
+            user = apiUser.toUserEntity(),
+            ratingChanges = apiRatingChanges.toRatingChangeEntity(source = "USER")
+        )
+    }
+
+    // makes 1 api call for user info for all users + n calls for rating changes
+    suspend fun fetchUsers(
+        handles: List<String>,
+        delayMillis: Long,
+        onProgress: suspend (index: Int, total: Int, handle: String, exception: Exception?) -> Unit = { _, _, _, _ -> }
+    ): Unit = withContext(ioDispatcher) {
+        if (handles.isEmpty()) return@withContext
+
+        // Make 1 API call to get all users
+        val apiUsers: List<User> = safeApiCall {
+            api.getUser(handles.joinToString(";"))
+        }.result ?: emptyList()
+
+        // Make n API calls to get rating changes for each user
+        apiUsers.forEachIndexed { index, user ->
+            try {
+                val apiRatingChanges: List<RatingChange> = safeApiCall {
+                    api.getRatingChanges(user.handle)
+                }.result ?: emptyList()
+
+                db.addUser(
+                    user = user.toUserEntity(),
+                    ratingChanges = apiRatingChanges.toRatingChangeEntity(source = "USER")
+                )
+
+                // Notify progress - success
+                onProgress(index, apiUsers.size, user.handle, null)
+
+                // Wait configured delay before next user (except for last user)
+                if (index < apiUsers.size - 1) {
+                    delay(delayMillis)
+                }
+            } catch (e: Exception) {
+                // Notify progress - failure
+                onProgress(index, apiUsers.size, user.handle, e)
+
+                // Continue with next user even if one fails
+            }
+        }
+    }
+
+    suspend fun deleteUser(handle: String) : Unit = withContext(ioDispatcher) {
+        db.deleteUser(handle)
+    }
+
+    fun getUsersWithLatestRatingChange(
+        sortBy: String = SortOption.LAST_RATING_UPDATE.value,
+        searchQuery: String = ""
+    ): Flow<List<UserWithLatestRatingChangeView>> {
+        return db.getUsersWithLatestRatingChange(sortBy, searchQuery)
+    }
+
+    suspend fun getAllUserHandles(): List<String> {
+        return db.getAllUserHandles()
+    }
+
+    fun getUserCount(): Flow<Int> {
+        return db.getUserCount()
+    }
+
+    fun getUserByHandle(handle: String): Flow<UserEntity> {
+        return db.getUserByHandle(handle)
+    }
+
+    fun getRatingChangesByHandle(handle: String, searchQuery: String = ""): Flow<List<RatingChangeEntity>> {
+        return db.getRatingChangesByHandle(handle, searchQuery)
+    }
+
+    fun getOutdatedUserHandles(): Flow<List<String>> {
+        return db.getOutdatedUserHandles()
+    }
+
+    // Fetches only user info (no rating changes) for all users - single API call
+    suspend fun fetchUsersInfo(handles: List<String>): Unit = withContext(ioDispatcher) {
+        if (handles.isEmpty()) return@withContext
+
+        val apiUsers: List<User> = safeApiCall {
+            api.getUser(handles.joinToString(";"))
+        }.result ?: return@withContext
+
+        db.upsertUsers(apiUsers.map { it.toUserEntity() })
+    }
+}
+
+fun User.toUserEntity(): UserEntity = UserEntity(
+    handle = handle,
+    avatar = avatar,
+    city = city,
+    contribution = contribution,
+    country = country,
+    email = email,
+    firstName = firstName,
+    friendOfCount = friendOfCount,
+    lastName = lastName,
+    lastOnlineTimeSeconds = lastOnlineTimeSeconds,
+    maxRank = maxRank,
+    maxRating = maxRating,
+    organization = organization,
+    rank = rank,
+    rating = rating,
+    registrationTimeSeconds = registrationTimeSeconds,
+    titlePhoto = titlePhoto,
+    lastSync = Clock.System.now().epochSeconds,
+)
+
+fun List<RatingChange>.toRatingChangeEntity(source: String): List<RatingChangeEntity> = map { ratingChange ->
+    RatingChangeEntity(
+        handle = ratingChange.handle,
+        contestId = ratingChange.contestId,
+        contestName = ratingChange.contestName,
+        contestRank = ratingChange.rank,
+        oldRating = ratingChange.oldRating,
+        newRating = ratingChange.newRating,
+        ratingUpdateTimeSeconds = ratingChange.ratingUpdateTimeSeconds,
+        lastSync = Clock.System.now().epochSeconds,
+        source = source
+    )
+}

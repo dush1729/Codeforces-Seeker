@@ -1,6 +1,6 @@
 # Codeforces Seeker
 
-**A modern Android app to track and monitor Codeforces users, contests, and rating changes.**
+**A Kotlin Multiplatform app to track and monitor Codeforces users, contests, and rating changes - available on Android and iOS.**
 
 Codeforces Seeker helps competitive programmers track their friends, teammates, or favorite competitive programmers on Codeforces. Get real-time updates on rating changes, contest standings, problems, and user statistics with a beautiful Material 3 UI.
 
@@ -27,72 +27,68 @@ Codeforces Seeker helps competitive programmers track their friends, teammates, 
 - 🔗 Open problems directly in browser
 
 ### General
-- 🎨 Modern Material Design 3 UI
+- 🎨 Modern Material 3 UI
 - 📱 Optimized image loading with smooth scrolling
 - 🔥 Firebase integration (Analytics, Crashlytics, Remote Config)
 - ⚡ Optimized database queries with indexes and views
 
 ## 🏗️ Tech Stack
 
-### Modern Android Development
-- **Kotlin** - 100% Kotlin codebase
-- **Jetpack Compose** - Modern declarative UI toolkit
+### Kotlin Multiplatform
+- **Kotlin 2.2** - 100% Kotlin, shared across Android and iOS
+- **Compose Multiplatform** - Shared declarative UI
 - **Material 3** - Latest Material Design components
 - **Coroutines & Flow** - Asynchronous programming
-- **Dagger Hilt** - Dependency injection
-- **Room** - Local database with SQLite
-- **Retrofit** - REST API client
-- **Coil** - Image loading with caching
-- **WorkManager** - Background task scheduling
+- **Koin** - Multiplatform dependency injection
+- **Room KMP** - Shared local database with KSP
+- **Ktor** - Multiplatform HTTP client
+- **kotlinx-serialization** - Multiplatform JSON parsing
+- **Coil 3** - Multiplatform image loading
+- **Navigation Compose** - Type-safe multiplatform navigation
 - **DataStore** - Modern data persistence
+- **kotlinx-datetime** - Multiplatform date/time
 
 ### Architecture
 - **MVVM** - Model-View-ViewModel pattern
 - **Repository Pattern** - Data layer abstraction
 - **Clean Architecture** - Separation of concerns
-- **Single Activity** - Compose navigation
+- **Single Activity** - Compose navigation (Android)
 
-### Firebase
-- **Analytics** - User behavior tracking
-- **Crashlytics** - Crash reporting
-- **Remote Config** - Feature flags
+### Platform-Specific
+- **Android**: Firebase (Analytics, Crashlytics, Remote Config), WorkManager
+- **iOS**: Swift wrapper with Firebase bridges, NSUserDefaults
 
 ## 📁 Project Structure
 
 ```
-app/src/main/java/com/dush1729/cfseeker/
-├── analytics/              # Analytics service abstraction
-│   ├── AnalyticsService.kt
-│   ├── DummyAnalyticsService.kt
-│   └── FirebaseAnalyticsService.kt
-├── crashlytics/            # Crashlytics service abstraction
-│   ├── CrashlyticsService.kt
-│   ├── DummyCrashlyticsService.kt
-│   └── FirebaseCrashlyticsService.kt
-├── data/
-│   ├── local/
-│   │   ├── dao/            # Room DAOs (UserDao, ContestDao, ContestStandingsDao)
-│   │   ├── entity/         # Room entities
-│   │   ├── view/           # Database views for optimized queries
-│   │   ├── AppDatabase.kt
-│   │   └── DatabaseService.kt
-│   ├── remote/
-│   │   ├── api/            # Retrofit API interfaces
-│   │   ├── config/         # Firebase Remote Config
-│   │   └── model/          # API response models
-│   └── repository/         # Repository implementations
-├── di/
-│   └── module/             # Dagger Hilt modules
-├── ui/
-│   ├── base/               # Base UI classes
-│   ├── components/         # Reusable Compose components
-│   ├── screens/            # App screens (Users, Contests, UserDetails, ContestDetails)
-│   ├── theme/              # Material 3 theme
-│   ├── UserViewModel.kt
-│   └── ContestViewModel.kt
-├── utils/                  # Utility classes
-├── worker/                 # WorkManager workers
-└── MyApplication.kt
+composeApp/src/
+├── commonMain/kotlin/com/dush1729/cfseeker/
+│   ├── crashlytics/        # Crashlytics service abstraction
+│   ├── data/
+│   │   ├── local/          # Room database, DAOs, entities, views
+│   │   ├── remote/         # Ktor API client, models
+│   │   └── repository/     # Repository implementations
+│   ├── di/                 # Koin modules
+│   ├── navigation/         # Type-safe navigation routes
+│   ├── platform/           # expect declarations for platform code
+│   └── ui/
+│       ├── base/           # Base UI classes
+│       ├── components/     # Reusable Compose components
+│       ├── screens/        # App screens (Users, Contests, Details)
+│       └── theme/          # Material 3 theme
+├── androidMain/kotlin/com/dush1729/cfseeker/
+│   ├── analytics/          # Firebase Analytics implementation
+│   ├── crashlytics/        # Firebase Crashlytics implementation
+│   ├── data/               # Android-specific data (Firebase Remote Config)
+│   ├── di/                 # Android Koin modules
+│   ├── platform/           # actual implementations
+│   ├── widget/             # Android widgets
+│   └── worker/             # WorkManager workers
+└── iosMain/kotlin/com/dush1729/cfseeker/
+    ├── bridge/             # Swift-to-Kotlin bridge interfaces
+    ├── data/               # iOS-specific data layer
+    ├── di/                 # iOS Koin modules
+    └── platform/           # actual implementations (iOS)
 ```
 
 ## 🔄 Development History
@@ -116,14 +112,22 @@ Fully migrated from XML-based UI to Jetpack Compose for a modern, declarative UI
 
 ### Release History
 
-#### v4.2 - Room Migration fix
+### v5.0 - Kotlin Multiplatform
+- Migrated entire codebase to Kotlin Multiplatform (KMP)
+- Added iOS support with shared UI via Compose Multiplatform
+- Replaced Retrofit + Gson with Ktor + kotlinx-serialization
+- Replaced Dagger Hilt with Koin for multiplatform DI
+- Migrated Room from kapt to KSP for KMP compatibility
+- Upgraded to Coil 3, Navigation Compose KMP, kotlinx-datetime
+
+### v4.2 - Room Migration fix
 - Fix Room migration crash for users upgrading from older versions
 - Send DB version to Firebase Crashlytics for better debugging
 
-#### v4.1
+### v4.1
 - Native debug symbols for better crash analysis
 
-#### v4.0 - Contest Filters & Performance
+### v4.0 - Contest Filters & Performance
 - "Show local only" filter in standings and rating changes
 - "Hide spoilers" filter chip for problems
 - Long-press to copy participant handles
@@ -135,16 +139,16 @@ Fully migrated from XML-based UI to Jetpack Compose for a modern, declarative UI
 - Show "Sync All" only when outdated users present
 - Play Store link in README
 
-#### v3.4 - Sync Improvements
+### v3.4 - Sync Improvements
 - Red border highlights for outdated users
 - Sync All dialog with confirmation
 - Clear contest data functionality
 - Case-insensitive user sorting fix
 
-#### v3.3 - Auto Refresh
+### v3.3 - Auto Refresh
 - Auto-refresh with visual sync status indicators
 
-#### v3.2 - Rating Charts & Performance
+### v3.2 - Rating Charts & Performance
 - Interactive user rating chart in details screen
 - Ratings tab in contest details
 - App renamed from CF Seeker to Codeforces Seeker
@@ -154,10 +158,10 @@ Fully migrated from XML-based UI to Jetpack Compose for a modern, declarative UI
 - Sync indicators in contest screens
 - Fixed blank screen on quick back presses
 
-#### v3.1 - Bug Fixes
+### v3.1 - Bug Fixes
 - Fixed tie handling in contest standings
 
-#### v3.0 - Contests Feature
+### v3.0 - Contests Feature
 - Browse and search past Codeforces contests
 - Full contest standings with participant search
 - Full-screen user details (replaced bottom sheet)
@@ -166,36 +170,36 @@ Fully migrated from XML-based UI to Jetpack Compose for a modern, declarative UI
 - Open problems directly in browser
 - Auto-refresh for contests
 
-#### v2.3 - UI Improvements
+### v2.3 - UI Improvements
 - Scrollable bottom sheet
 - Hide empty results during search
 
-#### v2.2 - Onboarding
+### v2.2 - Onboarding
 - Empty users view for better onboarding
 - Auto-popup keyboard on bottom sheet
 
-#### v2.1 - Performance
+### v2.1 - Performance
 - Database query optimizations with indexes
 - IO thread improvements for DataStore & Firebase
 
-#### v2.0 - Firebase Integration
+### v2.0 - Firebase Integration
 - Firebase Analytics with event tracking
 - Crashlytics for crash reporting
 - Remote Config for feature flags
 - Sync all cooldown to prevent API abuse
 
-#### v1.3 - Polish
+### v1.3 - Polish
 - About screen
 - Snackbar notifications for actions
 - Animated list items
 - Search feature for users
 
-#### v1.2 - Sync & Sort
+### v1.2 - Sync & Sort
 - Sort by handle option
 - Sync all users functionality
 - Rank-based color themes
 
-#### v1.1 - Initial Release
+### v1.1 - Initial Release
 - Track Codeforces users
 - View rating changes
 - Add/delete users
@@ -206,7 +210,8 @@ Fully migrated from XML-based UI to Jetpack Compose for a modern, declarative UI
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Android Studio Hedgehog (2023.1.1) or newer
+- Android Studio Ladybug (2024.2) or newer
+- Xcode 15+ (for iOS development)
 - JDK 11 or higher
 - Android SDK with minimum API 24 (Android 7.0)
 
@@ -222,21 +227,19 @@ This app uses Firebase services. To set it up:
 2. **Download google-services.json:**
    - In Firebase Console, go to Project Settings
    - Download the `google-services.json` file
-   - Place it in the `app/` directory
+   - Place it in the `composeApp/` directory
 
 3. **Enable Firebase services:**
    - Enable **Firebase Analytics** in the Firebase Console
    - Enable **Crashlytics** for crash reporting
    - Enable **Remote Config** for feature flags
 
-   📺 **Detailed Guide:** [Firebase Android Setup Tutorial](https://firebase.google.com/docs/android/setup)
-
 ### Keystore Setup (for release builds)
 
 Create a `keystore.properties` file in the project root:
 
 ```properties
-storeFile=/path/to/your/keystore.jks
+storeFile=keystore.jks
 storePassword=your_store_password
 keyAlias=your_key_alias
 keyPassword=your_key_password
@@ -245,15 +248,17 @@ keyPassword=your_key_password
 ### Build and Run
 
 ```bash
-# Debug build
-./gradlew assembleDebug
+# Android debug build
+./gradlew :composeApp:assembleDebug
 
-# Install on connected device
-./gradlew installDebug
+# Android release build
+./gradlew :composeApp:assembleRelease
 
-# Release build
-./gradlew assembleRelease
+# Install on connected Android device
+./gradlew :composeApp:installDebug
 ```
+
+For iOS, open `iosApp/iosApp.xcodeproj` in Xcode and run.
 
 ## 🤝 Contributing
 
@@ -286,7 +291,8 @@ This project is available for educational and personal use.
 ## 🙏 Acknowledgments
 
 - [Codeforces API](https://codeforces.com/apiHelp) for providing the data
-- Android Jetpack team for amazing libraries
+- [Kotlin Multiplatform](https://kotlinlang.org/docs/multiplatform.html) for cross-platform development
+- [Compose Multiplatform](https://www.jetbrains.com/compose-multiplatform/) for shared UI
 - Firebase team for excellent backend services
 
 ---

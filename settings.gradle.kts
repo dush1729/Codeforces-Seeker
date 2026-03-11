@@ -20,4 +20,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "CF Seeker"
-include(":app")
+include(":composeApp")
