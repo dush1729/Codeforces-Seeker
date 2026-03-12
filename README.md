@@ -5,6 +5,7 @@
 Codeforces Seeker helps competitive programmers track their friends, teammates, or favorite competitive programmers on Codeforces. Get real-time updates on rating changes, contest standings, problems, and user statistics with a beautiful Material 3 UI.
 
 [![Get it on Google Play](https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png)](https://play.google.com/store/apps/details?id=com.dush1729.cfseeker)
+[![Download on the App Store](https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg)](https://apps.apple.com/app/codeforces-seeker/id6759670793)
 
 ## ✨ Features
 
