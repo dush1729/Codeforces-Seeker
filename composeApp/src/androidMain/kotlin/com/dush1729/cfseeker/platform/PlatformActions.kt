@@ -1,3 +1,5 @@
+@file:JvmName("PlatformActionsAndroid")
+
 package com.dush1729.cfseeker.platform
 
 import android.content.Context
