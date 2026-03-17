@@ -12,6 +12,7 @@ interface AnalyticsService {
     fun logBulkSyncCompleted(durationMs: Long, userCount: Int, successCount: Int, failureCount: Int)
 
     fun logSortChanged(sortOption: String)
+    fun logDetailToggled(enabled: Boolean)
 
     // Navigation events
     fun logScreenView(screenName: String)

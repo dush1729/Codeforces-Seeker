@@ -62,6 +62,12 @@ class FirebaseAnalyticsService @Inject constructor(
         }
     }
 
+    override fun logDetailToggled(enabled: Boolean) {
+        firebaseAnalytics.logEvent("detail_toggled") {
+            param("enabled", enabled.toString())
+        }
+    }
+
     override fun logScreenView(screenName: String) {
         firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW) {
             param(FirebaseAnalytics.Param.SCREEN_NAME, screenName)

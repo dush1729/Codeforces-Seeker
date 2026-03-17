@@ -197,6 +197,10 @@ class UserViewModel(
         analyticsService.logSortChanged(sortOption.displayName)
     }
 
+    fun logDetailToggled(enabled: Boolean) {
+        analyticsService.logDetailToggled(enabled)
+    }
+
     fun setSearchQuery(query: String) {
         _searchQuery.value = query
     }

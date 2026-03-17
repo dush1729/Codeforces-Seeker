@@ -13,6 +13,7 @@ object DummyAnalyticsService : AnalyticsService {
     override fun logBulkSyncStarted() {}
     override fun logBulkSyncCompleted(durationMs: Long, userCount: Int, successCount: Int, failureCount: Int) {}
     override fun logSortChanged(sortOption: String) {}
+    override fun logDetailToggled(enabled: Boolean) {}
     override fun logScreenView(screenName: String) {}
     override fun logFeedbackOpened() {}
     override fun logGitHubOpened() {}

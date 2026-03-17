@@ -32,6 +32,7 @@ import com.dush1729.cfseeker.utils.toRelativeTime
 fun UserCard(
     user: UserWithLatestRatingChangeView,
     sortOption: SortOption = SortOption.LAST_RATING_UPDATE,
+    showDetails: Boolean = false,
     onClick: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -92,6 +93,17 @@ fun UserCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
+
+                // Detail line: last contest name
+                if (showDetails) {
+                    Text(
+                        text = user.latestContestName ?: "No contests",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
             }
 
             // Rating info (delta + new rating)
@@ -130,6 +142,15 @@ fun UserCard(
                         style = MaterialTheme.typography.bodyLarge,
                         color = getRatingColor(user.rating ?: user.latestNewRating)
                     )
+
+                    // Max rating
+                    if (showDetails && user.maxRating != null) {
+                        Text(
+                            text = "Max: ${user.maxRating}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = getRatingColor(user.maxRating)
+                        )
+                    }
                 }
             }
         }

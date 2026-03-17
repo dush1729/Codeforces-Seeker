@@ -56,6 +56,10 @@ class BridgedAnalyticsService(
         bridge.logEvent("sort_changed", mapOf("sort_option" to sortOption))
     }
 
+    override fun logDetailToggled(enabled: Boolean) {
+        bridge.logEvent("detail_toggled", mapOf("enabled" to enabled.toString()))
+    }
+
     override fun logScreenView(screenName: String) {
         bridge.logEvent("screen_view", mapOf("screen_name" to screenName))
     }

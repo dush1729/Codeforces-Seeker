@@ -20,8 +20,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
@@ -121,6 +123,7 @@ fun UserListScreen(
     var userHandle by remember { mutableStateOf("") }
     var showSortMenu by remember { mutableStateOf(false) }
     var showSyncDialog by remember { mutableStateOf(false) }
+    var showDetails by remember { mutableStateOf(false) }
 
     // Platform-specific notification permission handling
     val requestPermissionAndSync = rememberRequestPermissionAndSync(
@@ -141,6 +144,18 @@ fun UserListScreen(
                 title = { Text("Users") },
                 scrollBehavior = scrollBehavior,
                 actions = {
+                    // Detail toggle button
+                    if (userCount > 0) {
+                        IconButton(onClick = {
+                            showDetails = !showDetails
+                            viewModel.logDetailToggled(showDetails)
+                        }) {
+                            Icon(
+                                imageVector = if (showDetails) Icons.Filled.Info else Icons.Outlined.Info,
+                                contentDescription = if (showDetails) "Hide details" else "Show details"
+                            )
+                        }
+                    }
                     // Sort button - only show when user list size > 1
                     if (userCount > 1) {
                         FilledTonalButton(
@@ -345,6 +360,7 @@ fun UserListScreen(
                         UserList(
                             users = state.data,
                             sortOption = currentSortOption,
+                            showDetails = showDetails,
                             onUserCardClick = { handle ->
                                 navController.navigate(UserDetailsRoute(handle))
                             }
@@ -575,6 +591,7 @@ private fun AddUserBottomSheet(
 private fun UserList(
     users: List<UserWithLatestRatingChangeView>,
     sortOption: SortOption = SortOption.LAST_RATING_UPDATE,
+    showDetails: Boolean = false,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     onUserCardClick: (String) -> Unit = {},
     modifier: Modifier = Modifier
@@ -595,6 +612,7 @@ private fun UserList(
             UserCard(
                 user = user,
                 sortOption = sortOption,
+                showDetails = showDetails,
                 onClick = onUserCardClick,
                 modifier = if (users.size < 50) Modifier.animateItem() else Modifier
             )
