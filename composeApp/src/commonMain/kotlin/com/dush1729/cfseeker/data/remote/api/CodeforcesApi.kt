@@ -4,6 +4,7 @@ import com.dush1729.cfseeker.data.remote.model.CodeforcesApiResponse
 import com.dush1729.cfseeker.data.remote.model.CodeforcesApiSingleResponse
 import com.dush1729.cfseeker.data.remote.model.Contest
 import com.dush1729.cfseeker.data.remote.model.ContestStandings
+import com.dush1729.cfseeker.data.remote.model.ProblemsetProblems
 import com.dush1729.cfseeker.data.remote.model.RatingChange
 import com.dush1729.cfseeker.data.remote.model.User
 import io.ktor.client.HttpClient
@@ -54,6 +55,12 @@ class CodeforcesApi(private val client: HttpClient) {
     suspend fun getContestRatingChanges(contestId: Int): CodeforcesApiResponse<RatingChange> {
         return client.get("${BASE_URL}contest.ratingChanges") {
             parameter("contestId", contestId)
+        }.body()
+    }
+
+    suspend fun getProblemsetProblems(tags: String? = null): CodeforcesApiSingleResponse<ProblemsetProblems> {
+        return client.get("${BASE_URL}problemset.problems") {
+            tags?.let { parameter("tags", it) }
         }.body()
     }
 }
