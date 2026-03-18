@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -21,6 +22,7 @@ class AppPreferencesImpl(
         val LAST_SYNC_ALL_TIME = longPreferencesKey("last_sync_all_time")
         val CONTEST_LAST_SYNC_TIME = longPreferencesKey("contest_last_sync_time")
         val USERS_INFO_LAST_SYNC_TIME = longPreferencesKey("users_info_last_sync_time")
+        val SIGNED_IN_HANDLE = stringPreferencesKey("signed_in_handle")
     }
 
     override suspend fun incrementLaunchCount(): Int {
@@ -77,6 +79,21 @@ class AppPreferencesImpl(
     override suspend fun getUsersInfoLastSyncTime(): Long = withContext(Dispatchers.IO) {
         val preferences = context.dataStore.data.first()
         preferences[PreferencesKeys.USERS_INFO_LAST_SYNC_TIME] ?: 0L
+    }
+
+    override suspend fun setSignedInHandle(handle: String?) {
+        context.dataStore.edit { preferences ->
+            if (handle != null) {
+                preferences[PreferencesKeys.SIGNED_IN_HANDLE] = handle
+            } else {
+                preferences.remove(PreferencesKeys.SIGNED_IN_HANDLE)
+            }
+        }
+    }
+
+    override suspend fun getSignedInHandle(): String? = withContext(Dispatchers.IO) {
+        val preferences = context.dataStore.data.first()
+        preferences[PreferencesKeys.SIGNED_IN_HANDLE]
     }
 
     override suspend fun clearContestPreferences(contestIds: List<Int>) {

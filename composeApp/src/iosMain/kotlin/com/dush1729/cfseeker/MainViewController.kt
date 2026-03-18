@@ -16,6 +16,7 @@ import com.dush1729.cfseeker.di.iosModule
 import com.dush1729.cfseeker.navigation.CFSeekerNavGraph
 import com.dush1729.cfseeker.platform.PlatformActions
 import com.dush1729.cfseeker.ui.ContestViewModel
+import com.dush1729.cfseeker.ui.ProfileViewModel
 import com.dush1729.cfseeker.ui.UserViewModel
 import com.dush1729.cfseeker.ui.theme.CFSeekerTheme
 import org.koin.compose.viewmodel.koinViewModel
@@ -35,6 +36,7 @@ fun initKoin(
 fun MainViewController() = ComposeUIViewController {
     val userViewModel: UserViewModel = koinViewModel()
     val contestViewModel: ContestViewModel = koinViewModel()
+    val profileViewModel: ProfileViewModel = koinViewModel()
     val analyticsService = KoinPlatform.getKoin().get<AnalyticsService>()
     val crashlyticsService = KoinPlatform.getKoin().get<CrashlyticsService>()
     val platformActions = KoinPlatform.getKoin().get<PlatformActions>()
@@ -49,6 +51,7 @@ fun MainViewController() = ComposeUIViewController {
                 navController = navController,
                 userViewModel = userViewModel,
                 contestViewModel = contestViewModel,
+                profileViewModel = profileViewModel,
                 analyticsService = analyticsService,
                 crashlyticsService = crashlyticsService,
                 platformActions = platformActions

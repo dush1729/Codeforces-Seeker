@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -22,6 +23,7 @@ import com.dush1729.cfseeker.analytics.AnalyticsService
 import com.dush1729.cfseeker.navigation.ContestDetailsRoute
 import com.dush1729.cfseeker.platform.PlatformActions
 import com.dush1729.cfseeker.ui.ContestViewModel
+import com.dush1729.cfseeker.ui.ProfileViewModel
 import com.dush1729.cfseeker.ui.UserViewModel
 import kotlinx.coroutines.launch
 
@@ -30,11 +32,12 @@ fun MainScreen(
     navController: NavController,
     userViewModel: UserViewModel,
     contestViewModel: ContestViewModel,
+    profileViewModel: ProfileViewModel,
     analyticsService: AnalyticsService,
     platformActions: PlatformActions,
     modifier: Modifier = Modifier
 ) {
-    val pagerState = rememberPagerState(pageCount = { 3 })
+    val pagerState = rememberPagerState(pageCount = { 4 })
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(pagerState.currentPage) {
@@ -42,6 +45,7 @@ fun MainScreen(
             0 -> analyticsService.logScreenView("users")
             1 -> analyticsService.logScreenView("contests")
             2 -> analyticsService.logScreenView("about")
+            3 -> analyticsService.logScreenView("profile")
         }
     }
 
@@ -79,6 +83,16 @@ fun MainScreen(
                         }
                     }
                 )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Filled.Person, contentDescription = "Profile") },
+                    label = { Text("Profile") },
+                    selected = pagerState.currentPage == 3,
+                    onClick = {
+                        scope.launch {
+                            pagerState.animateScrollToPage(3)
+                        }
+                    }
+                )
             }
         }
     ) { paddingValues ->
@@ -104,6 +118,10 @@ fun MainScreen(
                 2 -> AboutScreen(
                     analyticsService = analyticsService,
                     platformActions = platformActions,
+                    modifier = Modifier.fillMaxSize()
+                )
+                3 -> ProfileScreen(
+                    viewModel = profileViewModel,
                     modifier = Modifier.fillMaxSize()
                 )
             }

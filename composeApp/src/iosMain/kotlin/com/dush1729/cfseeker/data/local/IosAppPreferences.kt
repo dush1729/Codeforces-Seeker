@@ -44,6 +44,18 @@ class IosAppPreferences : AppPreferences {
         return defaults.integerForKey("users_info_last_sync_time")
     }
 
+    override suspend fun setSignedInHandle(handle: String?) {
+        if (handle != null) {
+            defaults.setObject(handle, forKey = "signed_in_handle")
+        } else {
+            defaults.removeObjectForKey("signed_in_handle")
+        }
+    }
+
+    override suspend fun getSignedInHandle(): String? {
+        return defaults.stringForKey("signed_in_handle")?.takeIf { it.isNotEmpty() }
+    }
+
     override suspend fun clearContestPreferences(contestIds: List<Int>) {
         contestIds.forEach { contestId ->
             defaults.removeObjectForKey("contest_standings_sync_$contestId")

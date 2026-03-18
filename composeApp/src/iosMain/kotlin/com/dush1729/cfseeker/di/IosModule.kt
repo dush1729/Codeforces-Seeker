@@ -24,6 +24,7 @@ import com.dush1729.cfseeker.platform.IosPlatformActions
 import com.dush1729.cfseeker.platform.PlatformActions
 import com.dush1729.cfseeker.ui.ContestDetailsViewModel
 import com.dush1729.cfseeker.ui.ContestViewModel
+import com.dush1729.cfseeker.ui.ProfileViewModel
 import com.dush1729.cfseeker.ui.UserViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
@@ -58,4 +59,5 @@ fun iosModule(
     viewModel { UserViewModel(get(), get(), get(), get(), get(), get()) }
     viewModel { ContestViewModel(get(), get(), get()) }
     viewModel { ContestDetailsViewModel(get(), get(), get(), get()) }
+    viewModel { ProfileViewModel(get(), get()) }
 }

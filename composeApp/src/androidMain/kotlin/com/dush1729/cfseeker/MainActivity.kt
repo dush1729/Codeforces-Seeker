@@ -15,6 +15,7 @@ import com.dush1729.cfseeker.data.local.AppDatabase
 import com.dush1729.cfseeker.navigation.CFSeekerNavGraph
 import com.dush1729.cfseeker.platform.PlatformActions
 import com.dush1729.cfseeker.ui.ContestViewModel
+import com.dush1729.cfseeker.ui.ProfileViewModel
 import com.dush1729.cfseeker.ui.UserViewModel
 import com.dush1729.cfseeker.ui.theme.CFSeekerTheme
 import org.koin.android.ext.android.inject
@@ -23,6 +24,7 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 class MainActivity : ComponentActivity() {
     private val userViewModel: UserViewModel by viewModel()
     private val contestViewModel: ContestViewModel by viewModel()
+    private val profileViewModel: ProfileViewModel by viewModel()
 
     private val analyticsService: AnalyticsService by inject()
     private val crashlyticsService: CrashlyticsService by inject()
@@ -45,6 +47,7 @@ class MainActivity : ComponentActivity() {
                         navController = navController,
                         userViewModel = userViewModel,
                         contestViewModel = contestViewModel,
+                        profileViewModel = profileViewModel,
                         analyticsService = analyticsService,
                         crashlyticsService = crashlyticsService,
                         platformActions = platformActions

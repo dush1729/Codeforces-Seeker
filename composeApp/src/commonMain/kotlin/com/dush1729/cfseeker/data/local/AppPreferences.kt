@@ -11,4 +11,7 @@ interface AppPreferences {
     suspend fun setUsersInfoLastSyncTime(timestamp: Long)
     suspend fun getUsersInfoLastSyncTime(): Long
     suspend fun clearContestPreferences(contestIds: List<Int>)
+
+    suspend fun setSignedInHandle(handle: String?)
+    suspend fun getSignedInHandle(): String?
 }
