@@ -3,7 +3,9 @@ package com.dush1729.cfseeker.data.local
 import com.dush1729.cfseeker.data.local.entity.ContestEntity
 import com.dush1729.cfseeker.data.local.entity.ContestProblemEntity
 import com.dush1729.cfseeker.data.local.entity.ContestStandingRowEntity
+import com.dush1729.cfseeker.data.local.entity.ProblemEntity
 import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
+import com.dush1729.cfseeker.data.local.entity.SolvedProblemEntity
 import com.dush1729.cfseeker.data.local.entity.UserEntity
 import com.dush1729.cfseeker.data.local.view.UserWithLatestRatingChangeView
 import kotlinx.coroutines.flow.Flow
@@ -107,5 +109,39 @@ class AppDatabaseService(private val appDatabase: AppDatabase): DatabaseService 
 
     override suspend fun clearContestCache(): List<Int> {
         return appDatabase.contestStandingsDao().clearContestCache()
+    }
+
+    // Problemset methods
+
+    override suspend fun insertAllProblems(problems: List<ProblemEntity>) {
+        appDatabase.problemDao().insertAllProblems(problems)
+    }
+
+    override fun getProblems(
+        minRating: Int?,
+        maxRating: Int?,
+        searchQuery: String,
+        hideSolved: Boolean,
+        handle: String,
+    ): Flow<List<ProblemEntity>> {
+        return appDatabase.problemDao().getProblems(minRating, maxRating, searchQuery, hideSolved, handle)
+    }
+
+    override suspend fun getProblemCount(): Int {
+        return appDatabase.problemDao().getProblemCount()
+    }
+
+    override fun getAllTags(): Flow<List<String>> {
+        return appDatabase.problemDao().getAllTags()
+    }
+
+    // Solved problem methods
+
+    override suspend fun insertAllSolvedProblems(handle: String, solvedProblems: List<SolvedProblemEntity>) {
+        appDatabase.problemDao().insertAllSolvedProblems(handle, solvedProblems)
+    }
+
+    override fun getSolvedCountForHandle(handle: String): Flow<Int> {
+        return appDatabase.problemDao().getSolvedCountForHandle(handle)
     }
 }

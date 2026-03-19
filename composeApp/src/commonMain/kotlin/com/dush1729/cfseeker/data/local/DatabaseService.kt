@@ -3,7 +3,9 @@ package com.dush1729.cfseeker.data.local
 import com.dush1729.cfseeker.data.local.entity.ContestEntity
 import com.dush1729.cfseeker.data.local.entity.ContestProblemEntity
 import com.dush1729.cfseeker.data.local.entity.ContestStandingRowEntity
+import com.dush1729.cfseeker.data.local.entity.ProblemEntity
 import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
+import com.dush1729.cfseeker.data.local.entity.SolvedProblemEntity
 import com.dush1729.cfseeker.data.local.entity.UserEntity
 import com.dush1729.cfseeker.data.local.view.UserWithLatestRatingChangeView
 import com.dush1729.cfseeker.ui.SortOption
@@ -55,6 +57,22 @@ interface DatabaseService {
     // Contest cache info methods
     suspend fun getContestCacheInfo(): ContestCacheInfo
     suspend fun clearContestCache(): List<Int>
+
+    // Problemset methods
+    suspend fun insertAllProblems(problems: List<ProblemEntity>)
+    fun getProblems(
+        minRating: Int? = null,
+        maxRating: Int? = null,
+        searchQuery: String = "",
+        hideSolved: Boolean = true,
+        handle: String = "",
+    ): Flow<List<ProblemEntity>>
+    suspend fun getProblemCount(): Int
+    fun getAllTags(): Flow<List<String>>
+
+    // Solved problem methods
+    suspend fun insertAllSolvedProblems(handle: String, solvedProblems: List<SolvedProblemEntity>)
+    fun getSolvedCountForHandle(handle: String): Flow<Int>
 }
 
 data class ContestCacheInfo(
