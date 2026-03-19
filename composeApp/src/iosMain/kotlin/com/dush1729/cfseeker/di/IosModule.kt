@@ -15,6 +15,8 @@ import com.dush1729.cfseeker.data.local.DatabaseService
 import com.dush1729.cfseeker.data.local.IosAppPreferences
 import com.dush1729.cfseeker.data.local.createIosDatabase
 import com.dush1729.cfseeker.data.remote.config.RemoteConfigService
+import com.dush1729.cfseeker.data.remote.firestore.FirestoreService
+import com.dush1729.cfseeker.data.remote.firestore.IosFirestoreService
 import com.dush1729.cfseeker.data.repository.ContestRepository
 import com.dush1729.cfseeker.data.repository.ContestStandingsRepository
 import com.dush1729.cfseeker.data.repository.ProblemRepository
@@ -47,6 +49,7 @@ fun iosModule(
     single<AnalyticsService> { BridgedAnalyticsService(analyticsBridge) }
     single<CrashlyticsService> { BridgedCrashlyticsService(crashlyticsBridge) }
     single<RemoteConfigService> { BridgedRemoteConfigService(remoteConfigBridge, get()) }
+    single<FirestoreService> { IosFirestoreService() }
 
     // Preferences
     single<AppPreferences> { IosAppPreferences() }
@@ -61,5 +64,5 @@ fun iosModule(
     viewModel { UserViewModel(get(), get(), get(), get(), get(), get()) }
     viewModel { ContestViewModel(get(), get(), get()) }
     viewModel { ContestDetailsViewModel(get(), get(), get(), get()) }
-    viewModel { ProfileViewModel(get(), get()) }
+    viewModel { ProfileViewModel(get(), get(), get()) }
 }

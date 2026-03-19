@@ -33,6 +33,9 @@ import com.dush1729.cfseeker.ui.UserViewModel
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.crashlytics.ktx.crashlytics
 import com.google.firebase.ktx.Firebase
+import com.dush1729.cfseeker.data.remote.firestore.AndroidFirestoreService
+import com.dush1729.cfseeker.data.remote.firestore.FirestoreService
+import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.remoteconfig.ktx.remoteConfig
 import kotlinx.coroutines.Dispatchers
 import org.koin.android.ext.koin.androidContext
@@ -78,6 +81,9 @@ val androidModule = module {
     single { Firebase.remoteConfig }
     single<RemoteConfigService> { FirebaseRemoteConfigService(get(), get()) }
 
+    single { Firebase.firestore }
+    single<FirestoreService> { AndroidFirestoreService(get()) }
+
     // Preferences
     single<AppPreferences> { AppPreferencesImpl(androidContext()) }
 
@@ -91,5 +97,5 @@ val androidModule = module {
     viewModel { UserViewModel(get(), get(), get(), get(), get(), get()) }
     viewModel { ContestViewModel(get(), get(), get()) }
     viewModel { ContestDetailsViewModel(get(), get(), get(), get()) }
-    viewModel { ProfileViewModel(get(), get()) }
+    viewModel { ProfileViewModel(get(), get(), get()) }
 }

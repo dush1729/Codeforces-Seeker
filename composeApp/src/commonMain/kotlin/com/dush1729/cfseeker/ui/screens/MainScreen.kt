@@ -8,7 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.People
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Today
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -44,8 +44,8 @@ fun MainScreen(
         when (pagerState.currentPage) {
             0 -> analyticsService.logScreenView("users")
             1 -> analyticsService.logScreenView("contests")
-            2 -> analyticsService.logScreenView("about")
-            3 -> analyticsService.logScreenView("profile")
+            2 -> analyticsService.logScreenView("daily")
+            3 -> analyticsService.logScreenView("about")
         }
     }
 
@@ -74,8 +74,8 @@ fun MainScreen(
                     }
                 )
                 NavigationBarItem(
-                    icon = { Icon(Icons.Filled.Info, contentDescription = "About") },
-                    label = { Text("About") },
+                    icon = { Icon(Icons.Filled.Today, contentDescription = "Daily") },
+                    label = { Text("Daily") },
                     selected = pagerState.currentPage == 2,
                     onClick = {
                         scope.launch {
@@ -84,8 +84,8 @@ fun MainScreen(
                     }
                 )
                 NavigationBarItem(
-                    icon = { Icon(Icons.Filled.Person, contentDescription = "Profile") },
-                    label = { Text("Profile") },
+                    icon = { Icon(Icons.Filled.Info, contentDescription = "About") },
+                    label = { Text("About") },
                     selected = pagerState.currentPage == 3,
                     onClick = {
                         scope.launch {
@@ -115,13 +115,13 @@ fun MainScreen(
                     },
                     modifier = Modifier.fillMaxSize()
                 )
-                2 -> AboutScreen(
-                    analyticsService = analyticsService,
-                    platformActions = platformActions,
+                2 -> ProfileScreen(
+                    viewModel = profileViewModel,
                     modifier = Modifier.fillMaxSize()
                 )
-                3 -> ProfileScreen(
-                    viewModel = profileViewModel,
+                3 -> AboutScreen(
+                    analyticsService = analyticsService,
+                    platformActions = platformActions,
                     modifier = Modifier.fillMaxSize()
                 )
             }

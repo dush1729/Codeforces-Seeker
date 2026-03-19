@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.dush1729.cfseeker.data.local.AppPreferences
 import com.dush1729.cfseeker.data.remote.api.CodeforcesApi
 import com.dush1729.cfseeker.data.remote.api.safeApiCall
+import com.dush1729.cfseeker.data.remote.firestore.FirestoreService
 import com.dush1729.cfseeker.platform.ioDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,7 +27,8 @@ sealed interface VerificationResult {
 
 class ProfileViewModel(
     private val api: CodeforcesApi,
-    private val appPreferences: AppPreferences
+    private val appPreferences: AppPreferences,
+    private val firestoreService: FirestoreService
 ) : ViewModel() {
 
     private val _profileState = MutableStateFlow<ProfileState>(ProfileState.Loading)
@@ -74,6 +76,11 @@ class ProfileViewModel(
                     _verificationResult.value = VerificationResult.NetworkError("User not found")
                 } else if (user.firstName == state.verificationCode) {
                     appPreferences.setSignedInHandle(state.handle)
+                    try {
+                        firestoreService.registerUser(state.handle)
+                    } catch (_: Exception) {
+                        // Non-blocking: registration is best-effort
+                    }
                     _profileState.value = ProfileState.SignedIn(state.handle)
                     _verificationResult.value = VerificationResult.Success
                 } else {
@@ -94,7 +101,15 @@ class ProfileViewModel(
 
     fun signOut() {
         viewModelScope.launch(ioDispatcher) {
+            val handle = appPreferences.getSignedInHandle()
             appPreferences.setSignedInHandle(null)
+            if (handle != null) {
+                try {
+                    firestoreService.unregisterUser(handle)
+                } catch (_: Exception) {
+                    // Non-blocking: unregistration is best-effort
+                }
+            }
             _profileState.value = ProfileState.NotSignedIn
             _verificationResult.value = null
         }
