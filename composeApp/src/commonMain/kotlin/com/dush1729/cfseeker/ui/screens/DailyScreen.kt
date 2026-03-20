@@ -26,7 +26,6 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
@@ -68,17 +67,13 @@ fun DailyScreen(
     modifier: Modifier = Modifier
 ) {
     val uiState by dailyViewModel.uiState.collectAsState()
-    val isRefreshing by dailyViewModel.isRefreshing.collectAsState()
-
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
             TopAppBar(title = { Text("Daily Challenge") })
         }
     ) { paddingValues ->
-        PullToRefreshBox(
-            isRefreshing = isRefreshing,
-            onRefresh = { dailyViewModel.refresh() },
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
