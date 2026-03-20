@@ -8,11 +8,13 @@ import com.dush1729.cfseeker.data.local.AppDatabase.Companion.VERSION
 import com.dush1729.cfseeker.data.local.dao.ContestDao
 import com.dush1729.cfseeker.data.local.dao.ContestStandingsDao
 import com.dush1729.cfseeker.data.local.dao.ProblemDao
+import com.dush1729.cfseeker.data.local.dao.RatedUserDao
 import com.dush1729.cfseeker.data.local.dao.UserDao
 import com.dush1729.cfseeker.data.local.entity.ContestEntity
 import com.dush1729.cfseeker.data.local.entity.ContestProblemEntity
 import com.dush1729.cfseeker.data.local.entity.ContestStandingRowEntity
 import com.dush1729.cfseeker.data.local.entity.ProblemEntity
+import com.dush1729.cfseeker.data.local.entity.RatedUserEntity
 import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
 import com.dush1729.cfseeker.data.local.entity.SolvedProblemEntity
 import com.dush1729.cfseeker.data.local.entity.UserEntity
@@ -28,6 +30,7 @@ import com.dush1729.cfseeker.data.local.view.UserWithLatestRatingChangeView
         ContestStandingRowEntity::class,
         ProblemEntity::class,
         SolvedProblemEntity::class,
+        RatedUserEntity::class,
     ],
     views = [
         UserWithLatestRatingChangeView::class,
@@ -40,9 +43,10 @@ abstract class AppDatabase: RoomDatabase() {
     abstract fun contestDao(): ContestDao
     abstract fun contestStandingsDao(): ContestStandingsDao
     abstract fun problemDao(): ProblemDao
+    abstract fun ratedUserDao(): RatedUserDao
 
     companion object {
-        const val VERSION = 14
+        const val VERSION = 15
     }
 }
 

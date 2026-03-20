@@ -58,6 +58,12 @@ class CodeforcesApi(private val client: HttpClient) {
         }.body()
     }
 
+    suspend fun getRatedList(activeOnly: Boolean? = null): CodeforcesApiResponse<User> {
+        return client.get("${BASE_URL}user.ratedList") {
+            activeOnly?.let { parameter("activeOnly", it) }
+        }.body()
+    }
+
     suspend fun getProblemsetProblems(tags: String? = null): CodeforcesApiSingleResponse<ProblemsetProblems> {
         return client.get("${BASE_URL}problemset.problems") {
             tags?.let { parameter("tags", it) }

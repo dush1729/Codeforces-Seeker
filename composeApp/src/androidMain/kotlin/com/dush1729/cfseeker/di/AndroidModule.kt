@@ -21,6 +21,7 @@ import com.dush1729.cfseeker.data.remote.config.RemoteConfigService
 import com.dush1729.cfseeker.data.repository.ContestRepository
 import com.dush1729.cfseeker.data.repository.ContestStandingsRepository
 import com.dush1729.cfseeker.data.repository.ProblemRepository
+import com.dush1729.cfseeker.data.repository.RatedUserRepository
 import com.dush1729.cfseeker.data.repository.UserRepository
 import com.dush1729.cfseeker.platform.AndroidBackgroundSyncScheduler
 import com.dush1729.cfseeker.platform.AndroidPlatformActions
@@ -93,11 +94,12 @@ val androidModule = module {
     single { ContestRepository(get(), get(), get()) }
     single { ContestStandingsRepository(get(), get()) }
     single { ProblemRepository(get(), get()) }
+    single { RatedUserRepository(get(), get(), get()) }
 
     // ViewModels
     viewModel { UserViewModel(get(), get(), get(), get(), get(), get()) }
     viewModel { ContestViewModel(get(), get(), get()) }
-    viewModel { ContestDetailsViewModel(get(), get(), get(), get()) }
+    viewModel { ContestDetailsViewModel(get(), get(), get(), get(), get()) }
     viewModel { ProfileViewModel(get(), get(), get()) }
     viewModel { DailyViewModel(get(), get()) }
 }

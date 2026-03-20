@@ -1,9 +1,11 @@
 package com.dush1729.cfseeker.data.local
 
+import com.dush1729.cfseeker.data.local.dao.HandleRating
 import com.dush1729.cfseeker.data.local.entity.ContestEntity
 import com.dush1729.cfseeker.data.local.entity.ContestProblemEntity
 import com.dush1729.cfseeker.data.local.entity.ContestStandingRowEntity
 import com.dush1729.cfseeker.data.local.entity.ProblemEntity
+import com.dush1729.cfseeker.data.local.entity.RatedUserEntity
 import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
 import com.dush1729.cfseeker.data.local.entity.SolvedProblemEntity
 import com.dush1729.cfseeker.data.local.entity.UserEntity
@@ -73,6 +75,12 @@ interface DatabaseService {
     // Solved problem methods
     suspend fun insertAllSolvedProblems(handle: String, solvedProblems: List<SolvedProblemEntity>)
     fun getSolvedCountForHandle(handle: String): Flow<Int>
+
+    // Rated user methods
+    suspend fun replaceAllRatedUsers(users: List<RatedUserEntity>)
+    fun searchRatedUsers(query: String, limit: Int = 50): Flow<List<RatedUserEntity>>
+    suspend fun getRatingsForContest(contestId: Int): List<HandleRating>
+    suspend fun getRatedUserCount(): Int
 }
 
 data class ContestCacheInfo(

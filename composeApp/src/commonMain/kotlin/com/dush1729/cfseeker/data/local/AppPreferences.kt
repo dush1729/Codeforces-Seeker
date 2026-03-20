@@ -14,4 +14,7 @@ interface AppPreferences {
 
     suspend fun setSignedInHandle(handle: String?)
     suspend fun getSignedInHandle(): String?
+
+    suspend fun setRatedUserLastSyncTime(timestamp: Long)
+    suspend fun getRatedUserLastSyncTime(): Long
 }

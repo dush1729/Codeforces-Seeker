@@ -23,6 +23,7 @@ class AppPreferencesImpl(
         val CONTEST_LAST_SYNC_TIME = longPreferencesKey("contest_last_sync_time")
         val USERS_INFO_LAST_SYNC_TIME = longPreferencesKey("users_info_last_sync_time")
         val SIGNED_IN_HANDLE = stringPreferencesKey("signed_in_handle")
+        val RATED_USER_LAST_SYNC_TIME = longPreferencesKey("rated_user_last_sync_time")
     }
 
     override suspend fun incrementLaunchCount(): Int {
@@ -94,6 +95,17 @@ class AppPreferencesImpl(
     override suspend fun getSignedInHandle(): String? = withContext(Dispatchers.IO) {
         val preferences = context.dataStore.data.first()
         preferences[PreferencesKeys.SIGNED_IN_HANDLE]
+    }
+
+    override suspend fun setRatedUserLastSyncTime(timestamp: Long) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.RATED_USER_LAST_SYNC_TIME] = timestamp
+        }
+    }
+
+    override suspend fun getRatedUserLastSyncTime(): Long = withContext(Dispatchers.IO) {
+        val preferences = context.dataStore.data.first()
+        preferences[PreferencesKeys.RATED_USER_LAST_SYNC_TIME] ?: 0L
     }
 
     override suspend fun clearContestPreferences(contestIds: List<Int>) {

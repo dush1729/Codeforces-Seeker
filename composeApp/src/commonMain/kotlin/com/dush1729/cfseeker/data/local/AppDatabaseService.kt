@@ -1,9 +1,11 @@
 package com.dush1729.cfseeker.data.local
 
+import com.dush1729.cfseeker.data.local.dao.HandleRating
 import com.dush1729.cfseeker.data.local.entity.ContestEntity
 import com.dush1729.cfseeker.data.local.entity.ContestProblemEntity
 import com.dush1729.cfseeker.data.local.entity.ContestStandingRowEntity
 import com.dush1729.cfseeker.data.local.entity.ProblemEntity
+import com.dush1729.cfseeker.data.local.entity.RatedUserEntity
 import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
 import com.dush1729.cfseeker.data.local.entity.SolvedProblemEntity
 import com.dush1729.cfseeker.data.local.entity.UserEntity
@@ -143,5 +145,23 @@ class AppDatabaseService(private val appDatabase: AppDatabase): DatabaseService 
 
     override fun getSolvedCountForHandle(handle: String): Flow<Int> {
         return appDatabase.problemDao().getSolvedCountForHandle(handle)
+    }
+
+    // Rated user methods
+
+    override suspend fun replaceAllRatedUsers(users: List<RatedUserEntity>) {
+        appDatabase.ratedUserDao().replaceAll(users)
+    }
+
+    override fun searchRatedUsers(query: String, limit: Int): Flow<List<RatedUserEntity>> {
+        return appDatabase.ratedUserDao().searchByHandle(query, limit)
+    }
+
+    override suspend fun getRatingsForContest(contestId: Int): List<HandleRating> {
+        return appDatabase.ratedUserDao().getRatingsForContest(contestId)
+    }
+
+    override suspend fun getRatedUserCount(): Int {
+        return appDatabase.ratedUserDao().getCount()
     }
 }
