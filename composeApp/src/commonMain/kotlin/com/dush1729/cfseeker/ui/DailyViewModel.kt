@@ -27,9 +27,6 @@ class DailyViewModel(
     private val _uiState = MutableStateFlow<DailyUiState>(DailyUiState.Loading)
     val uiState = _uiState.asStateFlow()
 
-    private val _isRefreshing = MutableStateFlow(false)
-    val isRefreshing = _isRefreshing.asStateFlow()
-
     init {
         loadDaily()
     }
@@ -40,7 +37,6 @@ class DailyViewModel(
 
     private fun loadDaily() {
         viewModelScope.launch(ioDispatcher) {
-            _isRefreshing.value = true
             try {
                 val today = Clock.System.todayIn(TimeZone.UTC).toString()
                 val data = firestoreService.getDailyLeaderboard(today)
@@ -48,8 +44,6 @@ class DailyViewModel(
                 _uiState.value = DailyUiState.Success(data, handle)
             } catch (e: Exception) {
                 _uiState.value = DailyUiState.Error(e.message ?: "Failed to load daily data")
-            } finally {
-                _isRefreshing.value = false
             }
         }
     }

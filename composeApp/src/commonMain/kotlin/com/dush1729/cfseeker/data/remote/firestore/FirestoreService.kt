@@ -23,7 +23,8 @@ data class DailyLeaderboardEntry(
 data class DailyData(
     val problems: List<DailyProblem>,
     val leaderboard: List<DailyLeaderboardEntry>,
-    val submissions: List<DailySubmission>
+    val submissions: List<DailySubmission>,
+    val leaderboardUpdatedAt: Long? = null
 )
 
 interface FirestoreService {

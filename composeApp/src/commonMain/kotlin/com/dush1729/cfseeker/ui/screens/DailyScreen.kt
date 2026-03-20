@@ -58,6 +58,15 @@ import com.dush1729.cfseeker.ui.DailyViewModel
 import com.dush1729.cfseeker.ui.ProfileState
 import com.dush1729.cfseeker.ui.ProfileViewModel
 import com.dush1729.cfseeker.ui.VerificationResult
+import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.delay
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.todayIn
+import kotlinx.datetime.plus
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.atStartOfDayIn
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -136,6 +145,14 @@ private fun DailyContent(
     onSignOut: () -> Unit
 ) {
     var selectedTab by remember { mutableStateOf(DailyTab.Problems) }
+    var now by remember { mutableStateOf(Clock.System.now()) }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(60_000L)
+            now = Clock.System.now()
+        }
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         // Profile section
@@ -170,6 +187,14 @@ private fun DailyContent(
         // Tab content
         when (selectedTab) {
             DailyTab.Problems -> {
+                val nextMidnight = Clock.System.todayIn(TimeZone.UTC)
+                    .plus(1, DateTimeUnit.DAY)
+                    .atStartOfDayIn(TimeZone.UTC)
+                val remaining = nextMidnight - now
+                val hours = remaining.inWholeHours
+                val minutes = remaining.inWholeMinutes % 60
+                val countdownText = if (hours > 0) "${hours}h ${minutes}m" else "${minutes}m"
+
                 if (data.problems.isNotEmpty()) {
                     LazyColumn(
                         modifier = Modifier
@@ -177,6 +202,15 @@ private fun DailyContent(
                             .padding(horizontal = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+                        item {
+                            Text(
+                                text = "Problems refresh in $countdownText",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center
+                            )
+                        }
                         itemsIndexed(data.problems) { _, problem ->
                             ProblemCard(
                                 problem = problem,
@@ -205,12 +239,35 @@ private fun DailyContent(
             }
 
             DailyTab.Leaderboard -> {
+                val updatedText = data.leaderboardUpdatedAt?.let { updatedAtMillis ->
+                    val updatedAt = Instant.fromEpochMilliseconds(updatedAtMillis)
+                    val since = now - updatedAt
+                    when {
+                        since.inWholeMinutes < 1 -> "just now"
+                        since.inWholeMinutes < 60 -> "${since.inWholeMinutes}m ago"
+                        else -> "${since.inWholeHours}h ${since.inWholeMinutes % 60}m ago"
+                    }
+                }
+
                 if (data.leaderboard.isNotEmpty()) {
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(horizontal = 16.dp)
                     ) {
+                        if (updatedText != null) {
+                            item {
+                                Text(
+                                    text = "Last updated $updatedText",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp),
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
                         itemsIndexed(data.leaderboard) { index, entry ->
                             LeaderboardRow(
                                 rank = index + 1,

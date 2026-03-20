@@ -80,10 +80,13 @@ class AndroidFirestoreService(
             )
         }
 
+        val updatedAt = leaderboardDoc.getTimestamp("updatedAt")?.toDate()?.time
+
         return DailyData(
             problems = problemsDeferred,
             leaderboard = leaderboard,
-            submissions = submissions
+            submissions = submissions,
+            leaderboardUpdatedAt = updatedAt
         )
     }
 }
