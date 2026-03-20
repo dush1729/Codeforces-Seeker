@@ -82,11 +82,36 @@ class AndroidFirestoreService(
 
         val updatedAt = leaderboardDoc.getTimestamp("updatedAt")?.toDate()?.time
 
+        // Fetch cumulative leaderboard (may not have Firestore rules yet)
+        val (cumulativeLeaderboard, cumulativeUpdatedAt) = try {
+            val cumulativeDoc = firestore.collection("cumulativeLeaderboard")
+                .document("totals")
+                .get()
+                .await()
+
+            if (cumulativeDoc.exists()) {
+                val cumulativeScores = cumulativeDoc.get("scores") as? Map<*, *> ?: emptyMap<String, Any>()
+                val entries = cumulativeScores.map { (handle, score) ->
+                    DailyLeaderboardEntry(
+                        handle = handle as String,
+                        score = (score as? Number)?.toInt() ?: 0
+                    )
+                }.sortedByDescending { it.score }
+                entries to cumulativeDoc.getTimestamp("updatedAt")?.toDate()?.time
+            } else {
+                emptyList<DailyLeaderboardEntry>() to null
+            }
+        } catch (_: Exception) {
+            emptyList<DailyLeaderboardEntry>() to null
+        }
+
         return DailyData(
             problems = problemsDeferred,
             leaderboard = leaderboard,
             submissions = submissions,
-            leaderboardUpdatedAt = updatedAt
+            leaderboardUpdatedAt = updatedAt,
+            cumulativeLeaderboard = cumulativeLeaderboard,
+            cumulativeUpdatedAt = cumulativeUpdatedAt
         )
     }
 }

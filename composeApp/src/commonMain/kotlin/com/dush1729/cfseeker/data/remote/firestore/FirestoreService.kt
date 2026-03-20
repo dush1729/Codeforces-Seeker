@@ -24,7 +24,9 @@ data class DailyData(
     val problems: List<DailyProblem>,
     val leaderboard: List<DailyLeaderboardEntry>,
     val submissions: List<DailySubmission>,
-    val leaderboardUpdatedAt: Long? = null
+    val leaderboardUpdatedAt: Long? = null,
+    val cumulativeLeaderboard: List<DailyLeaderboardEntry> = emptyList(),
+    val cumulativeUpdatedAt: Long? = null
 )
 
 interface FirestoreService {

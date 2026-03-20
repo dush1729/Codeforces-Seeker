@@ -239,7 +239,11 @@ private fun DailyContent(
             }
 
             DailyTab.Leaderboard -> {
-                val updatedText = data.leaderboardUpdatedAt?.let { updatedAtMillis ->
+                var showCumulative by remember { mutableStateOf(false) }
+                val activeLeaderboard = if (showCumulative) data.cumulativeLeaderboard else data.leaderboard
+                val activeUpdatedAt = if (showCumulative) data.cumulativeUpdatedAt else data.leaderboardUpdatedAt
+
+                val updatedText = activeUpdatedAt?.let { updatedAtMillis ->
                     val updatedAt = Instant.fromEpochMilliseconds(updatedAtMillis)
                     val since = now - updatedAt
                     when {
@@ -249,48 +253,72 @@ private fun DailyContent(
                     }
                 }
 
-                if (data.leaderboard.isNotEmpty()) {
-                    LazyColumn(
+                Column(modifier = Modifier.fillMaxSize()) {
+                    // Today / All Time toggle
+                    SingleChoiceSegmentedButtonRow(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 16.dp)
+                            .fillMaxWidth()
+                            .padding(horizontal = 32.dp, vertical = 4.dp)
                     ) {
-                        if (updatedText != null) {
-                            item {
-                                Text(
-                                    text = "Last updated $updatedText",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 4.dp),
-                                    textAlign = TextAlign.Center
-                                )
-                            }
+                        SegmentedButton(
+                            selected = !showCumulative,
+                            onClick = { showCumulative = false },
+                            shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2)
+                        ) {
+                            Text("Today")
                         }
-                        itemsIndexed(data.leaderboard) { index, entry ->
-                            LeaderboardRow(
-                                rank = index + 1,
-                                handle = entry.handle,
-                                score = entry.score,
-                                isCurrentUser = entry.handle.equals(signedInHandle, ignoreCase = true)
-                            )
-                            if (index < data.leaderboard.lastIndex) {
-                                HorizontalDivider()
-                            }
+                        SegmentedButton(
+                            selected = showCumulative,
+                            onClick = { showCumulative = true },
+                            shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2)
+                        ) {
+                            Text("All Time")
                         }
-                        item { Spacer(modifier = Modifier.height(16.dp)) }
                     }
-                } else {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "No leaderboard data yet.",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+
+                    if (activeLeaderboard.isNotEmpty()) {
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 16.dp)
+                        ) {
+                            if (updatedText != null) {
+                                item {
+                                    Text(
+                                        text = "Last updated $updatedText",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 4.dp),
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
+                            itemsIndexed(activeLeaderboard) { index, entry ->
+                                LeaderboardRow(
+                                    rank = index + 1,
+                                    handle = entry.handle,
+                                    score = entry.score,
+                                    isCurrentUser = entry.handle.equals(signedInHandle, ignoreCase = true)
+                                )
+                                if (index < activeLeaderboard.lastIndex) {
+                                    HorizontalDivider()
+                                }
+                            }
+                            item { Spacer(modifier = Modifier.height(16.dp)) }
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "No leaderboard data yet.",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 }
             }
