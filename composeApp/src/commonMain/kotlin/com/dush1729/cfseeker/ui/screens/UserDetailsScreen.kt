@@ -74,6 +74,8 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.foundation.clickable
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -398,7 +400,30 @@ private fun InfoContent(
             SectionTitle("Basic Info")
             user.firstName?.let { DetailRow("First Name", it) }
             user.lastName?.let { DetailRow("Last Name", it) }
-            user.email?.let { DetailRow("Email", it) }
+            user.email?.let { email ->
+                val uriHandler = LocalUriHandler.current
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Email",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = email,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.primary,
+                        textDecoration = TextDecoration.Underline,
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable { uriHandler.openUri("mailto:$email") }
+                    )
+                }
+            }
         }
 
         // Stats Section
