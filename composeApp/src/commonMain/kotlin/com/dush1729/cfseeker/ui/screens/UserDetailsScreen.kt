@@ -28,6 +28,7 @@ import androidx.compose.material.icons.automirrored.filled.NavigateNext
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FirstPage
+import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.Button
@@ -180,6 +181,7 @@ private fun UserDetailsContent(
     var searchQuery by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
     val isSyncUserEnabled = remember { viewModel.isSyncUserEnabled() }
+    val uriHandler = LocalUriHandler.current
     val ratingChanges by viewModel.getRatingChangesByHandle(user.handle, searchQuery).collectAsStateWithLifecycle(initialValue = emptyList())
 
     val tabs = listOf("Info", "Ratings")
@@ -316,6 +318,22 @@ private fun UserDetailsContent(
                 )
                 Spacer(modifier = Modifier.size(4.dp))
                 Text("Delete")
+            }
+
+            OutlinedButton(
+                onClick = {
+                    uriHandler.openUri("https://codeforces.com/profile/${user.handle}")
+                },
+                enabled = !isSyncing,
+                modifier = Modifier.weight(1f)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.OpenInNew,
+                    contentDescription = "Profile",
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.size(4.dp))
+                Text("Profile")
             }
 
             Button(
