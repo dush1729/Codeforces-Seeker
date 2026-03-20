@@ -28,6 +28,7 @@ import com.dush1729.cfseeker.platform.BackgroundSyncScheduler
 import com.dush1729.cfseeker.platform.PlatformActions
 import com.dush1729.cfseeker.ui.ContestDetailsViewModel
 import com.dush1729.cfseeker.ui.ContestViewModel
+import com.dush1729.cfseeker.ui.DailyViewModel
 import com.dush1729.cfseeker.ui.ProfileViewModel
 import com.dush1729.cfseeker.ui.UserViewModel
 import com.google.firebase.analytics.ktx.analytics
@@ -98,4 +99,5 @@ val androidModule = module {
     viewModel { ContestViewModel(get(), get(), get()) }
     viewModel { ContestDetailsViewModel(get(), get(), get(), get()) }
     viewModel { ProfileViewModel(get(), get(), get()) }
+    viewModel { DailyViewModel(get(), get()) }
 }
