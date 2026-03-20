@@ -75,19 +75,16 @@ fun UserCard(
                     overflow = TextOverflow.Ellipsis
                 )
 
-                val (lastUpdateTitle, lastUpdatedTime) = when (sortOption) {
-                    SortOption.LAST_SYNC -> {
-                        val syncTime = user.lastSync.toRelativeTime()
-                        "Last sync" to syncTime
-                    }
-                    else -> {
-                        val updateTime = user.latestRatingUpdateTimeSeconds?.toRelativeTime()
-                            ?: "No rating update"
-                        "Last rating update" to updateTime
-                    }
+                val secondLineText = when (sortOption) {
+                    SortOption.LAST_SYNC -> "Last sync: ${user.lastSync.toRelativeTime()}"
+                    SortOption.MAX_RATING -> "Max rating: ${user.maxRating ?: "N/A"}"
+                    SortOption.CONTRIBUTION -> "Contribution: ${user.contribution}"
+                    SortOption.FRIEND_OF -> "Friend of: ${user.friendOfCount}"
+                    SortOption.LAST_ONLINE -> "Last online: ${user.lastOnlineTimeSeconds.toRelativeTime()}"
+                    else -> "Last rating update: ${user.latestRatingUpdateTimeSeconds?.toRelativeTime() ?: "No rating update"}"
                 }
                 Text(
-                    text = "$lastUpdateTitle: $lastUpdatedTime",
+                    text = secondLineText,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,

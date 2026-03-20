@@ -45,6 +45,10 @@ interface UserDao {
         ORDER BY
             CASE WHEN :sortBy = 'LAST_RATING_UPDATE' THEN latestRatingUpdateTimeSeconds END DESC,
             CASE WHEN :sortBy = 'RATING' THEN rating END DESC,
+            CASE WHEN :sortBy = 'MAX_RATING' THEN maxRating END DESC,
+            CASE WHEN :sortBy = 'CONTRIBUTION' THEN contribution END DESC,
+            CASE WHEN :sortBy = 'FRIEND_OF' THEN friendOfCount END DESC,
+            CASE WHEN :sortBy = 'LAST_ONLINE' THEN lastOnlineTimeSeconds END DESC,
             CASE WHEN :sortBy = 'LAST_SYNC' THEN lastSync END DESC,
             CASE WHEN :sortBy = 'HANDLE' THEN handle COLLATE NOCASE END ASC,
             handle ASC
