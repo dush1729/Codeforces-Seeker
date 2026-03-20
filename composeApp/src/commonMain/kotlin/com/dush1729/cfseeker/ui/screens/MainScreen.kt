@@ -23,6 +23,7 @@ import com.dush1729.cfseeker.analytics.AnalyticsService
 import com.dush1729.cfseeker.navigation.ContestDetailsRoute
 import com.dush1729.cfseeker.platform.PlatformActions
 import com.dush1729.cfseeker.ui.ContestViewModel
+import com.dush1729.cfseeker.ui.DailyViewModel
 import com.dush1729.cfseeker.ui.ProfileViewModel
 import com.dush1729.cfseeker.ui.UserViewModel
 import kotlinx.coroutines.launch
@@ -32,6 +33,7 @@ fun MainScreen(
     navController: NavController,
     userViewModel: UserViewModel,
     contestViewModel: ContestViewModel,
+    dailyViewModel: DailyViewModel,
     profileViewModel: ProfileViewModel,
     analyticsService: AnalyticsService,
     platformActions: PlatformActions,
@@ -115,8 +117,9 @@ fun MainScreen(
                     },
                     modifier = Modifier.fillMaxSize()
                 )
-                2 -> ProfileScreen(
-                    viewModel = profileViewModel,
+                2 -> DailyScreen(
+                    dailyViewModel = dailyViewModel,
+                    profileViewModel = profileViewModel,
                     modifier = Modifier.fillMaxSize()
                 )
                 3 -> AboutScreen(

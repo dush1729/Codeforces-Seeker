@@ -101,15 +101,7 @@ class ProfileViewModel(
 
     fun signOut() {
         viewModelScope.launch(ioDispatcher) {
-            val handle = appPreferences.getSignedInHandle()
             appPreferences.setSignedInHandle(null)
-            if (handle != null) {
-                try {
-                    firestoreService.unregisterUser(handle)
-                } catch (_: Exception) {
-                    // Non-blocking: unregistration is best-effort
-                }
-            }
             _profileState.value = ProfileState.NotSignedIn
             _verificationResult.value = null
         }

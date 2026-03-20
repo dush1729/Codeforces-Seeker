@@ -10,6 +10,7 @@ import com.dush1729.cfseeker.crashlytics.CrashlyticsService
 import com.dush1729.cfseeker.platform.PlatformActions
 import com.dush1729.cfseeker.ui.ContestDetailsViewModel
 import com.dush1729.cfseeker.ui.ContestViewModel
+import com.dush1729.cfseeker.ui.DailyViewModel
 import com.dush1729.cfseeker.ui.ProfileViewModel
 import com.dush1729.cfseeker.ui.UserViewModel
 import com.dush1729.cfseeker.ui.screens.ContestDetailsScreen
@@ -22,6 +23,7 @@ fun CFSeekerNavGraph(
     navController: NavHostController,
     userViewModel: UserViewModel,
     contestViewModel: ContestViewModel,
+    dailyViewModel: DailyViewModel,
     profileViewModel: ProfileViewModel,
     analyticsService: AnalyticsService,
     crashlyticsService: CrashlyticsService,
@@ -36,6 +38,7 @@ fun CFSeekerNavGraph(
                 navController = navController,
                 userViewModel = userViewModel,
                 contestViewModel = contestViewModel,
+                dailyViewModel = dailyViewModel,
                 profileViewModel = profileViewModel,
                 analyticsService = analyticsService,
                 platformActions = platformActions
