@@ -8,8 +8,18 @@ const db = admin.firestore();
 
 setGlobalOptions({maxInstances: 10});
 
-// Rating levels: 800 to 3500, step 300 (last step 400)
-const RATINGS = [800, 1100, 1400, 1700, 2000, 2300, 2600, 2900, 3200, 3500];
+// Rating ranges: each category spans 300 rating points (last one extends to 3500)
+const RATING_RANGES: { min: number; max: number }[] = [
+  {min: 800, max: 1000},
+  {min: 1100, max: 1300},
+  {min: 1400, max: 1600},
+  {min: 1700, max: 1900},
+  {min: 2000, max: 2200},
+  {min: 2300, max: 2500},
+  {min: 2600, max: 2800},
+  {min: 2900, max: 3100},
+  {min: 3200, max: 3500},
+];
 
 interface CfProblem {
   contestId: number;
@@ -75,16 +85,7 @@ export const selectDailyProblems = onSchedule("every day 00:00", async () => {
 
   const allProblems = data.result.problems.filter((p) => p.rating);
 
-  // Group by rating
-  const byRating = new Map<number, CfProblem[]>();
-  for (const p of allProblems) {
-    const r = p.rating as number;
-    const list = byRating.get(r) || [];
-    list.push(p);
-    byRating.set(r, list);
-  }
-
-  // Pick one random problem per rating level
+  // Pick one random problem per rating range
   const selected: Record<string, {
     contestId: number;
     index: string;
@@ -92,18 +93,22 @@ export const selectDailyProblems = onSchedule("every day 00:00", async () => {
     rating: number;
   }> = {};
 
-  for (const rating of RATINGS) {
-    const candidates = byRating.get(rating);
-    if (!candidates || candidates.length === 0) {
-      console.warn(`No problems found for rating ${rating}`);
+  for (const range of RATING_RANGES) {
+    const candidates = allProblems.filter(
+      (p) => (p.rating as number) >= range.min &&
+             (p.rating as number) <= range.max
+    );
+    if (candidates.length === 0) {
+      console.warn(`No problems found for range ${range.min}-${range.max}`);
       continue;
     }
     const pick = candidates[Math.floor(Math.random() * candidates.length)];
-    selected[String(rating)] = {
+    const label = `${range.min}-${range.max}`;
+    selected[label] = {
       contestId: pick.contestId,
       index: pick.index,
       name: pick.name,
-      rating: rating,
+      rating: pick.rating as number,
     };
   }
 
