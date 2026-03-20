@@ -580,11 +580,18 @@ private fun ProblemCard(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            val ratingRanges = listOf(
+                800 to 1000, 1100 to 1300, 1400 to 1600, 1700 to 1900,
+                2000 to 2200, 2300 to 2500, 2600 to 2800, 2900 to 3100, 3200 to 3500
+            )
+            val range = ratingRanges.find { problem.rating in it.first..it.second }
+            val rangeText = range?.let { "${it.first}-${it.second}" } ?: "${problem.rating}"
+
             Text(
-                text = "${problem.rating}",
+                text = rangeText,
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.width(48.dp)
+                modifier = Modifier.width(80.dp)
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
