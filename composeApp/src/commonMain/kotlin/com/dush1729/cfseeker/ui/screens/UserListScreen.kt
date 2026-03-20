@@ -275,6 +275,14 @@ fun UserListScreen(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
                     )
                 }
+                if (outdatedUserCount > 0) {
+                    Text(
+                        text = "$outdatedUserCount outdated user${if (outdatedUserCount > 1) "s" else ""}. Click on sync all to update.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)
+                    )
+                }
 
                 // Sync progress indicator
                 if (isRefreshing) {
