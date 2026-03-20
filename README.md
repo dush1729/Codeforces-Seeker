@@ -12,20 +12,34 @@ Codeforces Seeker helps competitive programmers track their friends, teammates, 
 ### Users
 - 📊 Track multiple Codeforces users with real-time sync
 - 📈 Interactive rating history chart in user details
-- 🔍 Search and sort users by handle, rating, last sync, or last rating update
+- 🔍 Search and sort users by handle, rating, max rating, last sync, or last rating update
 - 🔄 Auto-refresh with visual sync status indicators
-- 🔴 Red border highlights for outdated users
+- 🔴 Red border highlights for outdated users (with count indicator)
 - 🔗 Click to open contests from rating history
 - 🎨 Adaptive color themes based on user ratings
+- 📋 Detail toggle showing last contest name and max rating
+- 🔗 Profile link button to open Codeforces profile in browser
+- ✉️ Clickable email hyperlink in user details
 
 ### Contests
 - 🏆 Browse and search past Codeforces contests
 - 📊 View full contest standings with participant details
+- 🔮 Rating prediction (Delta column) in contest standings
 - 🔍 Search participants within contest standings
 - 📈 Ratings tab showing all rating changes from a contest
 - 📝 Problems tab with "Hide spoilers" filter
 - 📋 Long-press to copy participant handles
 - 🔗 Open problems directly in browser
+
+### Daily
+- 📅 Daily problem recommendations with rating ranges
+- 🏅 Daily leaderboard tracking solved problems
+- 🔐 Codeforces account verification and sign-in
+- ⏰ Timing info for daily problem refresh
+
+### Profile
+- 👤 Codeforces account verification
+- 🔗 Link your Codeforces account to track progress
 
 ### General
 - 🎨 Modern Material 3 UI
@@ -64,6 +78,7 @@ Codeforces Seeker helps competitive programmers track their friends, teammates, 
 ```
 composeApp/src/
 ├── commonMain/kotlin/com/dush1729/cfseeker/
+│   ├── analytics/          # Analytics service abstraction
 │   ├── crashlytics/        # Crashlytics service abstraction
 │   ├── data/
 │   │   ├── local/          # Room database, DAOs, entities, views
@@ -72,6 +87,7 @@ composeApp/src/
 │   ├── di/                 # Koin modules
 │   ├── navigation/         # Type-safe navigation routes
 │   ├── platform/           # expect declarations for platform code
+│   ├── utils/              # Utility functions
 │   └── ui/
 │       ├── base/           # Base UI classes
 │       ├── components/     # Reusable Compose components
@@ -112,6 +128,17 @@ Migrated from Dagger 2 to Dagger Hilt for simplified dependency injection with l
 Fully migrated from XML-based UI to Jetpack Compose for a modern, declarative UI approach with better maintainability.
 
 ### Release History
+
+### v6.0 - Daily Problems, Profile & Rating Predictions
+- Daily tab with curated daily problems (rating ranges) and leaderboard
+- Profile tab with Codeforces account verification
+- Rating prediction (Delta column) in contest standings
+- Profile link button in User Details screen
+- Detail toggle on user list showing last contest name and max rating
+- More sorting options for users (max rating, etc.)
+- Outdated users count displayed below last sync text
+- Clickable email hyperlink in User Details
+- Firebase Cloud Functions backend for daily leaderboard
 
 ### v5.0 - Kotlin Multiplatform
 - Migrated entire codebase to Kotlin Multiplatform (KMP)
