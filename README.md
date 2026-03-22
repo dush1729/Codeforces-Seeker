@@ -24,7 +24,7 @@ Codeforces Seeker helps competitive programmers track their friends, teammates, 
 ### Contests
 - 🏆 Browse and search past Codeforces contests
 - 📊 View full contest standings with participant details
-- 🔮 Rating prediction (Delta column) in contest standings
+- 🔮 Rating delta column in contest standings
 - 🔍 Search participants within contest standings
 - 📈 Ratings tab showing all rating changes from a contest
 - 📝 Problems tab with "Hide spoilers" filter
@@ -129,10 +129,16 @@ Fully migrated from XML-based UI to Jetpack Compose for a modern, declarative UI
 
 ### Release History
 
+### v6.1 - In-App WebView & Cumulative Leaderboard
+- In-app WebView for opening problem links (no more switching to browser)
+- All Time cumulative leaderboard in Daily tab
+- Show actual rating deltas instead of predicted deltas in contest standings
+- Fixed OOM crash caused by getRatedList API call
+
 ### v6.0 - Daily Problems, Profile & Rating Predictions
 - Daily tab with curated daily problems (rating ranges) and leaderboard
 - Profile tab with Codeforces account verification
-- Rating prediction (Delta column) in contest standings
+- Rating delta column in contest standings
 - Profile link button in User Details screen
 - Detail toggle on user list showing last contest name and max rating
 - More sorting options for users (max rating, etc.)

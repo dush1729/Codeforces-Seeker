@@ -81,7 +81,7 @@ fun ContestDetailsScreen(
     val problems by viewModel.getContestProblems(contestId).collectAsStateWithLifecycle(initialValue = emptyList())
     val standings by viewModel.getContestStandings(contestId).collectAsStateWithLifecycle(initialValue = emptyList())
     val ratingChanges by viewModel.getContestRatingChanges(contestId).collectAsStateWithLifecycle(initialValue = emptyList())
-    val predictedDeltas by viewModel.predictedDeltas.collectAsStateWithLifecycle()
+    val actualDeltas by viewModel.actualDeltas.collectAsStateWithLifecycle()
     val lastSyncTime by viewModel.lastSyncTime.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val showLocalUsersOnly by viewModel.showLocalUsersOnly.collectAsStateWithLifecycle()
@@ -132,7 +132,7 @@ fun ContestDetailsScreen(
             problems = problems,
             standings = standings,
             ratingChanges = ratingChanges,
-            predictedDeltas = predictedDeltas,
+            actualDeltas = actualDeltas,
             lastSyncTime = lastSyncTime,
             refreshIntervalMinutes = refreshIntervalMinutes,
             contestType = contestType,
@@ -151,7 +151,7 @@ private fun ContestDetailsContent(
     problems: List<ContestProblemEntity>,
     standings: List<ContestStandingRowEntity>,
     ratingChanges: List<RatingChangeEntity>,
-    predictedDeltas: Map<String, Int>,
+    actualDeltas: Map<String, Int>,
     lastSyncTime: Long?,
     refreshIntervalMinutes: Long,
     contestType: String,
@@ -272,7 +272,7 @@ private fun ContestDetailsContent(
             1 -> {
                 StandingsContent(
                     standings = standings,
-                    predictedDeltas = predictedDeltas,
+                    actualDeltas = actualDeltas,
                     contestType = contestType,
                     modifier = Modifier.weight(1f)
                 )
@@ -407,7 +407,7 @@ private fun ProblemCard(
 @Composable
 private fun StandingsContent(
     standings: List<ContestStandingRowEntity>,
-    predictedDeltas: Map<String, Int>,
+    actualDeltas: Map<String, Int>,
     contestType: String,
     modifier: Modifier = Modifier
 ) {
@@ -424,7 +424,7 @@ private fun StandingsContent(
         }
     } else {
         val showPenalty = contestType == "ICPC"
-        val showDelta = predictedDeltas.isNotEmpty()
+        val showDelta = actualDeltas.isNotEmpty()
 
         Column(modifier = modifier) {
             StandingTableHeader(showPenalty = showPenalty, showDelta = showDelta)
@@ -438,12 +438,12 @@ private fun StandingsContent(
                     items = standings,
                     key = { "${it.contestId}_${it.memberHandles}" }
                 ) { standing ->
-                    val delta = predictedDeltas[standing.memberHandles]
+                    val delta = actualDeltas[standing.memberHandles]
                     StandingTableRow(
                         standing = standing,
                         showPenalty = showPenalty,
                         showDelta = showDelta,
-                        predictedDelta = delta
+                        delta = delta
                     )
                     HorizontalDivider()
                 }
@@ -520,7 +520,7 @@ private fun StandingTableRow(
     standing: ContestStandingRowEntity,
     showPenalty: Boolean,
     showDelta: Boolean = false,
-    predictedDelta: Int? = null
+    delta: Int? = null
 ) {
     val problemResults = remember(standing.problemResults) {
         try {
@@ -571,12 +571,12 @@ private fun StandingTableRow(
             modifier = Modifier.weight(0.8f)
         )
         if (showDelta) {
-            val deltaText = predictedDelta?.let {
+            val deltaText = delta?.let {
                 if (it > 0) "+$it" else it.toString()
             } ?: "-"
             val deltaColor = when {
-                predictedDelta != null && predictedDelta > 0 -> Color(0xFF4CAF50)
-                predictedDelta != null && predictedDelta < 0 -> Color(0xFFF44336)
+                delta != null && delta > 0 -> Color(0xFF4CAF50)
+                delta != null && delta < 0 -> Color(0xFFF44336)
                 else -> MaterialTheme.colorScheme.onSurfaceVariant
             }
             Text(

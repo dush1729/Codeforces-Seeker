@@ -10,8 +10,6 @@ import com.dush1729.cfseeker.data.repository.ContestStandingsRepository
 import com.dush1729.cfseeker.data.local.AppPreferences
 import com.dush1729.cfseeker.data.remote.config.RemoteConfigService
 import com.dush1729.cfseeker.platform.ioDispatcher
-import com.dush1729.cfseeker.utils.ContestantForPrediction
-import com.dush1729.cfseeker.utils.RatingPredictor
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -50,8 +48,8 @@ class ContestDetailsViewModel(
     private val _showLocalUsersOnly = MutableStateFlow(true)
     val showLocalUsersOnly = _showLocalUsersOnly.asStateFlow()
 
-    private val _predictedDeltas = MutableStateFlow<Map<String, Int>>(emptyMap())
-    val predictedDeltas = _predictedDeltas.asStateFlow()
+    private val _actualDeltas = MutableStateFlow<Map<String, Int>>(emptyMap())
+    val actualDeltas = _actualDeltas.asStateFlow()
 
     fun getContestProblems(contestId: Int): Flow<List<ContestProblemEntity>> {
         return repository.getContestProblems(contestId)
@@ -113,7 +111,7 @@ class ContestDetailsViewModel(
                     val refreshIntervalSeconds = refreshIntervalMinutes * 60
 
                     if (lastSyncTime > 0 && (currentTime - lastSyncTime) < refreshIntervalSeconds) {
-                        computePredictedDeltas(contestId)
+                        computeActualDeltas(contestId)
                         _isRefreshing.value = false
                         return@launch
                     }
@@ -123,7 +121,7 @@ class ContestDetailsViewModel(
                 try {
                     repository.fetchContestRatingChanges(contestId)
                 } catch (_: Exception) {}
-                computePredictedDeltas(contestId)
+                computeActualDeltas(contestId)
                 val currentTime = Clock.System.now().epochSeconds
                 appPreferences.setContestStandingsLastSyncTime(contestId, currentTime)
                 _lastSyncTime.value = currentTime
@@ -139,32 +137,16 @@ class ContestDetailsViewModel(
         }
     }
 
-    private suspend fun computePredictedDeltas(contestId: Int) {
+    private suspend fun computeActualDeltas(contestId: Int) {
         try {
-            // Use contest rating changes (oldRating) to build rating map
             val ratingChanges = repository.getContestRatingChanges(contestId, "", false).first()
             if (ratingChanges.isEmpty()) return
 
-            val ratingMap = ratingChanges.associate { it.handle to it.oldRating }
-
-            val allStandings = repository.getContestStandings(contestId, "", false).first()
-
-            val contestants = allStandings
-                .filter { it.participantType == "CONTESTANT" && !it.memberHandles.contains(",") }
-                .mapNotNull { standing ->
-                    val rating = ratingMap[standing.memberHandles] ?: return@mapNotNull null
-                    ContestantForPrediction(
-                        handle = standing.memberHandles,
-                        rank = standing.rank,
-                        rating = rating
-                    )
-                }
-
-            if (contestants.isNotEmpty()) {
-                _predictedDeltas.value = RatingPredictor.predict(contestants)
+            _actualDeltas.value = ratingChanges.associate {
+                it.handle to (it.newRating - it.oldRating)
             }
         } catch (_: Exception) {
-            // Predicted deltas are optional — silently ignore errors
+            // Deltas are optional — silently ignore errors
         }
     }
 }
