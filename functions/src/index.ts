@@ -8,7 +8,8 @@ const db = admin.firestore();
 
 setGlobalOptions({maxInstances: 10});
 
-// Rating ranges: each category spans 300 rating points (last one extends to 3500)
+// Rating ranges: each category spans 300 rating points
+// (last one extends to 3500)
 const RATING_RANGES: { min: number; max: number }[] = [
   {min: 800, max: 1000},
   {min: 1100, max: 1300},
@@ -239,4 +240,30 @@ export const checkSubmissions = onSchedule("every 15 minutes", async () => {
   });
 
   console.log(`Updated leaderboard for ${date}`);
+
+  // Update cumulative (all-time) leaderboard
+  await updateCumulativeLeaderboard();
 });
+
+/**
+ * Aggregate all daily leaderboard scores into cumulativeLeaderboard/totals.
+ */
+async function updateCumulativeLeaderboard(): Promise<void> {
+  const allDays = await db.collection("dailyLeaderboard").get();
+  const cumulative: Record<string, number> = {};
+
+  for (const doc of allDays.docs) {
+    const scores = (doc.data().scores ?? {}) as Record<string, number>;
+    for (const [handle, score] of Object.entries(scores)) {
+      cumulative[handle] = (cumulative[handle] || 0) + score;
+    }
+  }
+
+  await db.doc("cumulativeLeaderboard/totals").set({
+    scores: cumulative,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  const count = Object.keys(cumulative).length;
+  console.log(`Updated cumulative leaderboard: ${count} users`);
+}

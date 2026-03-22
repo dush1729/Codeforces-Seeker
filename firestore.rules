@@ -13,6 +13,12 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Cumulative leaderboard: anyone can read
+    match /cumulativeLeaderboard/{document=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     // Users: anyone can read/write (registration from app)
     match /users/{handle} {
       allow read, write: if true;
