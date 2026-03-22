@@ -99,7 +99,7 @@ val androidModule = module {
     // ViewModels
     viewModel { UserViewModel(get(), get(), get(), get(), get(), get()) }
     viewModel { ContestViewModel(get(), get(), get()) }
-    viewModel { ContestDetailsViewModel(get(), get(), get(), get(), get()) }
+    viewModel { ContestDetailsViewModel(get(), get(), get(), get()) }
     viewModel { ProfileViewModel(get(), get(), get()) }
     viewModel { DailyViewModel(get(), get()) }
 }

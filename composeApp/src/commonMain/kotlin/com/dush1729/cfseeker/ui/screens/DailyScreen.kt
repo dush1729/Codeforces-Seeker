@@ -45,6 +45,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.navigation.NavController
+import com.dush1729.cfseeker.navigation.WebViewRoute
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -71,6 +73,7 @@ import kotlinx.datetime.atStartOfDayIn
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DailyScreen(
+    navController: NavController,
     dailyViewModel: DailyViewModel,
     profileViewModel: ProfileViewModel,
     modifier: Modifier = Modifier
@@ -121,6 +124,7 @@ fun DailyScreen(
                         data = state.data,
                         signedInHandle = state.signedInHandle,
                         profileViewModel = profileViewModel,
+                        navController = navController,
                         onSignOut = {
                             profileViewModel.signOut()
                             dailyViewModel.refresh()
@@ -142,6 +146,7 @@ private fun DailyContent(
     data: DailyData,
     signedInHandle: String?,
     profileViewModel: ProfileViewModel,
+    navController: NavController,
     onSignOut: () -> Unit
 ) {
     var selectedTab by remember { mutableStateOf(DailyTab.Problems) }
@@ -218,7 +223,8 @@ private fun DailyContent(
                                     sub.handle.equals(signedInHandle, ignoreCase = true) &&
                                         sub.contestId == problem.contestId &&
                                         sub.index == problem.index
-                                }
+                                },
+                                navController = navController
                             )
                         }
                         item { Spacer(modifier = Modifier.height(16.dp)) }
@@ -586,13 +592,13 @@ private fun VerificationCard(
 @Composable
 private fun ProblemCard(
     problem: DailyProblem,
-    isSolved: Boolean
+    isSolved: Boolean,
+    navController: NavController
 ) {
-    val uriHandler = LocalUriHandler.current
     val url = "https://codeforces.com/contest/${problem.contestId}/problem/${problem.index}"
 
     Card(
-        onClick = { uriHandler.openUri(url) },
+        onClick = { navController.navigate(WebViewRoute(url, problem.name)) },
         modifier = Modifier.fillMaxWidth(),
         colors = if (isSolved) {
             CardDefaults.cardColors(

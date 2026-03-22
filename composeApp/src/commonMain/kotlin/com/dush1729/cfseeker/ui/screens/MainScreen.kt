@@ -118,6 +118,7 @@ fun MainScreen(
                     modifier = Modifier.fillMaxSize()
                 )
                 2 -> DailyScreen(
+                    navController = navController,
                     dailyViewModel = dailyViewModel,
                     profileViewModel = profileViewModel,
                     modifier = Modifier.fillMaxSize()

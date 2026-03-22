@@ -14,3 +14,6 @@ data class ContestDetailsRoute(
     val contestName: String,
     val contestType: String
 )
+
+@Serializable
+data class WebViewRoute(val url: String, val title: String = "")

@@ -7,7 +7,6 @@ import com.dush1729.cfseeker.data.local.entity.ContestProblemEntity
 import com.dush1729.cfseeker.data.local.entity.ContestStandingRowEntity
 import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
 import com.dush1729.cfseeker.data.repository.ContestStandingsRepository
-import com.dush1729.cfseeker.data.repository.RatedUserRepository
 import com.dush1729.cfseeker.data.local.AppPreferences
 import com.dush1729.cfseeker.data.remote.config.RemoteConfigService
 import com.dush1729.cfseeker.platform.ioDispatcher
@@ -31,7 +30,6 @@ import kotlinx.datetime.Clock
 
 class ContestDetailsViewModel(
     private val repository: ContestStandingsRepository,
-    private val ratedUserRepository: RatedUserRepository,
     private val crashlyticsService: CrashlyticsService,
     private val appPreferences: AppPreferences,
     private val remoteConfigService: RemoteConfigService
@@ -143,25 +141,28 @@ class ContestDetailsViewModel(
 
     private suspend fun computePredictedDeltas(contestId: Int) {
         try {
-            // Ensure rated user cache is fresh
-            ratedUserRepository.ensureCacheFresh()
+            // Use contest rating changes (oldRating) to build rating map
+            val ratingChanges = repository.getContestRatingChanges(contestId, "", false).first()
+            if (ratingChanges.isEmpty()) return
+
+            val ratingMap = ratingChanges.associate { it.handle to it.oldRating }
 
             val allStandings = repository.getContestStandings(contestId, "", false).first()
 
-            // Get ratings from cached rated user list (works for ongoing + past contests)
-            val ratingMap = ratedUserRepository.getRatingsForContest(contestId)
-
             val contestants = allStandings
                 .filter { it.participantType == "CONTESTANT" && !it.memberHandles.contains(",") }
-                .map { standing ->
+                .mapNotNull { standing ->
+                    val rating = ratingMap[standing.memberHandles] ?: return@mapNotNull null
                     ContestantForPrediction(
                         handle = standing.memberHandles,
                         rank = standing.rank,
-                        rating = ratingMap[standing.memberHandles] ?: 1500
+                        rating = rating
                     )
                 }
 
-            _predictedDeltas.value = RatingPredictor.predict(contestants)
+            if (contestants.isNotEmpty()) {
+                _predictedDeltas.value = RatingPredictor.predict(contestants)
+            }
         } catch (_: Exception) {
             // Predicted deltas are optional — silently ignore errors
         }

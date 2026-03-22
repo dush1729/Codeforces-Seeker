@@ -16,6 +16,7 @@ import com.dush1729.cfseeker.ui.UserViewModel
 import com.dush1729.cfseeker.ui.screens.ContestDetailsScreen
 import com.dush1729.cfseeker.ui.screens.MainScreen
 import com.dush1729.cfseeker.ui.screens.UserDetailsScreen
+import com.dush1729.cfseeker.ui.screens.WebViewScreen
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -67,6 +68,15 @@ fun CFSeekerNavGraph(
                 viewModel = contestDetailsViewModel,
                 analyticsService = analyticsService,
                 crashlyticsService = crashlyticsService
+            )
+        }
+
+        composable<WebViewRoute> { backStackEntry ->
+            val route = backStackEntry.toRoute<WebViewRoute>()
+            WebViewScreen(
+                url = route.url,
+                title = route.title,
+                navController = navController
             )
         }
     }
