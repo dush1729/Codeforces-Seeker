@@ -3,10 +3,12 @@ package com.dush1729.cfseeker.ui.components
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.interop.UIKitView
+import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.NSURL
 import platform.Foundation.NSURLRequest
 import platform.WebKit.WKWebView
 
+@OptIn(ExperimentalForeignApi::class)
 @Composable
 actual fun PlatformWebView(url: String, modifier: Modifier) {
     UIKitView(
