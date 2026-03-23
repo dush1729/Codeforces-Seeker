@@ -235,6 +235,7 @@ export const checkSubmissions = onSchedule("every 15 minutes", async () => {
   await leaderboardRef.set({
     date,
     scores: existingScores,
+    ranks: computeRanks(existingScores),
     submissions: existingSubmissions,
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
@@ -244,6 +245,29 @@ export const checkSubmissions = onSchedule("every 15 minutes", async () => {
   // Update cumulative (all-time) leaderboard
   await updateCumulativeLeaderboard();
 });
+
+/**
+ * Compute ranks from a scores map, handling ties with standard competition
+ * ranking (1, 1, 3, 4, 4, 6).
+ * @param {Record<string, number>} scores - Map of handle to score.
+ * @return {Record<string, number>} Map of handle to rank.
+ */
+function computeRanks(
+  scores: Record<string, number>
+): Record<string, number> {
+  const sorted = Object.entries(scores)
+    .sort(([, a], [, b]) => b - a);
+
+  const ranks: Record<string, number> = {};
+  let rank = 1;
+  for (let i = 0; i < sorted.length; i++) {
+    if (i > 0 && sorted[i][1] < sorted[i - 1][1]) {
+      rank = i + 1;
+    }
+    ranks[sorted[i][0]] = rank;
+  }
+  return ranks;
+}
 
 /**
  * Aggregate all daily leaderboard scores into cumulativeLeaderboard/totals.
@@ -261,6 +285,7 @@ async function updateCumulativeLeaderboard(): Promise<void> {
 
   await db.doc("cumulativeLeaderboard/totals").set({
     scores: cumulative,
+    ranks: computeRanks(cumulative),
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
 
