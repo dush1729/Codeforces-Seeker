@@ -11,7 +11,9 @@ import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Today
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
@@ -20,23 +22,39 @@ import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.dush1729.cfseeker.analytics.AnalyticsService
+import com.dush1729.cfseeker.data.local.AppPreferences
 import com.dush1729.cfseeker.navigation.ContestDetailsRoute
 import com.dush1729.cfseeker.platform.PlatformActions
 import com.dush1729.cfseeker.ui.ContestViewModel
 import com.dush1729.cfseeker.ui.DailyViewModel
 import com.dush1729.cfseeker.ui.ProfileViewModel
 import com.dush1729.cfseeker.ui.UserViewModel
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 
+private data class DrawerTab(val label: String, val icon: ImageVector, val analyticsName: String)
+
+private val DRAWER_TABS = listOf(
+    DrawerTab("Users", Icons.Filled.People, "users"),
+    DrawerTab("Contests", Icons.Filled.EmojiEvents, "contests"),
+    DrawerTab("Daily", Icons.Filled.Today, "daily"),
+    DrawerTab("About", Icons.Filled.Info, "about"),
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     navController: NavController,
@@ -48,60 +66,47 @@ fun MainScreen(
     platformActions: PlatformActions,
     modifier: Modifier = Modifier
 ) {
+    val appPreferences: AppPreferences = koinInject()
     var selectedTab by rememberSaveable { mutableIntStateOf(0) }
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val onMenuClick: () -> Unit = { scope.launch { drawerState.open() } }
+    var showMenuBadge by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        val knownCount = appPreferences.getKnownMenuItemCount()
+        showMenuBadge = knownCount < DRAWER_TABS.size
+    }
+
+    LaunchedEffect(drawerState) {
+        snapshotFlow { drawerState.currentValue }
+            .filter { it == DrawerValue.Open }
+            .collect {
+                if (showMenuBadge) {
+                    appPreferences.setKnownMenuItemCount(DRAWER_TABS.size)
+                    showMenuBadge = false
+                }
+            }
+    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet(modifier = Modifier.width(IntrinsicSize.Min)) {
                 Spacer(Modifier.height(16.dp))
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Filled.People, contentDescription = null) },
-                    label = { Text("Users") },
-                    selected = selectedTab == 0,
-                    onClick = {
-                        selectedTab = 0
-                        scope.launch { drawerState.close() }
-                        analyticsService.logScreenView("users")
-                    },
-                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-                )
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Filled.EmojiEvents, contentDescription = null) },
-                    label = { Text("Contests") },
-                    selected = selectedTab == 1,
-                    onClick = {
-                        selectedTab = 1
-                        scope.launch { drawerState.close() }
-                        analyticsService.logScreenView("contests")
-                    },
-                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-                )
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Filled.Today, contentDescription = null) },
-                    label = { Text("Daily") },
-                    selected = selectedTab == 2,
-                    onClick = {
-                        selectedTab = 2
-                        scope.launch { drawerState.close() }
-                        analyticsService.logScreenView("daily")
-                    },
-                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-                )
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Filled.Info, contentDescription = null) },
-                    label = { Text("About") },
-                    selected = selectedTab == 3,
-                    onClick = {
-                        selectedTab = 3
-                        scope.launch { drawerState.close() }
-                        analyticsService.logScreenView("about")
-                    },
-                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-                )
+                DRAWER_TABS.forEachIndexed { index, tab ->
+                    NavigationDrawerItem(
+                        icon = { Icon(tab.icon, contentDescription = null) },
+                        label = { Text(tab.label) },
+                        selected = selectedTab == index,
+                        onClick = {
+                            selectedTab = index
+                            scope.launch { drawerState.close() }
+                            analyticsService.logScreenView(tab.analyticsName)
+                        },
+                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                    )
+                }
             }
         },
         modifier = modifier.fillMaxSize()
@@ -111,6 +116,7 @@ fun MainScreen(
                 navController = navController,
                 viewModel = userViewModel,
                 onMenuClick = onMenuClick,
+                showMenuBadge = showMenuBadge,
                 modifier = Modifier.fillMaxSize()
             )
             1 -> ContestListScreen(
@@ -121,6 +127,7 @@ fun MainScreen(
                     )
                 },
                 onMenuClick = onMenuClick,
+                showMenuBadge = showMenuBadge,
                 modifier = Modifier.fillMaxSize()
             )
             2 -> DailyScreen(
@@ -128,12 +135,14 @@ fun MainScreen(
                 dailyViewModel = dailyViewModel,
                 profileViewModel = profileViewModel,
                 onMenuClick = onMenuClick,
+                showMenuBadge = showMenuBadge,
                 modifier = Modifier.fillMaxSize()
             )
             3 -> AboutScreen(
                 analyticsService = analyticsService,
                 platformActions = platformActions,
                 onMenuClick = onMenuClick,
+                showMenuBadge = showMenuBadge,
                 modifier = Modifier.fillMaxSize()
             )
         }

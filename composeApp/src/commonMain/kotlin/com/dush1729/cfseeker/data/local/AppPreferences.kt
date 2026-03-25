@@ -17,4 +17,7 @@ interface AppPreferences {
 
     suspend fun setRatedUserLastSyncTime(timestamp: Long)
     suspend fun getRatedUserLastSyncTime(): Long
+
+    suspend fun setKnownMenuItemCount(count: Int)
+    suspend fun getKnownMenuItemCount(): Int
 }

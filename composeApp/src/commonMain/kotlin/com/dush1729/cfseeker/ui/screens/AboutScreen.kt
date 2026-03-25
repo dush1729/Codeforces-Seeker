@@ -16,6 +16,8 @@ import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -46,6 +48,7 @@ fun AboutScreen(
     analyticsService: AnalyticsService,
     platformActions: PlatformActions,
     onMenuClick: (() -> Unit)? = null,
+    showMenuBadge: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -56,7 +59,13 @@ fun AboutScreen(
                 navigationIcon = {
                     if (onMenuClick != null) {
                         IconButton(onClick = onMenuClick) {
-                            Icon(Icons.Filled.Menu, contentDescription = "Menu")
+                            if (showMenuBadge) {
+                                BadgedBox(badge = { Badge() }) {
+                                    Icon(Icons.Filled.Menu, contentDescription = "Menu")
+                                }
+                            } else {
+                                Icon(Icons.Filled.Menu, contentDescription = "Menu")
+                            }
                         }
                     }
                 }

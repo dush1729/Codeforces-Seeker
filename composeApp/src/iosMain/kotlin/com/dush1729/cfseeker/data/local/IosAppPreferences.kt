@@ -64,6 +64,14 @@ class IosAppPreferences : AppPreferences {
         return defaults.integerForKey("rated_user_last_sync_time")
     }
 
+    override suspend fun setKnownMenuItemCount(count: Int) {
+        defaults.setInteger(count.toLong(), forKey = "known_menu_item_count")
+    }
+
+    override suspend fun getKnownMenuItemCount(): Int {
+        return defaults.integerForKey("known_menu_item_count").toInt()
+    }
+
     override suspend fun clearContestPreferences(contestIds: List<Int>) {
         contestIds.forEach { contestId ->
             defaults.removeObjectForKey("contest_standings_sync_$contestId")

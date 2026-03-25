@@ -33,6 +33,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -79,6 +81,7 @@ fun DailyScreen(
     dailyViewModel: DailyViewModel,
     profileViewModel: ProfileViewModel,
     onMenuClick: (() -> Unit)? = null,
+    showMenuBadge: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val uiState by dailyViewModel.uiState.collectAsState()
@@ -90,7 +93,13 @@ fun DailyScreen(
                 navigationIcon = {
                     if (onMenuClick != null) {
                         IconButton(onClick = onMenuClick) {
-                            Icon(Icons.Filled.Menu, contentDescription = "Menu")
+                            if (showMenuBadge) {
+                                BadgedBox(badge = { Badge() }) {
+                                    Icon(Icons.Filled.Menu, contentDescription = "Menu")
+                                }
+                            } else {
+                                Icon(Icons.Filled.Menu, contentDescription = "Menu")
+                            }
                         }
                     }
                 }

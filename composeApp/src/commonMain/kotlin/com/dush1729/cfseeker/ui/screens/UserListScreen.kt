@@ -92,6 +92,7 @@ fun UserListScreen(
     navController: NavController,
     viewModel: UserViewModel,
     onMenuClick: (() -> Unit)? = null,
+    showMenuBadge: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -144,7 +145,13 @@ fun UserListScreen(
                 navigationIcon = {
                     if (onMenuClick != null) {
                         IconButton(onClick = onMenuClick) {
-                            Icon(Icons.Filled.Menu, contentDescription = "Menu")
+                            if (showMenuBadge) {
+                                BadgedBox(badge = { Badge() }) {
+                                    Icon(Icons.Filled.Menu, contentDescription = "Menu")
+                                }
+                            } else {
+                                Icon(Icons.Filled.Menu, contentDescription = "Menu")
+                            }
                         }
                     }
                 },

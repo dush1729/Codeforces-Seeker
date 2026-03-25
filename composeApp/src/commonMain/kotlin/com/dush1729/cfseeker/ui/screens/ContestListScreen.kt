@@ -15,6 +15,8 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
@@ -62,6 +64,7 @@ fun ContestListScreen(
     viewModel: ContestViewModel,
     onContestClick: (contestId: Int, contestName: String, contestType: String) -> Unit,
     onMenuClick: (() -> Unit)? = null,
+    showMenuBadge: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -92,7 +95,13 @@ fun ContestListScreen(
                 navigationIcon = {
                     if (onMenuClick != null) {
                         IconButton(onClick = onMenuClick) {
-                            Icon(Icons.Filled.Menu, contentDescription = "Menu")
+                            if (showMenuBadge) {
+                                BadgedBox(badge = { Badge() }) {
+                                    Icon(Icons.Filled.Menu, contentDescription = "Menu")
+                                }
+                            } else {
+                                Icon(Icons.Filled.Menu, contentDescription = "Menu")
+                            }
                         }
                     }
                 },
