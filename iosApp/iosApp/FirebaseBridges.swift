@@ -2,6 +2,7 @@ import Foundation
 import ComposeApp
 import FirebaseAnalytics
 import FirebaseCrashlytics
+import FirebaseFirestore
 import FirebaseRemoteConfig
 
 class SwiftAnalyticsBridge: AnalyticsBridge {
@@ -103,5 +104,79 @@ class SwiftRemoteConfigBridge: RemoteConfigBridge {
 
     func getDouble(key: String) -> Double {
         return remoteConfig.configValue(forKey: key).numberValue.doubleValue
+    }
+}
+
+class SwiftFirestoreBridge: FirestoreBridge {
+    private let db = Firestore.firestore()
+
+    func getDocument(collection: String, documentId: String, callback: any FirestoreCallback) {
+        db.collection(collection).document(documentId).getDocument { snapshot, error in
+            if let error = error {
+                callback.onFailure(error: error.localizedDescription)
+                return
+            }
+            guard let snapshot = snapshot, snapshot.exists, let data = snapshot.data() else {
+                callback.onSuccess(data: nil)
+                return
+            }
+            callback.onSuccess(data: self.convertToKotlinCompatible(data))
+        }
+    }
+
+    func setDocument(collection: String, documentId: String, data: [String: Any], callback: any FirestoreCallback) {
+        // Handle SERVER_TIMESTAMP sentinel
+        var firestoreData = data as [String: Any]
+        for (key, value) in firestoreData {
+            if let str = value as? String, str == "SERVER_TIMESTAMP" {
+                firestoreData[key] = FieldValue.serverTimestamp()
+            }
+        }
+
+        db.collection(collection).document(documentId).setData(firestoreData) { error in
+            if let error = error {
+                callback.onFailure(error: error.localizedDescription)
+            } else {
+                callback.onSuccess(data: nil)
+            }
+        }
+    }
+
+    func deleteDocument(collection: String, documentId: String, callback: any FirestoreCallback) {
+        db.collection(collection).document(documentId).delete { error in
+            if let error = error {
+                callback.onFailure(error: error.localizedDescription)
+            } else {
+                callback.onSuccess(data: nil)
+            }
+        }
+    }
+
+    /// Recursively convert Firestore data to types that cross the Kotlin/Swift boundary cleanly
+    private func convertToKotlinCompatible(_ data: [String: Any]) -> [String: Any] {
+        var result: [String: Any] = [:]
+        for (key, value) in data {
+            result[key] = convertValue(value)
+        }
+        return result
+    }
+
+    private func convertValue(_ value: Any) -> Any {
+        if let dict = value as? [String: Any] {
+            return convertToKotlinCompatible(dict)
+        } else if let array = value as? [Any] {
+            return array.map { convertValue($0) }
+        } else if let timestamp = value as? Timestamp {
+            // Convert Firestore Timestamp to epoch millis
+            return NSNumber(value: Int64(timestamp.dateValue().timeIntervalSince1970 * 1000))
+        } else if let number = value as? NSNumber {
+            return number
+        } else if let string = value as? String {
+            return string
+        } else if let bool = value as? Bool {
+            return NSNumber(value: bool)
+        } else {
+            return "\(value)"
+        }
     }
 }

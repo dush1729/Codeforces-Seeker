@@ -34,5 +34,8 @@ keystore.properties
 xcuserdata/
 *.xcworkspace/
 
+# Xcode build output
+iosApp/build/
+
 # Xcode export
 ExportOptions.plist

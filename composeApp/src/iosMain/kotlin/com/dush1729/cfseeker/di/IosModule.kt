@@ -6,6 +6,7 @@ import com.dush1729.cfseeker.bridge.BridgedAnalyticsService
 import com.dush1729.cfseeker.bridge.BridgedCrashlyticsService
 import com.dush1729.cfseeker.bridge.BridgedRemoteConfigService
 import com.dush1729.cfseeker.bridge.CrashlyticsBridge
+import com.dush1729.cfseeker.bridge.FirestoreBridge
 import com.dush1729.cfseeker.bridge.RemoteConfigBridge
 import com.dush1729.cfseeker.crashlytics.CrashlyticsService
 import com.dush1729.cfseeker.data.local.AppDatabase
@@ -37,21 +38,22 @@ import org.koin.dsl.module
 fun iosModule(
     analyticsBridge: AnalyticsBridge,
     crashlyticsBridge: CrashlyticsBridge,
-    remoteConfigBridge: RemoteConfigBridge
+    remoteConfigBridge: RemoteConfigBridge,
+    firestoreBridge: FirestoreBridge
 ) = module {
     // Database
     single<AppDatabase> { createIosDatabase() }
     single<DatabaseService> { AppDatabaseService(get()) }
 
     // Platform
-    single<BackgroundSyncScheduler> { IosBackgroundSyncScheduler() }
+    single<BackgroundSyncScheduler> { IosBackgroundSyncScheduler(get(), get(), get()) }
     single<PlatformActions> { IosPlatformActions() }
 
     // Services
     single<AnalyticsService> { BridgedAnalyticsService(analyticsBridge) }
     single<CrashlyticsService> { BridgedCrashlyticsService(crashlyticsBridge) }
     single<RemoteConfigService> { BridgedRemoteConfigService(remoteConfigBridge, get()) }
-    single<FirestoreService> { IosFirestoreService() }
+    single<FirestoreService> { IosFirestoreService(firestoreBridge) }
 
     // Preferences
     single<AppPreferences> { IosAppPreferences() }

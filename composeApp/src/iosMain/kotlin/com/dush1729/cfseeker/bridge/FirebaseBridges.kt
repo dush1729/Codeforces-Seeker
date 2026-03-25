@@ -29,3 +29,14 @@ interface RemoteConfigBridge {
     fun getLong(key: String): Long
     fun getDouble(key: String): Double
 }
+
+interface FirestoreCallback {
+    fun onSuccess(data: Map<String, Any>?)
+    fun onFailure(error: String)
+}
+
+interface FirestoreBridge {
+    fun getDocument(collection: String, documentId: String, callback: FirestoreCallback)
+    fun setDocument(collection: String, documentId: String, data: Map<String, Any>, callback: FirestoreCallback)
+    fun deleteDocument(collection: String, documentId: String, callback: FirestoreCallback)
+}

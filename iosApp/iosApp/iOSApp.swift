@@ -10,11 +10,13 @@ struct iOSApp: App {
         let analyticsBridge = SwiftAnalyticsBridge()
         let crashlyticsBridge = SwiftCrashlyticsBridge()
         let remoteConfigBridge = SwiftRemoteConfigBridge()
+        let firestoreBridge = SwiftFirestoreBridge()
 
         MainViewControllerKt.doInitKoin(
             analyticsBridge: analyticsBridge,
             crashlyticsBridge: crashlyticsBridge,
-            remoteConfigBridge: remoteConfigBridge
+            remoteConfigBridge: remoteConfigBridge,
+            firestoreBridge: firestoreBridge
         )
     }
 

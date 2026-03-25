@@ -10,6 +10,7 @@ import com.dush1729.cfseeker.analytics.AnalyticsService
 import com.dush1729.cfseeker.crashlytics.CrashlyticsService
 import com.dush1729.cfseeker.bridge.AnalyticsBridge
 import com.dush1729.cfseeker.bridge.CrashlyticsBridge
+import com.dush1729.cfseeker.bridge.FirestoreBridge
 import com.dush1729.cfseeker.bridge.RemoteConfigBridge
 import com.dush1729.cfseeker.di.commonModule
 import com.dush1729.cfseeker.di.iosModule
@@ -27,10 +28,11 @@ import org.koin.mp.KoinPlatform
 fun initKoin(
     analyticsBridge: AnalyticsBridge,
     crashlyticsBridge: CrashlyticsBridge,
-    remoteConfigBridge: RemoteConfigBridge
+    remoteConfigBridge: RemoteConfigBridge,
+    firestoreBridge: FirestoreBridge
 ) {
     startKoin {
-        modules(commonModule, iosModule(analyticsBridge, crashlyticsBridge, remoteConfigBridge))
+        modules(commonModule, iosModule(analyticsBridge, crashlyticsBridge, remoteConfigBridge, firestoreBridge))
     }
 }
 

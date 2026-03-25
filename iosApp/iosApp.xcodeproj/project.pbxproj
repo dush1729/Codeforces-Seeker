@@ -11,6 +11,7 @@
 		346D3F602F482023007076E4 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 346D3F5F2F482023007076E4 /* FirebaseAnalytics */; };
 		346D3F622F482023007076E4 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 346D3F612F482023007076E4 /* FirebaseCrashlytics */; };
 		346D3F642F482023007076E4 /* FirebaseRemoteConfig in Frameworks */ = {isa = PBXBuildFile; productRef = 346D3F632F482023007076E4 /* FirebaseRemoteConfig */; };
+		346D3F6A2F482023007076E4 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 346D3F6B2F482023007076E4 /* FirebaseFirestore */; };
 		346D3F662F482067007076E4 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 346D3F652F482067007076E4 /* GoogleService-Info.plist */; };
 		346D3F692F4822A0007076E4 /* FirebaseBridges.swift in Sources */ = {isa = PBXBuildFile; fileRef = 346D3F682F4822A0007076E4 /* FirebaseBridges.swift */; };
 		7555FF83242A565900829871 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7555FF82242A565900829871 /* ContentView.swift */; };
@@ -47,6 +48,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				346D3F642F482023007076E4 /* FirebaseRemoteConfig in Frameworks */,
+				346D3F6A2F482023007076E4 /* FirebaseFirestore in Frameworks */,
 				346D3F602F482023007076E4 /* FirebaseAnalytics in Frameworks */,
 				346D3F622F482023007076E4 /* FirebaseCrashlytics in Frameworks */,
 			);
@@ -455,6 +457,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 346D3F5E2F482023007076E4 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseRemoteConfig;
+		};
+		346D3F6B2F482023007076E4 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 346D3F5E2F482023007076E4 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
