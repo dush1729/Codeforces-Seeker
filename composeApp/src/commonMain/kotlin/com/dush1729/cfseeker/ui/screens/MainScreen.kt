@@ -1,23 +1,32 @@
 package com.dush1729.cfseeker.ui.screens
 
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Today
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.dush1729.cfseeker.analytics.AnalyticsService
 import com.dush1729.cfseeker.navigation.ContestDetailsRoute
@@ -39,96 +48,94 @@ fun MainScreen(
     platformActions: PlatformActions,
     modifier: Modifier = Modifier
 ) {
-    val pagerState = rememberPagerState(pageCount = { 4 })
+    var selectedTab by rememberSaveable { mutableIntStateOf(0) }
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    val onMenuClick: () -> Unit = { scope.launch { drawerState.open() } }
 
-    LaunchedEffect(pagerState.currentPage) {
-        when (pagerState.currentPage) {
-            0 -> analyticsService.logScreenView("users")
-            1 -> analyticsService.logScreenView("contests")
-            2 -> analyticsService.logScreenView("daily")
-            3 -> analyticsService.logScreenView("about")
-        }
-    }
-
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    icon = { Icon(Icons.Filled.People, contentDescription = "Users") },
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet(modifier = Modifier.width(IntrinsicSize.Min)) {
+                Spacer(Modifier.height(16.dp))
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Filled.People, contentDescription = null) },
                     label = { Text("Users") },
-                    selected = pagerState.currentPage == 0,
+                    selected = selectedTab == 0,
                     onClick = {
-                        scope.launch {
-                            pagerState.animateScrollToPage(0)
-                        }
-                    }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Filled.EmojiEvents, contentDescription = "Contests") },
-                    label = { Text("Contests") },
-                    selected = pagerState.currentPage == 1,
-                    onClick = {
-                        scope.launch {
-                            pagerState.animateScrollToPage(1)
-                        }
-                    }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Filled.Today, contentDescription = "Daily") },
-                    label = { Text("Daily") },
-                    selected = pagerState.currentPage == 2,
-                    onClick = {
-                        scope.launch {
-                            pagerState.animateScrollToPage(2)
-                        }
-                    }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Filled.Info, contentDescription = "About") },
-                    label = { Text("About") },
-                    selected = pagerState.currentPage == 3,
-                    onClick = {
-                        scope.launch {
-                            pagerState.animateScrollToPage(3)
-                        }
-                    }
-                )
-            }
-        }
-    ) { paddingValues ->
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) { page ->
-            when (page) {
-                0 -> UserListScreen(
-                    navController = navController,
-                    viewModel = userViewModel,
-                    modifier = Modifier.fillMaxSize()
-                )
-                1 -> ContestListScreen(
-                    viewModel = contestViewModel,
-                    onContestClick = { contestId, contestName, contestType ->
-                        navController.navigate(ContestDetailsRoute(contestId, contestName, contestType))
+                        selectedTab = 0
+                        scope.launch { drawerState.close() }
+                        analyticsService.logScreenView("users")
                     },
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                 )
-                2 -> DailyScreen(
-                    navController = navController,
-                    dailyViewModel = dailyViewModel,
-                    profileViewModel = profileViewModel,
-                    modifier = Modifier.fillMaxSize()
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Filled.EmojiEvents, contentDescription = null) },
+                    label = { Text("Contests") },
+                    selected = selectedTab == 1,
+                    onClick = {
+                        selectedTab = 1
+                        scope.launch { drawerState.close() }
+                        analyticsService.logScreenView("contests")
+                    },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                 )
-                3 -> AboutScreen(
-                    analyticsService = analyticsService,
-                    platformActions = platformActions,
-                    modifier = Modifier.fillMaxSize()
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Filled.Today, contentDescription = null) },
+                    label = { Text("Daily") },
+                    selected = selectedTab == 2,
+                    onClick = {
+                        selectedTab = 2
+                        scope.launch { drawerState.close() }
+                        analyticsService.logScreenView("daily")
+                    },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                )
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Filled.Info, contentDescription = null) },
+                    label = { Text("About") },
+                    selected = selectedTab == 3,
+                    onClick = {
+                        selectedTab = 3
+                        scope.launch { drawerState.close() }
+                        analyticsService.logScreenView("about")
+                    },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                 )
             }
+        },
+        modifier = modifier.fillMaxSize()
+    ) {
+        when (selectedTab) {
+            0 -> UserListScreen(
+                navController = navController,
+                viewModel = userViewModel,
+                onMenuClick = onMenuClick,
+                modifier = Modifier.fillMaxSize()
+            )
+            1 -> ContestListScreen(
+                viewModel = contestViewModel,
+                onContestClick = { contestId, contestName, contestType ->
+                    navController.navigate(
+                        ContestDetailsRoute(contestId, contestName, contestType)
+                    )
+                },
+                onMenuClick = onMenuClick,
+                modifier = Modifier.fillMaxSize()
+            )
+            2 -> DailyScreen(
+                navController = navController,
+                dailyViewModel = dailyViewModel,
+                profileViewModel = profileViewModel,
+                onMenuClick = onMenuClick,
+                modifier = Modifier.fillMaxSize()
+            )
+            3 -> AboutScreen(
+                analyticsService = analyticsService,
+                platformActions = platformActions,
+                onMenuClick = onMenuClick,
+                modifier = Modifier.fillMaxSize()
+            )
         }
     }
 }

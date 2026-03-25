@@ -21,6 +21,7 @@ import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.outlined.Info
@@ -61,7 +62,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.outlined.PersonSearch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -92,6 +92,7 @@ import kotlinx.coroutines.launch
 fun UserListScreen(
     navController: NavController,
     viewModel: UserViewModel,
+    onMenuClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -142,6 +143,13 @@ fun UserListScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Users") },
+                navigationIcon = {
+                    if (onMenuClick != null) {
+                        IconButton(onClick = onMenuClick) {
+                            Icon(Icons.Filled.Menu, contentDescription = "Menu")
+                        }
+                    }
+                },
                 scrollBehavior = scrollBehavior,
                 actions = {
                     // Detail toggle button
