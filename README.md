@@ -129,6 +129,12 @@ Fully migrated from XML-based UI to Jetpack Compose for a modern, declarative UI
 
 ### Release History
 
+### v6.2 - Navigation Drawer & Leaderboard Ranks
+- Replaced bottom navigation bar with modal navigation drawer
+- Notification dot on hamburger menu for new/undiscovered drawer items
+- Added rank computation to daily and cumulative leaderboards
+- iOS background sync and Firestore bridge
+
 ### v6.1 - In-App WebView & Cumulative Leaderboard
 - In-app WebView for opening problem links (no more switching to browser)
 - All Time cumulative leaderboard in Daily tab
