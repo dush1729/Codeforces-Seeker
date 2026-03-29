@@ -138,6 +138,7 @@ fun MainScreen(
                 modifier = Modifier.fillMaxSize()
             )
             3 -> AboutScreen(
+                navController = navController,
                 analyticsService = analyticsService,
                 platformActions = platformActions,
                 onMenuClick = onMenuClick,

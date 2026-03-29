@@ -74,6 +74,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
+import com.dush1729.cfseeker.navigation.WebViewRoute
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.unit.dp
@@ -147,6 +148,7 @@ fun UserDetailsScreen(
                 user = currentUser,
                 viewModel = viewModel,
                 snackbarHostState = snackbarHostState,
+                navController = navController,
                 onNavigateBack = {
                     if (navController.previousBackStackEntry != null) {
                         navController.popBackStack()
@@ -172,6 +174,7 @@ private fun UserDetailsContent(
     user: UserEntity,
     viewModel: UserViewModel,
     snackbarHostState: SnackbarHostState,
+    navController: NavController,
     onNavigateBack: () -> Unit,
     analyticsService: AnalyticsService,
     crashlyticsService: CrashlyticsService,
@@ -183,7 +186,6 @@ private fun UserDetailsContent(
     var searchQuery by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
     val isSyncUserEnabled = remember { viewModel.isSyncUserEnabled() }
-    val uriHandler = LocalUriHandler.current
     val ratingChanges by viewModel.getRatingChangesByHandle(user.handle, searchQuery).collectAsStateWithLifecycle(initialValue = emptyList())
 
     val tabs = listOf("Info", "Ratings")
@@ -263,6 +265,7 @@ private fun UserDetailsContent(
                 InfoContent(
                     user = user,
                     ratingChanges = ratingChanges,
+                    navController = navController,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -272,6 +275,7 @@ private fun UserDetailsContent(
                     ratingChanges = ratingChanges,
                     searchQuery = searchQuery,
                     onSearchQueryChange = { searchQuery = it },
+                    navController = navController,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -324,7 +328,7 @@ private fun UserDetailsContent(
 
             OutlinedButton(
                 onClick = {
-                    uriHandler.openUri("https://codeforces.com/profile/${user.handle}")
+                    navController.navigate(WebViewRoute("https://codeforces.com/profile/${user.handle}", user.handle))
                 },
                 enabled = !isSyncing,
                 modifier = Modifier.weight(1f)
@@ -387,6 +391,7 @@ private fun UserDetailsContent(
 private fun InfoContent(
     user: UserEntity,
     ratingChanges: List<com.dush1729.cfseeker.data.local.entity.RatingChangeEntity>,
+    navController: NavController,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -452,6 +457,7 @@ private fun InfoContent(
             SectionTitle("Rating History")
             RatingChart(
                 ratingChanges = ratingChanges,
+                navController = navController,
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -461,6 +467,7 @@ private fun InfoContent(
 @Composable
 private fun RatingChart(
     ratingChanges: List<com.dush1729.cfseeker.data.local.entity.RatingChangeEntity>,
+    navController: NavController,
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
@@ -528,8 +535,6 @@ private fun RatingChart(
         }
     }
 
-    val uriHandler = LocalUriHandler.current
-
     Column(modifier = modifier) {
         // Selected contest info display - always visible since selectedRatingChange is non-null
         val currentIndex = sortedChanges.indexOfFirst { it.contestId == selectedRatingChange.contestId }
@@ -538,7 +543,7 @@ private fun RatingChart(
 
         Card(
             onClick = {
-                uriHandler.openUri("https://codeforces.com/contest/${selectedRatingChange.contestId}")
+                navController.navigate(WebViewRoute("https://codeforces.com/contest/${selectedRatingChange.contestId}", selectedRatingChange.contestName))
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -863,6 +868,7 @@ private fun RatingsContent(
     ratingChanges: List<com.dush1729.cfseeker.data.local.entity.RatingChangeEntity>,
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
+    navController: NavController,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
@@ -921,7 +927,7 @@ private fun RatingsContent(
                     items = ratingChanges,
                     key = { it.contestId }
                 ) { ratingChange ->
-                    RatingChangeCard(ratingChange)
+                    RatingChangeCard(ratingChange, navController)
                 }
             }
         }
@@ -930,9 +936,9 @@ private fun RatingsContent(
 
 @Composable
 private fun RatingChangeCard(
-    ratingChange: com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
+    ratingChange: com.dush1729.cfseeker.data.local.entity.RatingChangeEntity,
+    navController: NavController
 ) {
-    val uriHandler = LocalUriHandler.current
     val ratingDelta = ratingChange.newRating - ratingChange.oldRating
     val deltaColor = getRatingDeltaColor(
         ratingChange.oldRating,
@@ -942,7 +948,7 @@ private fun RatingChangeCard(
 
     Card(
         onClick = {
-            uriHandler.openUri("https://codeforces.com/contest/${ratingChange.contestId}")
+            navController.navigate(WebViewRoute("https://codeforces.com/contest/${ratingChange.contestId}", ratingChange.contestName))
         },
         modifier = Modifier
             .fillMaxWidth()

@@ -32,6 +32,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
+import androidx.navigation.NavController
+import com.dush1729.cfseeker.navigation.WebViewRoute
 import androidx.compose.ui.unit.dp
 import com.dush1729.cfseeker.analytics.AnalyticsService
 import com.dush1729.cfseeker.platform.PlatformActions
@@ -45,6 +47,7 @@ private const val APP_STORE_URL = "https://apps.apple.com/app/codeforces-seeker/
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutScreen(
+    navController: NavController,
     analyticsService: AnalyticsService,
     platformActions: PlatformActions,
     onMenuClick: (() -> Unit)? = null,
@@ -93,7 +96,7 @@ fun AboutScreen(
                 description = "Share feedback or report bugs",
                 onClick = {
                     analyticsService.logFeedbackOpened()
-                    uriHandler.openUri(FEEDBACK_URL)
+                    navController.navigate(WebViewRoute(FEEDBACK_URL, "Feedback / Bugs"))
                 }
             )
 
@@ -110,7 +113,7 @@ fun AboutScreen(
                 description = "View source code on GitHub",
                 onClick = {
                     analyticsService.logGitHubOpened()
-                    uriHandler.openUri(GITHUB_URL)
+                    navController.navigate(WebViewRoute(GITHUB_URL, "GitHub"))
                 }
             )
 

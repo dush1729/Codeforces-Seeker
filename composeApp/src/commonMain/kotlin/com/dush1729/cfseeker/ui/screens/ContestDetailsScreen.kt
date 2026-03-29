@@ -49,7 +49,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -61,6 +60,7 @@ import com.dush1729.cfseeker.data.local.entity.ContestProblemEntity
 import com.dush1729.cfseeker.data.local.entity.ContestStandingRowEntity
 import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
 import com.dush1729.cfseeker.data.remote.model.ProblemResult
+import com.dush1729.cfseeker.navigation.WebViewRoute
 import com.dush1729.cfseeker.ui.ContestDetailsViewModel
 import com.dush1729.cfseeker.utils.toRelativeTime
 import kotlinx.serialization.json.Json
@@ -141,6 +141,7 @@ fun ContestDetailsScreen(
             showLocalUsersOnly = showLocalUsersOnly,
             onShowLocalUsersOnlyChange = { viewModel.setShowLocalUsersOnly(it) },
             isRefreshing = isRefreshing,
+            navController = navController,
             modifier = Modifier.padding(paddingValues)
         )
     }
@@ -160,6 +161,7 @@ private fun ContestDetailsContent(
     showLocalUsersOnly: Boolean,
     onShowLocalUsersOnlyChange: (Boolean) -> Unit,
     isRefreshing: Boolean,
+    navController: NavController,
     modifier: Modifier = Modifier
 ) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
@@ -266,6 +268,7 @@ private fun ContestDetailsContent(
                 ProblemsContent(
                     problems = problems,
                     hideSpoilers = hideSpoilers,
+                    navController = navController,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -291,9 +294,9 @@ private fun ContestDetailsContent(
 private fun ProblemsContent(
     problems: List<ContestProblemEntity>,
     hideSpoilers: Boolean,
+    navController: NavController,
     modifier: Modifier = Modifier
 ) {
-    val uriHandler = LocalUriHandler.current
 
     if (problems.isEmpty()) {
         Box(
@@ -325,7 +328,7 @@ private fun ProblemsContent(
                         } else {
                             "https://codeforces.com/contest/${problem.contestId}/problem/${problem.index}"
                         }
-                        uriHandler.openUri(url)
+                        navController.navigate(WebViewRoute(url, problem.name))
                     }
                 )
             }
