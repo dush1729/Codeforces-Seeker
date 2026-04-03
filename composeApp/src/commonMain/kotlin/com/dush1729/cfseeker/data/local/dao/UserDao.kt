@@ -27,9 +27,13 @@ interface UserDao {
     @Query("DELETE FROM rating_change WHERE handle = :handle")
     suspend fun deleteRatingChanges(handle: String)
 
+    @Query("DELETE FROM rating_change WHERE handle = :handle AND source = :source")
+    suspend fun deleteRatingChangesBySource(handle: String, source: String)
+
     @Transaction
     suspend fun addUser(user: UserEntity, ratingChanges: List<RatingChangeEntity>) {
         insertUser(user)
+        deleteRatingChangesBySource(user.handle, "USER")
         upsertRatingChanges(ratingChanges)
     }
 
