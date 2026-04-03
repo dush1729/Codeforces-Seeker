@@ -22,6 +22,7 @@ firebaseBom = "33.7.0"
 googleServices = "4.4.2"
 firebaseCrashlytics = "3.0.2"
 workManager = "2.10.0"
+playAppUpdate = "2.1.0"
 datastore = "1.1.1"
 ktor = "3.1.1"
 kotlinxSerialization = "1.7.3"
@@ -81,6 +82,10 @@ firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics
 firebase-config = { group = "com.google.firebase", name = "firebase-config" }
 firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore" }
+
+# Play In-App Updates
+play-app-update = { module = "com.google.android.play:app-update", version.ref = "playAppUpdate" }
+play-app-update-ktx = { module = "com.google.android.play:app-update-ktx", version.ref = "playAppUpdate" }
 
 # WorkManager
 androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workManager" }

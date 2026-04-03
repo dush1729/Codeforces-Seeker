@@ -61,6 +61,9 @@ kotlin {
 
             // DataStore
             implementation(libs.androidx.datastore.preferences)
+
+            // Play In-App Updates
+            implementation(libs.play.app.update.ktx)
         }
 
         commonMain.dependencies {
