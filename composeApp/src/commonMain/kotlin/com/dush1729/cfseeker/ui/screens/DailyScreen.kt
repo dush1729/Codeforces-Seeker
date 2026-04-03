@@ -404,9 +404,36 @@ private fun ProfileSection(
         }
 
         is ProfileState.NotSignedIn -> {
-            SignInCard(
-                onSignIn = { handle -> profileViewModel.startVerification(handle) }
-            )
+            var expanded by remember { mutableStateOf(false) }
+            if (expanded) {
+                SignInCard(
+                    onSignIn = { handle -> profileViewModel.startVerification(handle) }
+                )
+            } else {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 12.dp, top = 4.dp, bottom = 4.dp, end = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Not signed in",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            modifier = Modifier.weight(1f)
+                        )
+                        TextButton(onClick = { expanded = true }) {
+                            Text("Sign In")
+                        }
+                    }
+                }
+            }
         }
 
         is ProfileState.Verifying -> {
