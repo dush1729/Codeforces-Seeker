@@ -93,11 +93,10 @@ class MainActivity : ComponentActivity() {
 
                 Scaffold(
                     snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
-                ) { innerPadding ->
+                ) { _ ->
                     Surface(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .padding(innerPadding),
+                            .fillMaxSize(),
                         color = MaterialTheme.colorScheme.background
                     ) {
                         CFSeekerNavGraph(

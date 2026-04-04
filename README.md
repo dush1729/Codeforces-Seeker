@@ -129,6 +129,9 @@ Fully migrated from XML-based UI to Jetpack Compose for a modern, declarative UI
 
 ### Release History
 
+### v6.4 - Toolbar Fix
+- Fix double status bar padding causing extra space above toolbar
+
 ### v6.3 - Sign-In UX & Stability
 - Compact sign-in row on Daily tab, expandable on tap
 - Fix stale rating data when Codeforces rolls back contest ratings
