@@ -129,6 +129,11 @@ Fully migrated from XML-based UI to Jetpack Compose for a modern, declarative UI
 
 ### Release History
 
+### v6.3 - Sign-In UX & Stability
+- Compact sign-in row on Daily tab, expandable on tap
+- Fix stale rating data when Codeforces rolls back contest ratings
+- In-app update support (Android)
+
 ### v6.2 - Navigation Drawer & Leaderboard Ranks
 - Replaced bottom navigation bar with modal navigation drawer
 - Notification dot on hamburger menu for new/undiscovered drawer items
