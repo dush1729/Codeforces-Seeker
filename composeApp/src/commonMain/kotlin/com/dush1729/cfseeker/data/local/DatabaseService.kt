@@ -78,7 +78,10 @@ interface DatabaseService {
 
     // Rated user methods
     suspend fun replaceAllRatedUsers(users: List<RatedUserEntity>)
+    suspend fun deleteAllRatedUsers()
+    suspend fun upsertRatedUsers(users: List<RatedUserEntity>)
     fun searchRatedUsers(query: String, limit: Int = 50): Flow<List<RatedUserEntity>>
+    fun searchRatedUsers(query: String, sortBy: String, limit: Int = 100): Flow<List<RatedUserEntity>>
     suspend fun getRatingsForContest(contestId: Int): List<HandleRating>
     suspend fun getRatedUserCount(): Int
 }

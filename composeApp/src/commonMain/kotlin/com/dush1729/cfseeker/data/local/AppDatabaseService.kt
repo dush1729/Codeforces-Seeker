@@ -153,8 +153,25 @@ class AppDatabaseService(private val appDatabase: AppDatabase): DatabaseService 
         appDatabase.ratedUserDao().replaceAll(users)
     }
 
+    override suspend fun deleteAllRatedUsers() {
+        appDatabase.ratedUserDao().deleteAll()
+    }
+
+    override suspend fun upsertRatedUsers(users: List<RatedUserEntity>) {
+        appDatabase.ratedUserDao().upsertAll(users)
+    }
+
     override fun searchRatedUsers(query: String, limit: Int): Flow<List<RatedUserEntity>> {
         return appDatabase.ratedUserDao().searchByHandle(query, limit)
+    }
+
+    override fun searchRatedUsers(query: String, sortBy: String, limit: Int): Flow<List<RatedUserEntity>> {
+        val dao = appDatabase.ratedUserDao()
+        return when (sortBy) {
+            "HANDLE" -> dao.searchByHandleSortByHandle(query, limit)
+            "MAX_RATING" -> dao.searchByHandleSortByMaxRating(query, limit)
+            else -> dao.searchByHandle(query, limit)
+        }
     }
 
     override suspend fun getRatingsForContest(contestId: Int): List<HandleRating> {

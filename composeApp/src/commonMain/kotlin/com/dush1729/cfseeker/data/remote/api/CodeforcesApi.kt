@@ -11,6 +11,8 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
+import io.ktor.client.request.prepareGet
+import io.ktor.client.statement.HttpStatement
 
 class CodeforcesApi(private val client: HttpClient) {
 
@@ -62,6 +64,12 @@ class CodeforcesApi(private val client: HttpClient) {
         return client.get("${BASE_URL}user.ratedList") {
             activeOnly?.let { parameter("activeOnly", it) }
         }.body()
+    }
+
+    suspend fun getRatedListStreaming(activeOnly: Boolean? = null): HttpStatement {
+        return client.prepareGet("${BASE_URL}user.ratedList") {
+            activeOnly?.let { parameter("activeOnly", it) }
+        }
     }
 
     suspend fun getProblemsetProblems(tags: String? = null): CodeforcesApiSingleResponse<ProblemsetProblems> {
