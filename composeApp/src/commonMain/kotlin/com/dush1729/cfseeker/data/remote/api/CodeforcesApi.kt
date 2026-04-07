@@ -60,15 +60,17 @@ class CodeforcesApi(private val client: HttpClient) {
         }.body()
     }
 
-    suspend fun getRatedList(activeOnly: Boolean? = null): CodeforcesApiResponse<User> {
+    suspend fun getRatedList(activeOnly: Boolean? = null, includeRetired: Boolean? = null): CodeforcesApiResponse<User> {
         return client.get("${BASE_URL}user.ratedList") {
             activeOnly?.let { parameter("activeOnly", it) }
+            includeRetired?.let { parameter("includeRetired", it) }
         }.body()
     }
 
-    suspend fun getRatedListStreaming(activeOnly: Boolean? = null): HttpStatement {
+    suspend fun getRatedListStreaming(activeOnly: Boolean? = null, includeRetired: Boolean? = null): HttpStatement {
         return client.prepareGet("${BASE_URL}user.ratedList") {
             activeOnly?.let { parameter("activeOnly", it) }
+            includeRetired?.let { parameter("includeRetired", it) }
         }
     }
 

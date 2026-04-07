@@ -174,6 +174,34 @@ class AppDatabaseService(private val appDatabase: AppDatabase): DatabaseService 
         }
     }
 
+    override fun searchRatedUsersFiltered(
+        query: String,
+        sortBy: String,
+        country: String,
+        city: String,
+        organization: String,
+        limit: Int
+    ): Flow<List<RatedUserEntity>> {
+        val dao = appDatabase.ratedUserDao()
+        return when (sortBy) {
+            "HANDLE" -> dao.searchFilteredSortByHandle(query, country, city, organization, limit)
+            "MAX_RATING" -> dao.searchFilteredSortByMaxRating(query, country, city, organization, limit)
+            else -> dao.searchFiltered(query, country, city, organization, limit)
+        }
+    }
+
+    override fun getDistinctCountries(): Flow<List<String>> {
+        return appDatabase.ratedUserDao().getDistinctCountries()
+    }
+
+    override fun getDistinctCities(): Flow<List<String>> {
+        return appDatabase.ratedUserDao().getDistinctCities()
+    }
+
+    override fun getDistinctOrganizations(): Flow<List<String>> {
+        return appDatabase.ratedUserDao().getDistinctOrganizations()
+    }
+
     override suspend fun getRatingsForContest(contestId: Int): List<HandleRating> {
         return appDatabase.ratedUserDao().getRatingsForContest(contestId)
     }

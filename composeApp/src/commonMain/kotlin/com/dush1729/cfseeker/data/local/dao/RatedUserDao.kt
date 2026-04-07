@@ -47,6 +47,48 @@ interface RatedUserDao {
     fun searchByHandleSortByMaxRating(query: String, limit: Int = 50): Flow<List<RatedUserEntity>>
 
     @Query("""
+        SELECT * FROM rated_user
+        WHERE handle LIKE '%' || :query || '%'
+            AND (:country = '' OR country = :country)
+            AND (:city = '' OR city = :city)
+            AND (:organization = '' OR organization = :organization)
+        ORDER BY rating DESC
+        LIMIT :limit
+    """)
+    fun searchFiltered(query: String, country: String, city: String, organization: String, limit: Int): Flow<List<RatedUserEntity>>
+
+    @Query("""
+        SELECT * FROM rated_user
+        WHERE handle LIKE '%' || :query || '%'
+            AND (:country = '' OR country = :country)
+            AND (:city = '' OR city = :city)
+            AND (:organization = '' OR organization = :organization)
+        ORDER BY handle ASC
+        LIMIT :limit
+    """)
+    fun searchFilteredSortByHandle(query: String, country: String, city: String, organization: String, limit: Int): Flow<List<RatedUserEntity>>
+
+    @Query("""
+        SELECT * FROM rated_user
+        WHERE handle LIKE '%' || :query || '%'
+            AND (:country = '' OR country = :country)
+            AND (:city = '' OR city = :city)
+            AND (:organization = '' OR organization = :organization)
+        ORDER BY maxRating DESC
+        LIMIT :limit
+    """)
+    fun searchFilteredSortByMaxRating(query: String, country: String, city: String, organization: String, limit: Int): Flow<List<RatedUserEntity>>
+
+    @Query("SELECT DISTINCT country FROM rated_user WHERE country IS NOT NULL AND country != '' ORDER BY country ASC")
+    fun getDistinctCountries(): Flow<List<String>>
+
+    @Query("SELECT DISTINCT city FROM rated_user WHERE city IS NOT NULL AND city != '' ORDER BY city ASC")
+    fun getDistinctCities(): Flow<List<String>>
+
+    @Query("SELECT DISTINCT organization FROM rated_user WHERE organization IS NOT NULL AND organization != '' ORDER BY organization ASC")
+    fun getDistinctOrganizations(): Flow<List<String>>
+
+    @Query("""
         SELECT ru.handle, ru.rating FROM rated_user ru
         INNER JOIN contest_standing_row csr
             ON ru.handle = csr.memberHandles

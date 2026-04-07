@@ -32,7 +32,7 @@ class RatedUserRepository(
     }
 
     suspend fun fetchAndCacheRatedUsers() = withContext(ioDispatcher) {
-        val statement = api.getRatedListStreaming(activeOnly = false)
+        val statement = api.getRatedListStreaming(activeOnly = false, includeRetired = true)
         streamParseRatedUsers(statement) { batch ->
             db.upsertRatedUsers(batch)
         }
@@ -51,6 +51,21 @@ class RatedUserRepository(
     fun searchByHandle(query: String, sortBy: String, limit: Int = 100): Flow<List<RatedUserEntity>> {
         return db.searchRatedUsers(query, sortBy, limit)
     }
+
+    fun searchFiltered(
+        query: String,
+        sortBy: String,
+        country: String,
+        city: String,
+        organization: String,
+        limit: Int
+    ): Flow<List<RatedUserEntity>> {
+        return db.searchRatedUsersFiltered(query, sortBy, country, city, organization, limit)
+    }
+
+    fun getDistinctCountries(): Flow<List<String>> = db.getDistinctCountries()
+    fun getDistinctCities(): Flow<List<String>> = db.getDistinctCities()
+    fun getDistinctOrganizations(): Flow<List<String>> = db.getDistinctOrganizations()
 
     suspend fun getRatedUserCount(): Int {
         return db.getRatedUserCount()

@@ -265,6 +265,7 @@ object AppDatabaseMigrations {
                 )
             """)
             connection.execSQL("CREATE INDEX IF NOT EXISTS index_rated_user_rating ON rated_user(rating)")
+            connection.execSQL("CREATE INDEX IF NOT EXISTS index_rated_user_maxRating ON rated_user(maxRating)")
         }
     }
 

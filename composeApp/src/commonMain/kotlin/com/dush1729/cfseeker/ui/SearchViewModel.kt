@@ -20,6 +20,15 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
+data class SearchFilters(
+    val country: String = "",
+    val city: String = "",
+    val organization: String = ""
+) {
+    val activeCount: Int get() = listOf(country, city, organization).count { it.isNotEmpty() }
+    val hasFilters: Boolean get() = activeCount > 0
+}
+
 class SearchViewModel(
     private val ratedUserRepository: RatedUserRepository,
     private val crashlyticsService: CrashlyticsService
@@ -31,6 +40,9 @@ class SearchViewModel(
     private val _sortOption = MutableStateFlow(SearchSortOption.RATING)
     val sortOption = _sortOption.asStateFlow()
 
+    private val _filters = MutableStateFlow(SearchFilters())
+    val filters = _filters.asStateFlow()
+
     private val _isCacheLoading = MutableStateFlow(false)
     val isCacheLoading = _isCacheLoading.asStateFlow()
 
@@ -39,15 +51,38 @@ class SearchViewModel(
 
     private val _displayLimit = MutableStateFlow(PAGE_SIZE)
 
+    val countries: StateFlow<List<String>> = ratedUserRepository.getDistinctCountries()
+        .flowOn(ioDispatcher)
+        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
+    val cities: StateFlow<List<String>> = ratedUserRepository.getDistinctCities()
+        .flowOn(ioDispatcher)
+        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
+    val organizations: StateFlow<List<String>> = ratedUserRepository.getDistinctOrganizations()
+        .flowOn(ioDispatcher)
+        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     val searchResults: StateFlow<List<RatedUserEntity>> =
-        combine(_searchQuery, _sortOption, _displayLimit) { query, sort, limit ->
-            Triple(query, sort, limit)
+        combine(_searchQuery, _sortOption, _displayLimit, _filters) { query, sort, limit, filters ->
+            SearchParams(query, sort, limit, filters)
         }
             .debounce(300)
             .distinctUntilChanged()
-            .flatMapLatest { (query, sort, limit) ->
-                ratedUserRepository.searchByHandle(query.trim(), sort.value, limit)
+            .flatMapLatest { params ->
+                if (params.filters.hasFilters) {
+                    ratedUserRepository.searchFiltered(
+                        query = params.query.trim(),
+                        sortBy = params.sort.value,
+                        country = params.filters.country,
+                        city = params.filters.city,
+                        organization = params.filters.organization,
+                        limit = params.limit
+                    )
+                } else {
+                    ratedUserRepository.searchByHandle(params.query.trim(), params.sort.value, params.limit)
+                }
             }
             .flowOn(ioDispatcher)
             .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
@@ -76,6 +111,16 @@ class SearchViewModel(
         _displayLimit.value = PAGE_SIZE
     }
 
+    fun setFilters(filters: SearchFilters) {
+        _filters.value = filters
+        _displayLimit.value = PAGE_SIZE
+    }
+
+    fun clearFilters() {
+        _filters.value = SearchFilters()
+        _displayLimit.value = PAGE_SIZE
+    }
+
     fun loadMore() {
         _displayLimit.value += PAGE_SIZE
     }
@@ -84,3 +129,10 @@ class SearchViewModel(
         private const val PAGE_SIZE = 100
     }
 }
+
+private data class SearchParams(
+    val query: String,
+    val sort: SearchSortOption,
+    val limit: Int,
+    val filters: SearchFilters
+)

@@ -82,6 +82,17 @@ interface DatabaseService {
     suspend fun upsertRatedUsers(users: List<RatedUserEntity>)
     fun searchRatedUsers(query: String, limit: Int = 50): Flow<List<RatedUserEntity>>
     fun searchRatedUsers(query: String, sortBy: String, limit: Int = 100): Flow<List<RatedUserEntity>>
+    fun searchRatedUsersFiltered(
+        query: String,
+        sortBy: String,
+        country: String,
+        city: String,
+        organization: String,
+        limit: Int
+    ): Flow<List<RatedUserEntity>>
+    fun getDistinctCountries(): Flow<List<String>>
+    fun getDistinctCities(): Flow<List<String>>
+    fun getDistinctOrganizations(): Flow<List<String>>
     suspend fun getRatingsForContest(contestId: Int): List<HandleRating>
     suspend fun getRatedUserCount(): Int
 }
