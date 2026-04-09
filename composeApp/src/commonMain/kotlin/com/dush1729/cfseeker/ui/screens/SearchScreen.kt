@@ -95,6 +95,9 @@ fun SearchScreen(
     val isCacheLoading by viewModel.isCacheLoading.collectAsStateWithLifecycle()
     val cachedUserCount by viewModel.cachedUserCount.collectAsStateWithLifecycle()
     val filters by viewModel.filters.collectAsStateWithLifecycle()
+    val activeOnly by viewModel.activeOnly.collectAsStateWithLifecycle()
+    val includeRetired by viewModel.includeRetired.collectAsStateWithLifecycle()
+    val storageBytes by viewModel.storageBytes.collectAsStateWithLifecycle()
     val countries by viewModel.countries.collectAsStateWithLifecycle()
     val cities by viewModel.cities.collectAsStateWithLifecycle()
     val organizations by viewModel.organizations.collectAsStateWithLifecycle()
@@ -182,22 +185,61 @@ fun SearchScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Cache status
+            // User type chips and fetch button
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                FilterChip(
+                    selected = activeOnly,
+                    onClick = { viewModel.toggleActiveOnly() },
+                    label = { Text("Active only") }
+                )
+                FilterChip(
+                    selected = includeRetired,
+                    onClick = { viewModel.toggleIncludeRetired() },
+                    label = { Text("Include retired") }
+                )
+                FilledTonalButton(
+                    onClick = { viewModel.fetchUsers() },
+                    enabled = !isCacheLoading
+                ) {
+                    Text("Fetch")
+                }
+            }
+
+            // Loading indicator
             if (isCacheLoading) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                 Text(
-                    text = "Loading user database...",
+                    text = "Syncing users from Codeforces...",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
                 )
-            } else if (cachedUserCount > 0) {
-                Text(
-                    text = "$cachedUserCount rated users cached",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
-                )
+            }
+
+            // Storage info
+            if (cachedUserCount > 0) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 2.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "$cachedUserCount users · ${formatBytes(storageBytes)}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    TextButton(onClick = { viewModel.clearUsers() }) {
+                        Text("Clear", style = MaterialTheme.typography.bodySmall)
+                    }
+                }
             }
 
             // Search bar
@@ -643,5 +685,13 @@ private fun FilterField(
                 }
             }
         }
+    }
+}
+
+private fun formatBytes(bytes: Long): String {
+    return when {
+        bytes < 1024 -> "$bytes B"
+        bytes < 1024 * 1024 -> "${(bytes * 10 / 1024).let { "${it / 10}.${it % 10}" }} KB"
+        else -> "${(bytes * 10 / (1024 * 1024)).let { "${it / 10}.${it % 10}" }} MB"
     }
 }

@@ -155,6 +155,9 @@ class AppDatabaseService(private val appDatabase: AppDatabase): DatabaseService 
 
     override suspend fun deleteAllRatedUsers() {
         appDatabase.ratedUserDao().deleteAll()
+        appDatabase.useConnection(isReadOnly = false) { connection ->
+            connection.usePrepared("VACUUM") { it.step() }
+        }
     }
 
     override suspend fun upsertRatedUsers(users: List<RatedUserEntity>) {
@@ -208,5 +211,10 @@ class AppDatabaseService(private val appDatabase: AppDatabase): DatabaseService 
 
     override suspend fun getRatedUserCount(): Int {
         return appDatabase.ratedUserDao().getCount()
+    }
+
+    override suspend fun getRatedUserStorageBytes(): Long {
+        // Estimate ~300 bytes per row (handle, ratings, rank, avatar URLs, location, etc.)
+        return appDatabase.ratedUserDao().getCount() * 300L
     }
 }

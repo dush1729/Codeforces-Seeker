@@ -20,4 +20,9 @@ interface AppPreferences {
 
     suspend fun setKnownMenuItemCount(count: Int)
     suspend fun getKnownMenuItemCount(): Int
+
+    suspend fun setRatedUserActiveOnly(value: Boolean)
+    suspend fun getRatedUserActiveOnly(): Boolean
+    suspend fun setRatedUserIncludeRetired(value: Boolean)
+    suspend fun getRatedUserIncludeRetired(): Boolean
 }

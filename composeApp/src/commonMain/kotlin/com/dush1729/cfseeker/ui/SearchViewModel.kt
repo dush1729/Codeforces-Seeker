@@ -3,6 +3,7 @@ package com.dush1729.cfseeker.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dush1729.cfseeker.crashlytics.CrashlyticsService
+import com.dush1729.cfseeker.data.local.AppPreferences
 import com.dush1729.cfseeker.data.local.entity.RatedUserEntity
 import com.dush1729.cfseeker.data.repository.RatedUserRepository
 import com.dush1729.cfseeker.platform.ioDispatcher
@@ -31,7 +32,8 @@ data class SearchFilters(
 
 class SearchViewModel(
     private val ratedUserRepository: RatedUserRepository,
-    private val crashlyticsService: CrashlyticsService
+    private val crashlyticsService: CrashlyticsService,
+    private val appPreferences: AppPreferences
 ) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
@@ -43,11 +45,20 @@ class SearchViewModel(
     private val _filters = MutableStateFlow(SearchFilters())
     val filters = _filters.asStateFlow()
 
+    private val _activeOnly = MutableStateFlow(false)
+    val activeOnly = _activeOnly.asStateFlow()
+
+    private val _includeRetired = MutableStateFlow(false)
+    val includeRetired = _includeRetired.asStateFlow()
+
     private val _isCacheLoading = MutableStateFlow(false)
     val isCacheLoading = _isCacheLoading.asStateFlow()
 
     private val _cachedUserCount = MutableStateFlow(0)
     val cachedUserCount = _cachedUserCount.asStateFlow()
+
+    private val _storageBytes = MutableStateFlow(0L)
+    val storageBytes = _storageBytes.asStateFlow()
 
     private val _displayLimit = MutableStateFlow(PAGE_SIZE)
 
@@ -89,15 +100,54 @@ class SearchViewModel(
 
     init {
         viewModelScope.launch {
+            _activeOnly.value = appPreferences.getRatedUserActiveOnly()
+            _includeRetired.value = appPreferences.getRatedUserIncludeRetired()
+        }
+        refreshCacheInfo()
+    }
+
+    fun toggleActiveOnly() {
+        _activeOnly.value = !_activeOnly.value
+        viewModelScope.launch { appPreferences.setRatedUserActiveOnly(_activeOnly.value) }
+    }
+
+    fun toggleIncludeRetired() {
+        _includeRetired.value = !_includeRetired.value
+        viewModelScope.launch { appPreferences.setRatedUserIncludeRetired(_includeRetired.value) }
+    }
+
+    fun fetchUsers() {
+        viewModelScope.launch {
             try {
                 _isCacheLoading.value = true
-                ratedUserRepository.ensureCacheFresh()
-                _cachedUserCount.value = ratedUserRepository.getRatedUserCount()
+                ratedUserRepository.fetchAndCacheRatedUsers(
+                    activeOnly = _activeOnly.value,
+                    includeRetired = _includeRetired.value
+                )
+                refreshCacheInfo()
             } catch (e: Exception) {
                 crashlyticsService.logException(e)
             } finally {
                 _isCacheLoading.value = false
             }
+        }
+    }
+
+    fun clearUsers() {
+        viewModelScope.launch {
+            try {
+                ratedUserRepository.clearRatedUsers()
+                refreshCacheInfo()
+            } catch (e: Exception) {
+                crashlyticsService.logException(e)
+            }
+        }
+    }
+
+    private fun refreshCacheInfo() {
+        viewModelScope.launch {
+            _cachedUserCount.value = ratedUserRepository.getRatedUserCount()
+            _storageBytes.value = ratedUserRepository.getStorageBytes()
         }
     }
 

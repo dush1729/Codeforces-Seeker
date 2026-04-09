@@ -95,6 +95,7 @@ interface DatabaseService {
     fun getDistinctOrganizations(): Flow<List<String>>
     suspend fun getRatingsForContest(contestId: Int): List<HandleRating>
     suspend fun getRatedUserCount(): Int
+    suspend fun getRatedUserStorageBytes(): Long
 }
 
 data class ContestCacheInfo(

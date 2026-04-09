@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -25,6 +26,8 @@ class AppPreferencesImpl(
         val SIGNED_IN_HANDLE = stringPreferencesKey("signed_in_handle")
         val RATED_USER_LAST_SYNC_TIME = longPreferencesKey("rated_user_last_sync_time")
         val KNOWN_MENU_ITEM_COUNT = intPreferencesKey("known_menu_item_count")
+        val RATED_USER_ACTIVE_ONLY = booleanPreferencesKey("rated_user_active_only")
+        val RATED_USER_INCLUDE_RETIRED = booleanPreferencesKey("rated_user_include_retired")
     }
 
     override suspend fun incrementLaunchCount(): Int {
@@ -118,6 +121,28 @@ class AppPreferencesImpl(
     override suspend fun getKnownMenuItemCount(): Int = withContext(Dispatchers.IO) {
         val preferences = context.dataStore.data.first()
         preferences[PreferencesKeys.KNOWN_MENU_ITEM_COUNT] ?: 0
+    }
+
+    override suspend fun setRatedUserActiveOnly(value: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.RATED_USER_ACTIVE_ONLY] = value
+        }
+    }
+
+    override suspend fun getRatedUserActiveOnly(): Boolean = withContext(Dispatchers.IO) {
+        val preferences = context.dataStore.data.first()
+        preferences[PreferencesKeys.RATED_USER_ACTIVE_ONLY] ?: false
+    }
+
+    override suspend fun setRatedUserIncludeRetired(value: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.RATED_USER_INCLUDE_RETIRED] = value
+        }
+    }
+
+    override suspend fun getRatedUserIncludeRetired(): Boolean = withContext(Dispatchers.IO) {
+        val preferences = context.dataStore.data.first()
+        preferences[PreferencesKeys.RATED_USER_INCLUDE_RETIRED] ?: false
     }
 
     override suspend fun clearContestPreferences(contestIds: List<Int>) {

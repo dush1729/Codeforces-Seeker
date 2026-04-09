@@ -31,12 +31,25 @@ class RatedUserRepository(
         fetchAndCacheRatedUsers()
     }
 
-    suspend fun fetchAndCacheRatedUsers() = withContext(ioDispatcher) {
-        val statement = api.getRatedListStreaming(activeOnly = false, includeRetired = true)
+    suspend fun fetchAndCacheRatedUsers(
+        activeOnly: Boolean = false,
+        includeRetired: Boolean = true
+    ) = withContext(ioDispatcher) {
+        db.deleteAllRatedUsers()
+        val statement = api.getRatedListStreaming(activeOnly = activeOnly, includeRetired = includeRetired)
         streamParseRatedUsers(statement) { batch ->
             db.upsertRatedUsers(batch)
         }
         appPreferences.setRatedUserLastSyncTime(Clock.System.now().epochSeconds)
+    }
+
+    suspend fun clearRatedUsers() = withContext(ioDispatcher) {
+        db.deleteAllRatedUsers()
+        appPreferences.setRatedUserLastSyncTime(0)
+    }
+
+    suspend fun getStorageBytes(): Long = withContext(ioDispatcher) {
+        db.getRatedUserStorageBytes()
     }
 
     suspend fun getRatingsForContest(contestId: Int): Map<String, Int> = withContext(ioDispatcher) {

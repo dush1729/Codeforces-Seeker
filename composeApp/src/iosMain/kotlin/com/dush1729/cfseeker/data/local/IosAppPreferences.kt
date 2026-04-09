@@ -72,6 +72,22 @@ class IosAppPreferences : AppPreferences {
         return defaults.integerForKey("known_menu_item_count").toInt()
     }
 
+    override suspend fun setRatedUserActiveOnly(value: Boolean) {
+        defaults.setBool(value, forKey = "rated_user_active_only")
+    }
+
+    override suspend fun getRatedUserActiveOnly(): Boolean {
+        return defaults.boolForKey("rated_user_active_only")
+    }
+
+    override suspend fun setRatedUserIncludeRetired(value: Boolean) {
+        defaults.setBool(value, forKey = "rated_user_include_retired")
+    }
+
+    override suspend fun getRatedUserIncludeRetired(): Boolean {
+        return defaults.boolForKey("rated_user_include_retired")
+    }
+
     override suspend fun clearContestPreferences(contestIds: List<Int>) {
         contestIds.forEach { contestId ->
             defaults.removeObjectForKey("contest_standings_sync_$contestId")
