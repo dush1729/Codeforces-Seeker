@@ -171,18 +171,10 @@ fun UserListScreen(
                     }
                     // Sort button - only show when user list size > 1
                     if (userCount > 1) {
-                        FilledTonalButton(
-                            onClick = { showSortMenu = true },
-                            modifier = Modifier.padding(end = 8.dp)
-                        ) {
+                        IconButton(onClick = { showSortMenu = true }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.Sort,
-                                contentDescription = "Sort",
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Text(
-                                text = "Sort by ${currentSortOption.displayName}",
-                                modifier = Modifier.padding(start = 4.dp)
+                                contentDescription = "Sort by ${currentSortOption.displayName}"
                             )
                         }
                         DropdownMenu(
