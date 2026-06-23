@@ -72,6 +72,14 @@ class IosAppPreferences : AppPreferences {
         return defaults.integerForKey("known_menu_item_count").toInt()
     }
 
+    override suspend fun setShowUserDetails(show: Boolean) {
+        defaults.setBool(show, forKey = "show_user_details")
+    }
+
+    override suspend fun getShowUserDetails(): Boolean {
+        return defaults.boolForKey("show_user_details")
+    }
+
     override suspend fun clearContestPreferences(contestIds: List<Int>) {
         contestIds.forEach { contestId ->
             defaults.removeObjectForKey("contest_standings_sync_$contestId")

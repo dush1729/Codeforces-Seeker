@@ -61,6 +61,9 @@ class UserViewModel(
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing = _isRefreshing.asStateFlow()
 
+    private val _showUserDetails = MutableStateFlow(false)
+    val showUserDetails = _showUserDetails.asStateFlow()
+
     val userCount: StateFlow<Int> = repository.getUserCount()
         .flowOn(ioDispatcher)
         .stateIn(
@@ -98,6 +101,10 @@ class UserViewModel(
         viewModelScope.launch(ioDispatcher) {
             _lastSyncTime.value = appPreferences.getUsersInfoLastSyncTime()
             autoRefreshIfNeeded()
+        }
+
+        viewModelScope.launch(ioDispatcher) {
+            _showUserDetails.value = appPreferences.getShowUserDetails()
         }
 
         viewModelScope.launch {
@@ -197,8 +204,13 @@ class UserViewModel(
         analyticsService.logSortChanged(sortOption.displayName)
     }
 
-    fun logDetailToggled(enabled: Boolean) {
-        analyticsService.logDetailToggled(enabled)
+    fun toggleShowUserDetails() {
+        val newValue = !_showUserDetails.value
+        _showUserDetails.value = newValue
+        analyticsService.logDetailToggled(newValue)
+        viewModelScope.launch(ioDispatcher) {
+            appPreferences.setShowUserDetails(newValue)
+        }
     }
 
     fun setSearchQuery(query: String) {

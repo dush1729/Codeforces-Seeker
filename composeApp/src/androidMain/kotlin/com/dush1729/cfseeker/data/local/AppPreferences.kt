@@ -25,6 +25,7 @@ class AppPreferencesImpl(
         val SIGNED_IN_HANDLE = stringPreferencesKey("signed_in_handle")
         val RATED_USER_LAST_SYNC_TIME = longPreferencesKey("rated_user_last_sync_time")
         val KNOWN_MENU_ITEM_COUNT = intPreferencesKey("known_menu_item_count")
+        val SHOW_USER_DETAILS = intPreferencesKey("show_user_details")
     }
 
     override suspend fun incrementLaunchCount(): Int {
@@ -118,6 +119,17 @@ class AppPreferencesImpl(
     override suspend fun getKnownMenuItemCount(): Int = withContext(Dispatchers.IO) {
         val preferences = context.dataStore.data.first()
         preferences[PreferencesKeys.KNOWN_MENU_ITEM_COUNT] ?: 0
+    }
+
+    override suspend fun setShowUserDetails(show: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.SHOW_USER_DETAILS] = if (show) 1 else 0
+        }
+    }
+
+    override suspend fun getShowUserDetails(): Boolean = withContext(Dispatchers.IO) {
+        val preferences = context.dataStore.data.first()
+        (preferences[PreferencesKeys.SHOW_USER_DETAILS] ?: 0) != 0
     }
 
     override suspend fun clearContestPreferences(contestIds: List<Int>) {

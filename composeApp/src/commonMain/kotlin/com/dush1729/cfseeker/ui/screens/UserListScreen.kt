@@ -98,6 +98,7 @@ fun UserListScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val currentSortOption by viewModel.sortOption.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+    val showDetails by viewModel.showUserDetails.collectAsStateWithLifecycle()
     val isSyncing by viewModel.isSyncing.collectAsStateWithLifecycle()
     val syncProgress by viewModel.syncProgress.collectAsStateWithLifecycle()
     val userCount by viewModel.userCount.collectAsStateWithLifecycle()
@@ -124,7 +125,6 @@ fun UserListScreen(
     var userHandle by remember { mutableStateOf("") }
     var showSortMenu by remember { mutableStateOf(false) }
     var showSyncDialog by remember { mutableStateOf(false) }
-    var showDetails by remember { mutableStateOf(false) }
 
     // Platform-specific notification permission handling
     val requestPermissionAndSync = rememberRequestPermissionAndSync(
@@ -159,10 +159,7 @@ fun UserListScreen(
                 actions = {
                     // Detail toggle button
                     if (userCount > 0) {
-                        IconButton(onClick = {
-                            showDetails = !showDetails
-                            viewModel.logDetailToggled(showDetails)
-                        }) {
+                        IconButton(onClick = { viewModel.toggleShowUserDetails() }) {
                             Icon(
                                 imageVector = if (showDetails) Icons.Filled.Info else Icons.Outlined.Info,
                                 contentDescription = if (showDetails) "Hide details" else "Show details"

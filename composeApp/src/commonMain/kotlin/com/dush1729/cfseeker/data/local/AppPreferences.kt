@@ -20,4 +20,7 @@ interface AppPreferences {
 
     suspend fun setKnownMenuItemCount(count: Int)
     suspend fun getKnownMenuItemCount(): Int
+
+    suspend fun setShowUserDetails(show: Boolean)
+    suspend fun getShowUserDetails(): Boolean
 }
