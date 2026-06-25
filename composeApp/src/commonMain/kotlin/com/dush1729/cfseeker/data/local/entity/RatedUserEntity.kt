@@ -10,8 +10,7 @@ import androidx.room.PrimaryKey
         Index(value = ["rating"]),
         Index(value = ["country"]),
         Index(value = ["city"]),
-        Index(value = ["organization"]),
-        Index(value = ["maxRating"])
+        Index(value = ["organization"])
     ]
 )
 data class RatedUserEntity(
