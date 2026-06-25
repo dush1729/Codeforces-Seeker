@@ -10,7 +10,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.People
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Today
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.DrawerValue
@@ -40,9 +39,7 @@ import com.dush1729.cfseeker.platform.PlatformActions
 import com.dush1729.cfseeker.ui.ContestViewModel
 import com.dush1729.cfseeker.ui.DailyViewModel
 import com.dush1729.cfseeker.ui.ProfileViewModel
-import com.dush1729.cfseeker.ui.SearchViewModel
 import com.dush1729.cfseeker.ui.UserViewModel
-import org.koin.compose.viewmodel.koinViewModel
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
@@ -52,7 +49,6 @@ private data class DrawerTab(val label: String, val icon: ImageVector, val analy
 private val DRAWER_TABS = listOf(
     DrawerTab("Users", Icons.Filled.People, "users"),
     DrawerTab("Contests", Icons.Filled.EmojiEvents, "contests"),
-    DrawerTab("Search", Icons.Filled.Search, "search"),
     DrawerTab("Daily", Icons.Filled.Today, "daily"),
     DrawerTab("About", Icons.Filled.Info, "about"),
 )
@@ -70,7 +66,6 @@ fun MainScreen(
     modifier: Modifier = Modifier
 ) {
     val appPreferences: AppPreferences = koinInject()
-    val searchViewModel: SearchViewModel = koinViewModel()
     var selectedTab by rememberSaveable { mutableStateOf(0) }
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -134,14 +129,7 @@ fun MainScreen(
                 showMenuBadge = showMenuBadge,
                 modifier = Modifier.fillMaxSize()
             )
-            2 -> SearchScreen(
-                navController = navController,
-                viewModel = searchViewModel,
-                onMenuClick = onMenuClick,
-                showMenuBadge = showMenuBadge,
-                modifier = Modifier.fillMaxSize()
-            )
-            3 -> DailyScreen(
+            2 -> DailyScreen(
                 navController = navController,
                 dailyViewModel = dailyViewModel,
                 profileViewModel = profileViewModel,
@@ -149,7 +137,7 @@ fun MainScreen(
                 showMenuBadge = showMenuBadge,
                 modifier = Modifier.fillMaxSize()
             )
-            4 -> AboutScreen(
+            3 -> AboutScreen(
                 navController = navController,
                 analyticsService = analyticsService,
                 platformActions = platformActions,

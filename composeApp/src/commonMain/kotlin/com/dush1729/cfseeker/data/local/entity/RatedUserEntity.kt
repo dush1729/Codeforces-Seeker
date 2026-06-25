@@ -6,12 +6,7 @@ import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "rated_user",
-    indices = [
-        Index(value = ["rating"]),
-        Index(value = ["country"]),
-        Index(value = ["city"]),
-        Index(value = ["organization"])
-    ]
+    indices = [Index(value = ["rating"])]
 )
 data class RatedUserEntity(
     @PrimaryKey
@@ -20,15 +15,4 @@ data class RatedUserEntity(
     val maxRating: Int?,
     val rank: String?,
     val maxRank: String?,
-    val avatar: String?,
-    val titlePhoto: String?,
-    val firstName: String?,
-    val lastName: String?,
-    val country: String?,
-    val city: String?,
-    val organization: String?,
-    val contribution: Int,
-    val friendOfCount: Int,
-    val lastOnlineTimeSeconds: Long,
-    val registrationTimeSeconds: Long,
 )

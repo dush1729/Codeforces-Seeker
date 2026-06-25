@@ -5,7 +5,7 @@ import com.dush1729.cfseeker.data.local.DatabaseService
 import com.dush1729.cfseeker.data.local.dao.HandleRating
 import com.dush1729.cfseeker.data.local.entity.RatedUserEntity
 import com.dush1729.cfseeker.data.remote.api.CodeforcesApi
-import com.dush1729.cfseeker.data.remote.api.streamParseRatedUsers
+import com.dush1729.cfseeker.data.remote.api.safeApiCall
 import com.dush1729.cfseeker.data.remote.model.User
 import com.dush1729.cfseeker.platform.ioDispatcher
 import kotlinx.coroutines.flow.Flow
@@ -32,10 +32,11 @@ class RatedUserRepository(
     }
 
     suspend fun fetchAndCacheRatedUsers() = withContext(ioDispatcher) {
-        val statement = api.getRatedListStreaming(activeOnly = false)
-        streamParseRatedUsers(statement) { batch ->
-            db.upsertRatedUsers(batch)
-        }
+        val users = safeApiCall {
+            api.getRatedList()
+        }.result ?: return@withContext
+
+        db.replaceAllRatedUsers(users.map { it.toRatedUserEntity() })
         appPreferences.setRatedUserLastSyncTime(Clock.System.now().epochSeconds)
     }
 
@@ -46,10 +47,6 @@ class RatedUserRepository(
 
     fun searchByHandle(query: String, limit: Int = 50): Flow<List<RatedUserEntity>> {
         return db.searchRatedUsers(query, limit)
-    }
-
-    fun searchByHandle(query: String, sortBy: String, limit: Int = 100): Flow<List<RatedUserEntity>> {
-        return db.searchRatedUsers(query, sortBy, limit)
     }
 
     suspend fun getRatedUserCount(): Int {
@@ -63,15 +60,4 @@ fun User.toRatedUserEntity(): RatedUserEntity = RatedUserEntity(
     maxRating = this.maxRating,
     rank = this.rank,
     maxRank = this.maxRank,
-    avatar = this.avatar,
-    titlePhoto = this.titlePhoto,
-    firstName = this.firstName,
-    lastName = this.lastName,
-    country = this.country,
-    city = this.city,
-    organization = this.organization,
-    contribution = this.contribution,
-    friendOfCount = this.friendOfCount,
-    lastOnlineTimeSeconds = this.lastOnlineTimeSeconds,
-    registrationTimeSeconds = this.registrationTimeSeconds,
 )
