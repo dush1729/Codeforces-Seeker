@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material.icons.filled.Today
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.DrawerValue
@@ -50,6 +51,7 @@ private val DRAWER_TABS = listOf(
     DrawerTab("Users", Icons.Filled.People, "users"),
     DrawerTab("Contests", Icons.Filled.EmojiEvents, "contests"),
     DrawerTab("Daily", Icons.Filled.Today, "daily"),
+    DrawerTab("Duel", Icons.Filled.SwapHoriz, "duel"),
     DrawerTab("About", Icons.Filled.Info, "about"),
 )
 
@@ -137,7 +139,13 @@ fun MainScreen(
                 showMenuBadge = showMenuBadge,
                 modifier = Modifier.fillMaxSize()
             )
-            3 -> AboutScreen(
+            3 -> DuelScreen(
+                userViewModel = userViewModel,
+                onMenuClick = onMenuClick,
+                showMenuBadge = showMenuBadge,
+                modifier = Modifier.fillMaxSize()
+            )
+            4 -> AboutScreen(
                 navController = navController,
                 analyticsService = analyticsService,
                 platformActions = platformActions,
