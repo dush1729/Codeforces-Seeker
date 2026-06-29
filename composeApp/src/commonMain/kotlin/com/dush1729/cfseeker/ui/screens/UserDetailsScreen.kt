@@ -1,11 +1,13 @@
 package com.dush1729.cfseeker.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -15,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.Canvas
@@ -29,6 +32,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FirstPage
 import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.Button
@@ -84,7 +88,9 @@ import coil3.compose.AsyncImage
 import com.dush1729.cfseeker.analytics.AnalyticsService
 import com.dush1729.cfseeker.crashlytics.CrashlyticsService
 import com.dush1729.cfseeker.data.local.entity.UserEntity
+import com.dush1729.cfseeker.data.remote.model.Submission
 import com.dush1729.cfseeker.ui.UserViewModel
+import com.dush1729.cfseeker.ui.base.UiState
 import com.dush1729.cfseeker.ui.theme.RatingNegative
 import com.dush1729.cfseeker.ui.theme.RatingPositive
 import com.dush1729.cfseeker.utils.getRatingBackgroundColors
@@ -92,6 +98,7 @@ import com.dush1729.cfseeker.utils.getRatingColor
 import com.dush1729.cfseeker.utils.toFormattedDate
 import com.dush1729.cfseeker.utils.toRelativeTime
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -188,7 +195,7 @@ private fun UserDetailsContent(
     val isSyncUserEnabled = remember { viewModel.isSyncUserEnabled() }
     val ratingChanges by viewModel.getRatingChangesByHandle(user.handle, searchQuery).collectAsStateWithLifecycle(initialValue = emptyList())
 
-    val tabs = listOf("Info", "Ratings")
+    val tabs = listOf("Info", "Ratings", "Stats")
 
     Column(
         modifier = modifier
@@ -276,6 +283,14 @@ private fun UserDetailsContent(
                     searchQuery = searchQuery,
                     onSearchQueryChange = { searchQuery = it },
                     navController = navController,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+            2 -> {
+                // Stats Tab
+                StatsContent(
+                    handle = user.handle,
+                    viewModel = viewModel,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -1015,6 +1030,252 @@ private fun RatingChangeCard(
                     )
                 }
             }
+        }
+    }
+}
+
+private data class UserStats(
+    val totalSubmissions: Int,
+    val uniqueSolved: Int,
+    val verdictCounts: List<Pair<String, Int>>,
+    val languageCounts: List<Pair<String, Int>>,
+    val tagCounts: List<Pair<String, Int>>,
+    val ratingBuckets: List<Pair<Int, Int>>
+)
+
+private fun computeUserStats(submissions: List<Submission>): UserStats {
+    val accepted = submissions.filter { it.verdict == "OK" }
+    val uniqueSolved = accepted.distinctBy { "${it.problem.contestId}_${it.problem.index}" }.size
+
+    val verdictCounts = submissions
+        .groupBy { it.verdict ?: "TESTING" }
+        .mapValues { it.value.size }
+        .entries.sortedByDescending { it.value }
+        .map { it.key to it.value }
+
+    val languageCounts = submissions
+        .groupBy { it.programmingLanguage }
+        .mapValues { it.value.size }
+        .entries.sortedByDescending { it.value }
+        .map { it.key to it.value }
+
+    val tagCounts = accepted
+        .flatMap { it.problem.tags }
+        .groupBy { it }
+        .mapValues { it.value.size }
+        .entries.sortedByDescending { it.value }
+        .take(15)
+        .map { it.key to it.value }
+
+    val ratingBuckets = accepted
+        .mapNotNull { it.problem.rating }
+        .groupBy { (it / 100) * 100 }
+        .mapValues { it.value.size }
+        .entries.sortedBy { it.key }
+        .map { it.key to it.value }
+
+    return UserStats(submissions.size, uniqueSolved, verdictCounts, languageCounts, tagCounts, ratingBuckets)
+}
+
+private fun verdictLabel(verdict: String): String = when (verdict) {
+    "OK" -> "Accepted"
+    "WRONG_ANSWER" -> "Wrong Answer"
+    "TIME_LIMIT_EXCEEDED" -> "TLE"
+    "MEMORY_LIMIT_EXCEEDED" -> "MLE"
+    "RUNTIME_ERROR" -> "Runtime Error"
+    "COMPILATION_ERROR" -> "Compile Error"
+    "IDLENESS_LIMIT_EXCEEDED" -> "Idleness Limit"
+    "PARTIAL" -> "Partial"
+    "SKIPPED" -> "Skipped"
+    "REJECTED" -> "Rejected"
+    "CHALLENGED" -> "Challenged"
+    "PRESENTATION_ERROR" -> "Presentation Error"
+    "SECURITY_VIOLATED" -> "Security Violated"
+    "CRASHED" -> "Crashed"
+    "FAILED" -> "Failed"
+    else -> verdict
+}
+
+@Composable
+private fun StatsContent(
+    handle: String,
+    viewModel: UserViewModel,
+    modifier: Modifier = Modifier
+) {
+    var state by remember { mutableStateOf<UiState<UserStats>>(UiState.Loading) }
+    var retryTrigger by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(retryTrigger) {
+        state = UiState.Loading
+        state = try {
+            val submissions = viewModel.fetchUserSubmissions(handle)
+            UiState.Success(computeUserStats(submissions))
+        } catch (e: Exception) {
+            UiState.Error(e.message ?: "Failed to load stats")
+        }
+    }
+
+    when (val s = state) {
+        is UiState.Loading -> {
+            Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    CircularProgressIndicator()
+                    Text("Loading submissions…", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+        is UiState.Error -> {
+            Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(s.message, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
+                    Button(onClick = { retryTrigger++ }) {
+                        Icon(imageVector = Icons.Filled.Refresh, contentDescription = "Retry", modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.size(4.dp))
+                        Text("Retry")
+                    }
+                }
+            }
+        }
+        is UiState.Success -> {
+            StatsDisplay(stats = s.data, modifier = modifier)
+        }
+    }
+}
+
+@Composable
+private fun StatsDisplay(stats: UserStats, modifier: Modifier = Modifier) {
+    val total = stats.totalSubmissions
+    Column(
+        modifier = modifier
+            .verticalScroll(rememberScrollState())
+            .padding(vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // Summary
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                StatSummaryItem(label = "Submissions", value = total.toString())
+                StatSummaryItem(label = "Unique Solved", value = stats.uniqueSolved.toString())
+                if (total > 0) {
+                    val acCount = stats.verdictCounts.firstOrNull { it.first == "OK" }?.second ?: 0
+                    val pct = (acCount.toFloat() / total * 100).roundToInt()
+                    StatSummaryItem(label = "AC Rate", value = "$pct%")
+                }
+            }
+        }
+
+        // Verdicts
+        if (stats.verdictCounts.isNotEmpty()) {
+            SectionTitle("Verdicts")
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                stats.verdictCounts.forEach { (verdict, count) ->
+                    val barColor = when (verdict) {
+                        "OK" -> RatingPositive
+                        "WRONG_ANSWER", "RUNTIME_ERROR", "COMPILATION_ERROR" -> RatingNegative
+                        else -> MaterialTheme.colorScheme.primary
+                    }
+                    StatBar(
+                        label = verdictLabel(verdict),
+                        count = count,
+                        total = total,
+                        color = barColor
+                    )
+                }
+            }
+        }
+
+        // Languages
+        if (stats.languageCounts.isNotEmpty()) {
+            SectionTitle("Languages")
+            val maxLang = stats.languageCounts.first().second
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                stats.languageCounts.take(8).forEach { (lang, count) ->
+                    StatBar(label = lang, count = count, total = maxLang, showPct = false, countLabel = count.toString())
+                }
+            }
+        }
+
+        // Tags
+        if (stats.tagCounts.isNotEmpty()) {
+            SectionTitle("Tags (Accepted)")
+            val maxTag = stats.tagCounts.first().second
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                stats.tagCounts.forEach { (tag, count) ->
+                    StatBar(label = tag, count = count, total = maxTag, showPct = false, countLabel = count.toString())
+                }
+            }
+        }
+
+        // Rating distribution
+        if (stats.ratingBuckets.isNotEmpty()) {
+            SectionTitle("Solved by Rating")
+            val maxBucket = stats.ratingBuckets.maxOf { it.second }
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                stats.ratingBuckets.forEach { (rating, count) ->
+                    StatBar(
+                        label = "$rating–${rating + 99}",
+                        count = count,
+                        total = maxBucket,
+                        showPct = false,
+                        countLabel = count.toString(),
+                        color = getRatingColor(rating)
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+    }
+}
+
+@Composable
+private fun StatSummaryItem(label: String, value: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(value, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+@Composable
+private fun StatBar(
+    label: String,
+    count: Int,
+    total: Int,
+    showPct: Boolean = true,
+    countLabel: String? = null,
+    color: Color = MaterialTheme.colorScheme.primary
+) {
+    val fraction = if (total > 0) (count.toFloat() / total).coerceIn(0f, 1f) else 0f
+    val trailingText = if (showPct) {
+        "$count (${(fraction * 100).roundToInt()}%)"
+    } else {
+        countLabel ?: count.toString()
+    }
+    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(label, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
+            Text(trailingText, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(6.dp)
+                .clip(RoundedCornerShape(3.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(fraction)
+                    .fillMaxHeight()
+                    .clip(RoundedCornerShape(3.dp))
+                    .background(color)
+            )
         }
     }
 }

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.dush1729.cfseeker.analytics.AnalyticsService
 import com.dush1729.cfseeker.crashlytics.CrashlyticsService
 import com.dush1729.cfseeker.data.remote.config.RemoteConfigService
+import com.dush1729.cfseeker.data.remote.model.Submission
 import com.dush1729.cfseeker.data.local.AppPreferences
 import com.dush1729.cfseeker.data.local.view.UserWithLatestRatingChangeView
 import com.dush1729.cfseeker.data.repository.UserRepository
@@ -287,6 +288,7 @@ class UserViewModel(
 
     fun getUserByHandle(handle: String) = repository.getUserByHandle(handle)
     fun getRatingChangesByHandle(handle: String, searchQuery: String = "") = repository.getRatingChangesByHandle(handle, searchQuery)
+    suspend fun fetchUserSubmissions(handle: String): List<Submission> = repository.getUserSubmissions(handle)
 
     fun isAddUserEnabled() = remoteConfigService.isAddUserEnabled()
     fun isSyncAllUsersEnabled() = remoteConfigService.isSyncAllUsersEnabled()

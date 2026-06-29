@@ -7,6 +7,7 @@ import com.dush1729.cfseeker.data.local.view.UserWithLatestRatingChangeView
 import com.dush1729.cfseeker.data.remote.api.CodeforcesApi
 import com.dush1729.cfseeker.data.remote.api.safeApiCall
 import com.dush1729.cfseeker.data.remote.model.RatingChange
+import com.dush1729.cfseeker.data.remote.model.Submission
 import com.dush1729.cfseeker.data.remote.model.User
 import com.dush1729.cfseeker.ui.SortOption
 import com.dush1729.cfseeker.platform.ioDispatcher
@@ -105,6 +106,10 @@ class UserRepository(
 
     fun getOutdatedUserHandles(): Flow<List<String>> {
         return db.getOutdatedUserHandles()
+    }
+
+    suspend fun getUserSubmissions(handle: String): List<Submission> = withContext(ioDispatcher) {
+        safeApiCall { api.getUserStatus(handle) }.result ?: emptyList()
     }
 
     // Fetches only user info (no rating changes) for all users - single API call
