@@ -1,7 +1,6 @@
 package com.dush1729.cfseeker.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -51,10 +49,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dush1729.cfseeker.ui.UserStats
 import com.dush1729.cfseeker.ui.UserViewModel
-import com.dush1729.cfseeker.ui.base.UiState
 import com.dush1729.cfseeker.ui.computeUserStats
 import com.dush1729.cfseeker.ui.verdictLabel
 import com.dush1729.cfseeker.utils.getRatingColor
@@ -78,11 +74,6 @@ fun DuelScreen(
     showMenuBadge: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val uiState by userViewModel.uiState.collectAsStateWithLifecycle()
-    val trackedHandles = remember(uiState) {
-        (uiState as? UiState.Success)?.data?.map { it.handle } ?: emptyList()
-    }
-
     var handle1 by remember { mutableStateOf("") }
     var handle2 by remember { mutableStateOf("") }
     var duelState by remember { mutableStateOf<DuelState>(DuelState.Idle) }
@@ -115,10 +106,7 @@ fun DuelScreen(
             UserHandlePicker(
                 value = handle1,
                 onValueChange = { handle1 = it },
-                label = "Player 1",
-                suggestions = if (handle1.isNotEmpty())
-                    trackedHandles.filter { it.contains(handle1, ignoreCase = true) && !it.equals(handle1, ignoreCase = true) }
-                else emptyList()
+                label = "Player 1"
             )
 
             Row(
@@ -139,10 +127,7 @@ fun DuelScreen(
             UserHandlePicker(
                 value = handle2,
                 onValueChange = { handle2 = it },
-                label = "Player 2",
-                suggestions = if (handle2.isNotEmpty())
-                    trackedHandles.filter { it.contains(handle2, ignoreCase = true) && !it.equals(handle2, ignoreCase = true) }
-                else emptyList()
+                label = "Player 2"
             )
 
             Button(
@@ -202,39 +187,16 @@ private fun UserHandlePicker(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
-    suggestions: List<String>,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier) {
-        OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            label = { Text(label) },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
-        )
-        if (suggestions.isNotEmpty()) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                shape = RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp)
-            ) {
-                suggestions.take(4).forEachIndexed { idx, handle ->
-                    Text(
-                        text = handle,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onValueChange(handle) }
-                            .padding(horizontal = 16.dp, vertical = 10.dp),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = getRatingColor(null)
-                    )
-                    if (idx < suggestions.size - 1 && idx < 3) HorizontalDivider()
-                }
-            }
-        }
-    }
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label) },
+        modifier = modifier.fillMaxWidth(),
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+    )
 }
 
 @Composable
